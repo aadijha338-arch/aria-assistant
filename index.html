@@ -18,70 +18,61 @@
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'DM Mono',monospace}
 body{display:flex;flex-direction:column}
 
-/* LOGIN SCREEN */
 #loginScreen{position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:32px}
 #loginScreen.gone{display:none}
 .login-logo{font-family:'Syne',sans-serif;font-size:64px;font-weight:800;letter-spacing:-4px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .login-sub{font-size:14px;color:var(--muted);text-align:center;line-height:1.7;max-width:260px}
-.google-btn{display:flex;align-items:center;gap:12px;background:#fff;color:#1a1a1a;border:none;border-radius:12px;padding:14px 24px;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s;width:100%;max-width:280px;justify-content:center}
+.google-btn{display:flex;align-items:center;gap:12px;background:#fff;color:#1a1a1a;border:none;border-radius:12px;padding:14px 24px;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;width:100%;max-width:280px;justify-content:center}
 .google-btn:active{opacity:.85}
-.google-icon{width:22px;height:22px}
-.login-note{font-size:11px;color:var(--muted);text-align:center;max-width:240px;line-height:1.6}
 #login-err{font-size:12px;color:var(--red);text-align:center;display:none;max-width:260px;line-height:1.6}
 #login-err.show{display:block}
-.login-loading{font-size:13px;color:var(--muted);display:none}
-.login-loading.show{display:block}
 
-/* SETUP (first time after login) */
 #setupScreen{position:fixed;inset:0;background:var(--bg);z-index:150;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px;gap:16px;overflow-y:auto}
 #setupScreen.gone{display:none}
 .setup-logo{font-family:'Syne',sans-serif;font-size:48px;font-weight:800;letter-spacing:-3px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.setup-sub{font-size:13px;color:var(--muted);text-align:center;line-height:1.7;max-width:280px}
 .form{width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px}
 .lbl{font-size:10px;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px}
 .inp{width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);padding:13px 16px;color:var(--text);font-family:'DM Mono',monospace;font-size:14px;outline:none;transition:border-color .2s}
 .inp:focus{border-color:var(--accent)}
 .inp::placeholder{color:var(--muted)}
 .inp-wrap{position:relative}
-.eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:16px;user-select:none}
-.launch-btn{width:100%;padding:16px;border-radius:var(--r);border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#080810;font-family:'Syne',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:opacity .2s;margin-top:4px}
-.launch-btn:active{opacity:.85}
-.setup-err{background:#1a0808;border:1px solid #7f1d1d;border-radius:var(--rs);padding:10px 14px;font-size:12px;color:var(--red);display:none}
-.setup-err.show{display:block}
+.eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:16px}
+.sel{width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);padding:13px 16px;color:var(--text);font-family:'DM Mono',monospace;font-size:14px;outline:none}
+.sel option{background:var(--s2)}
+.launch-btn{width:100%;padding:16px;border-radius:var(--r);border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#080810;font-family:'Syne',sans-serif;font-size:16px;font-weight:700;cursor:pointer;margin-top:4px}
 
-/* APP */
 #app{display:flex;flex-direction:column;height:100%;opacity:0;transition:opacity .5s;pointer-events:none}
 #app.on{opacity:1;pointer-events:all}
 
-/* HEADER */
+#wake-bar{display:none;position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));z-index:50;animation:scan 1.5s linear infinite}
+@keyframes scan{0%{opacity:1}50%{opacity:.3}100%{opacity:1}}
+#wake-bar.on{display:block}
+#wake-toast{position:fixed;bottom:130px;left:50%;transform:translateX(-50%);background:var(--s3);border:1px solid var(--accent);border-radius:20px;padding:8px 18px;font-size:13px;color:var(--accent);display:none;z-index:60;white-space:nowrap}
+#wake-toast.show{display:block}
+
 .hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;padding-top:max(12px,env(safe-area-inset-top));border-bottom:1px solid var(--border);flex-shrink:0}
 .hdr-logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .hdr-mid{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 .hdr-btns{display:flex;gap:5px}
-.hbtn{width:32px;height:32px;border-radius:var(--rs);border:1px solid var(--border);background:var(--s2);color:var(--muted2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:all .15s;flex-shrink:0}
+.hbtn{width:32px;height:32px;border-radius:var(--rs);border:1px solid var(--border);background:var(--s2);color:var(--muted2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;flex-shrink:0}
 .hbtn:active{background:var(--s3);color:var(--accent)}
 
-/* WAKE WORD INDICATOR */
-#wake-indicator{display:none;position:fixed;top:0;left:0;right:0;z-index:50;background:linear-gradient(90deg,var(--accent),var(--accent2));height:3px}
-#wake-indicator.listening{display:block;animation:scan 1.5s linear infinite}
-@keyframes scan{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
-#wake-toast{position:fixed;bottom:120px;left:50%;transform:translateX(-50%);background:var(--s3);border:1px solid var(--accent);border-radius:20px;padding:8px 18px;font-size:13px;color:var(--accent);display:none;z-index:60;white-space:nowrap}
-#wake-toast.show{display:block;animation:fadeup .3s ease-out}
-@keyframes fadeup{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+/* TAB BAR */
+.tabbar{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto}
+.tabbar::-webkit-scrollbar{display:none}
+.tab{flex:1;padding:10px 8px;font-size:11px;color:var(--muted);cursor:pointer;text-align:center;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;font-family:'DM Mono',monospace}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 
-/* BRIEFING BANNER */
-#briefing{display:none;margin:10px 14px 0;background:linear-gradient(135deg,#1a1a3e,#1e1e30);border:1px solid var(--accent2);border-radius:var(--r);padding:12px 14px;font-size:13px;line-height:1.6;position:relative}
-#briefing.show{display:block}
-#briefing-close{position:absolute;top:8px;right:10px;color:var(--muted);cursor:pointer;font-size:16px}
-#briefing-text{color:var(--text);padding-right:20px}
-.briefing-label{font-size:10px;color:var(--accent2);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+/* VIEWS */
+.view{display:none;flex:1;overflow-y:auto;flex-direction:column}
+.view.active{display:flex}
 
-/* MESSAGES */
-#msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth}
-#msgs::-webkit-scrollbar{width:2px}
-#msgs::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+/* CHAT */
+#chatView{padding:14px;gap:12px;scroll-behavior:smooth}
+#chatView::-webkit-scrollbar{width:2px}
+#chatView::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 .msg{display:flex;flex-direction:column;gap:3px;animation:pop .2s ease-out}
 @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .msg.u{align-items:flex-end}
@@ -96,6 +87,55 @@ body{display:flex;flex-direction:column}
 @keyframes th{0%{content:' .'}33%{content:' ..'}66%{content:' ...'}100%{content:' .'}}
 .ts{font-size:10px;color:var(--muted);padding:0 3px}
 .msg-img{max-width:180px;border-radius:var(--rs);border:1px solid var(--border2);margin-bottom:4px;display:block}
+.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:12px;padding:24px;text-align:center;color:var(--muted)}
+.wico{font-size:44px}
+.wtitle{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text)}
+.wsub{font-size:13px;line-height:1.7;max-width:260px}
+.qtips{display:flex;flex-direction:column;gap:7px;width:100%;max-width:300px;margin-top:6px}
+.qtip{background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 14px;font-size:12px;color:var(--muted2);text-align:left;cursor:pointer}
+.qtip:active{border-color:var(--accent);color:var(--accent)}
+
+/* FINANCE VIEW */
+#financeView{padding:14px;gap:12px}
+.fin-header{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--accent)}
+.watchlist{display:flex;flex-direction:column;gap:8px}
+.asset-card{background:var(--s2);border:1px solid var(--border2);border-radius:var(--r);padding:13px;display:flex;justify-content:space-between;align-items:center}
+.asset-name{font-size:14px;font-weight:500}
+.asset-verdict{font-size:11px;padding:3px 8px;border-radius:4px;font-family:'DM Mono',monospace}
+.buy{background:#052e16;color:var(--green);border:1px solid #166534}
+.hold{background:#422006;color:var(--yellow);border:1px solid #78350f}
+.avoid{background:#3b0000;color:var(--red);border:1px solid #7f1d1d}
+.analyzing{background:var(--s3);color:var(--muted);border:1px solid var(--border)}
+.asset-reasoning{font-size:12px;color:var(--muted2);margin-top:6px;line-height:1.5}
+.add-asset{display:flex;gap:8px;margin-top:4px}
+.add-asset input{flex:1;background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);padding:11px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;outline:none}
+.add-asset input:focus{border-color:var(--accent)}
+.add-asset input::placeholder{color:var(--muted)}
+.add-btn{background:var(--accent);color:#080810;border:none;border-radius:var(--rs);padding:11px 16px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap}
+.refresh-btn{width:100%;padding:12px;border-radius:var(--rs);border:1px solid var(--accent);background:transparent;color:var(--accent);font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;margin-top:4px}
+.fin-disclaimer{font-size:11px;color:var(--muted);line-height:1.6;padding:10px;background:var(--s3);border-radius:var(--rs);border:1px solid var(--border)}
+
+/* NEWS VIEW */
+#newsView{padding:14px;gap:10px}
+.news-card{background:var(--s2);border:1px solid var(--border2);border-radius:var(--r);padding:13px;cursor:pointer}
+.news-card:active{border-color:var(--accent)}
+.news-source{font-size:10px;color:var(--accent2);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.news-title{font-size:13px;line-height:1.5;margin-bottom:4px}
+.news-time{font-size:11px;color:var(--muted)}
+.news-summary{font-size:12px;color:var(--muted2);margin-top:6px;line-height:1.5;display:none}
+.news-card.expanded .news-summary{display:block}
+.news-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.news-tabs::-webkit-scrollbar{display:none}
+.ntab{padding:6px 12px;border-radius:20px;border:1px solid var(--border2);background:var(--s2);color:var(--muted2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:'DM Mono',monospace}
+.ntab.active{border-color:var(--accent);color:var(--accent);background:var(--s3)}
+
+/* HISTORY VIEW */
+#historyView{padding:14px;gap:8px}
+.session-card{background:var(--s2);border:1px solid var(--border2);border-radius:var(--r);padding:13px;cursor:pointer}
+.session-card:active{border-color:var(--accent)}
+.session-date{font-size:11px;color:var(--accent2);margin-bottom:4px}
+.session-preview{font-size:13px;color:var(--muted2);line-height:1.5}
+.session-count{font-size:11px;color:var(--muted);margin-top:4px}
 
 /* PANELS */
 .panel{position:fixed;inset:0;background:rgba(8,8,16,.97);z-index:60;display:flex;flex-direction:column;padding:16px;padding-top:max(16px,env(safe-area-inset-top));transform:translateX(100%);transition:transform .28s ease}
@@ -108,19 +148,28 @@ body{display:flex;flex-direction:column}
 .mitem,.ritem{background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);padding:11px 13px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
 .ritem{align-items:center}
 .ritem.done{opacity:.4}
-.mtext{font-size:13px;line-height:1.5;flex:1}
+.mtext,.rtext{font-size:13px;line-height:1.5;flex:1}
 .rinfo{flex:1}
-.rtext{font-size:13px;line-height:1.4}
 .rtime{font-size:11px;color:var(--accent);margin-top:3px}
-.mdel,.rdel{color:var(--muted);font-size:16px;cursor:pointer;flex-shrink:0;padding:0 3px}
+.mdel,.rdel{color:var(--muted);font-size:16px;cursor:pointer;flex-shrink:0}
 .mdel:active,.rdel:active{color:var(--red)}
 .madd,.radd{display:flex;gap:8px}
 .radd{flex-direction:column}
-.madd input,.radd input,.radd select{background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);padding:12px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;outline:none;width:100%}
+.madd input,.radd input{background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);padding:12px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;outline:none;width:100%}
 .madd input:focus,.radd input:focus{border-color:var(--accent)}
 .madd input::placeholder,.radd input::placeholder{color:var(--muted)}
 .msavebtn{background:var(--accent);color:#080810;border:none;border-radius:var(--rs);padding:12px 16px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap}
 .rsavebtn{background:var(--accent3);color:#080810;border:none;border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;width:100%}
+
+/* SETTINGS PANEL */
+.setting-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+.setting-label{font-size:13px}
+.setting-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.setting-sel{background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);padding:8px 12px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;outline:none}
+
+/* EMOTION BADGE */
+#emotion-badge{position:fixed;top:60px;right:14px;background:var(--s3);border:1px solid var(--border2);border-radius:20px;padding:4px 10px;font-size:11px;color:var(--muted2);display:none;z-index:40}
+#emotion-badge.show{display:block}
 
 /* INPUT BAR */
 .ibar{padding:10px 12px;padding-bottom:max(12px,env(safe-area-inset-bottom));border-top:1px solid var(--border);flex-shrink:0}
@@ -141,90 +190,135 @@ body{display:flex;flex-direction:column}
 #ipw.on{display:inline-block}
 #ipreview{width:72px;height:72px;object-fit:cover;border-radius:var(--rs);border:1px solid var(--accent)}
 #iclr{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--red);color:#fff;border:none;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-
-/* WELCOME */
-.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:12px;padding:24px;text-align:center;color:var(--muted)}
-.wico{font-size:44px}
-.wtitle{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text)}
-.wsub{font-size:13px;line-height:1.7;max-width:260px}
-.qtips{display:flex;flex-direction:column;gap:7px;width:100%;max-width:300px;margin-top:6px}
-.qtip{background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 14px;font-size:12px;color:var(--muted2);text-align:left;cursor:pointer;transition:all .15s}
-.qtip:active{border-color:var(--accent);color:var(--accent)}
 </style>
 </head>
 <body>
 
-<!-- WAKE WORD INDICATOR -->
-<div id="wake-indicator"></div>
+<div id="wake-bar"></div>
 <div id="wake-toast">🎤 Listening...</div>
+<div id="emotion-badge"></div>
 
-<!-- LOGIN SCREEN -->
+<!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-logo">ARIA</div>
-  <p class="login-sub">Your personal AI assistant — private and secure. Sign in to continue.</p>
+  <p class="login-sub">Your personal AI — private and secure.</p>
   <button class="google-btn" onclick="signInWithGoogle()">
-    <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+    <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
     Sign in with Google
   </button>
-  <div id="login-loading" class="login-loading">Signing you in...</div>
   <div id="login-err">Access denied. Only the authorised account can use ARIA.</div>
-  <p class="login-note">🔒 Only your Google account can access this app.</p>
+  <p style="font-size:11px;color:var(--muted);text-align:center;max-width:240px;line-height:1.6">🔒 Only your Google account can access this.</p>
 </div>
 
-<!-- SETUP SCREEN (first time) -->
+<!-- SETUP -->
 <div id="setupScreen" class="gone">
   <div class="setup-logo">ARIA</div>
-  <p class="setup-sub">One last thing — tell me about yourself so I can personalise your experience.</p>
+  <p style="font-size:13px;color:var(--muted);text-align:center;line-height:1.7;max-width:280px">Let's personalise your experience.</p>
   <div class="form">
     <div>
       <div class="lbl">Anthropic API key</div>
       <div class="inp-wrap">
-        <input class="inp" id="skey" placeholder="sk-ant-api03-..." type="password" autocomplete="off" style="padding-right:44px">
+        <input class="inp" id="skey" placeholder="sk-ant-api03-..." type="password" style="padding-right:44px">
         <span class="eye" onclick="toggleEye()">👁</span>
       </div>
-      <div style="font-size:11px;color:var(--muted);margin-top:5px;line-height:1.6">Get your free key at <span style="color:var(--accent)">console.anthropic.com</span> → API Keys</div>
     </div>
     <div>
-      <div class="lbl">About you (optional)</div>
-      <input class="inp" id="sbio" placeholder="e.g. Student in London, 22, loves football">
+      <div class="lbl">NewsAPI key (for live news & finance)</div>
+      <input class="inp" id="snewskey" placeholder="Get free at newsapi.org">
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Free at newsapi.org — needed for market news</div>
     </div>
-    <div id="setup-err" class="setup-err">Please enter your API key.</div>
+    <div>
+      <div class="lbl">About you</div>
+      <input class="inp" id="sbio" placeholder="e.g. Student in London, loves football">
+    </div>
+    <div>
+      <div class="lbl">ARIA's personality</div>
+      <select class="sel" id="spersonality">
+        <option value="friendly">Friendly & casual</option>
+        <option value="professional">Professional & formal</option>
+        <option value="motivating">Motivating & energetic</option>
+        <option value="blunt">Direct & blunt (no fluff)</option>
+        <option value="mentor">Wise mentor</option>
+      </select>
+    </div>
+    <div>
+      <div class="lbl">ARIA's voice speed</div>
+      <select class="sel" id="svoicespeed">
+        <option value="0.85">Slow</option>
+        <option value="0.95" selected>Normal</option>
+        <option value="1.1">Fast</option>
+        <option value="1.25">Very fast</option>
+      </select>
+    </div>
     <button class="launch-btn" onclick="finishSetup()">Launch ARIA →</button>
   </div>
 </div>
 
-<!-- MAIN APP -->
+<!-- APP -->
 <div id="app">
   <div class="hdr">
     <div class="hdr-logo">ARIA</div>
     <div class="hdr-mid"><div class="dot"></div><span id="stxt">ready</span></div>
     <div class="hdr-btns">
-      <div class="hbtn" onclick="showBriefing()" title="Daily briefing">☀️</div>
-      <div class="hbtn" onclick="openPanel('rpanel')" title="Reminders">⏰</div>
-      <div class="hbtn" onclick="openPanel('mpanel')" title="Memory">🧠</div>
-      <div class="hbtn" onclick="signOut()" title="Sign out">👤</div>
-      <div class="hbtn" onclick="newChat()" title="New chat">↺</div>
+      <div class="hbtn" onclick="openPanel('mpanel')">🧠</div>
+      <div class="hbtn" onclick="openPanel('rpanel')">⏰</div>
+      <div class="hbtn" onclick="openPanel('settings')">⚙️</div>
+      <div class="hbtn" onclick="signOut()">👤</div>
     </div>
   </div>
 
-  <div id="briefing">
-    <div class="briefing-label">☀️ Daily Briefing</div>
-    <div id="briefing-text">Loading...</div>
-    <span id="briefing-close" onclick="document.getElementById('briefing').classList.remove('show')">✕</span>
+  <div class="tabbar">
+    <div class="tab active" onclick="switchTab('chat')">💬 Chat</div>
+    <div class="tab" onclick="switchTab('finance')">📈 Markets</div>
+    <div class="tab" onclick="switchTab('news')">📰 News</div>
+    <div class="tab" onclick="switchTab('history')">🕐 History</div>
   </div>
 
-  <div id="msgs">
+  <!-- CHAT TAB -->
+  <div class="view active" id="chatView">
     <div class="welcome" id="wlc">
       <div class="wico">✦</div>
       <div class="wtitle" id="wtitle">Hey!</div>
-      <div class="wsub" id="wsub">I'm ARIA. Say <b style="color:var(--accent)">"Yo ARIA"</b> to wake me, or type below.</div>
+      <div class="wsub">Say <b style="color:var(--accent)">"Yo ARIA"</b> or type below. I remember everything.</div>
       <div class="qtips">
-        <div class="qtip" onclick="sq('Give me my daily briefing')">☀️ Give me my daily briefing</div>
-        <div class="qtip" onclick="sq('What do you remember about me?')">🧠 What do you remember about me?</div>
-        <div class="qtip" onclick="sq('What\'s the weather near me?')">📍 What\'s the weather near me?</div>
-        <div class="qtip" onclick="sq('What should I focus on today?')">⚡ What should I focus on today?</div>
+        <div class="qtip" onclick="sq('Give me my daily briefing')">☀️ Daily briefing</div>
+        <div class="qtip" onclick="sq('What\'s happening in the markets today?')">📈 Market update</div>
+        <div class="qtip" onclick="sq('What\'s in the news today?')">📰 Today\'s news</div>
+        <div class="qtip" onclick="sq('What do you remember about me?')">🧠 What do you know about me?</div>
       </div>
     </div>
+  </div>
+
+  <!-- FINANCE TAB -->
+  <div class="view" id="financeView">
+    <div class="fin-header">📈 Market Watchlist</div>
+    <p style="font-size:12px;color:var(--muted);line-height:1.6">ARIA analyses live news to give you a Buy / Hold / Avoid verdict for each asset.</p>
+    <div class="add-asset">
+      <input id="assetInput" placeholder="Add asset (e.g. Bitcoin, AAPL, Tesla)" onkeydown="if(event.key==='Enter')addAsset()">
+      <button class="add-btn" onclick="addAsset()">Add</button>
+    </div>
+    <div class="watchlist" id="watchlist"></div>
+    <button class="refresh-btn" onclick="analyzeAll()">🔄 Refresh all analysis</button>
+    <div class="fin-disclaimer">⚠️ ARIA's analysis is based on news reasoning, not regulated financial advice. Always do your own research before investing.</div>
+  </div>
+
+  <!-- NEWS TAB -->
+  <div class="view" id="newsView">
+    <div class="news-tabs">
+      <div class="ntab active" onclick="loadNews('general',this)">🌍 World</div>
+      <div class="ntab" onclick="loadNews('business',this)">💼 Business</div>
+      <div class="ntab" onclick="loadNews('technology',this)">💻 Tech</div>
+      <div class="ntab" onclick="loadNews('sports',this)">⚽ Sports</div>
+      <div class="ntab" onclick="loadNews('health',this)">🏥 Health</div>
+    </div>
+    <div id="newsList" style="display:flex;flex-direction:column;gap:10px;padding-top:4px"></div>
+  </div>
+
+  <!-- HISTORY TAB -->
+  <div class="view" id="historyView">
+    <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--accent)">🕐 Chat History</div>
+    <p style="font-size:12px;color:var(--muted);line-height:1.6">Every conversation saved forever.</p>
+    <div id="historyList" style="display:flex;flex-direction:column;gap:8px"></div>
   </div>
 
   <div class="ibar">
@@ -233,9 +327,9 @@ body{display:flex;flex-direction:column}
       <div class="chip" id="wakechip" onclick="toggleWake()">👂 Yo ARIA</div>
       <div class="chip" id="micchip" onclick="toggleMic()">🎤 Voice</div>
       <div class="chip" onclick="trigCam()">📷 Camera</div>
+      <div class="chip" onclick="detectEmotion()">😊 Mood</div>
       <div class="chip" onclick="getLocation()">📍 Location</div>
       <div class="chip" onclick="showBriefing()">☀️ Briefing</div>
-      <div class="chip" onclick="openPanel('rpanel')">⏰ Remind me</div>
     </div>
     <div class="irow">
       <textarea id="tinput" placeholder="Message ARIA..." rows="1" oninput="resize(this)" onkeydown="onKey(event)"></textarea>
@@ -247,10 +341,10 @@ body{display:flex;flex-direction:column}
 <!-- MEMORY PANEL -->
 <div class="panel" id="mpanel">
   <div class="ph"><div class="ptitle">🧠 Memory</div><div class="pclose" onclick="closePanel('mpanel')">✕</div></div>
-  <p class="psub">These facts are injected into every conversation so ARIA always knows you.</p>
+  <p class="psub">Facts ARIA always knows about you.</p>
   <div class="mlist" id="mlist"></div>
   <div class="madd">
-    <input id="minput" placeholder="e.g. I work as a chef in London" onkeydown="if(event.key==='Enter')addMem()">
+    <input id="minput" placeholder="Add a fact about you..." onkeydown="if(event.key==='Enter')addMem()">
     <button class="msavebtn" onclick="addMem()">Save</button>
   </div>
 </div>
@@ -258,7 +352,7 @@ body{display:flex;flex-direction:column}
 <!-- REMINDERS PANEL -->
 <div class="panel" id="rpanel">
   <div class="ph"><div class="ptitle">⏰ Reminders</div><div class="pclose" onclick="closePanel('rpanel')">✕</div></div>
-  <p class="psub">ARIA will notify you and mention upcoming reminders in conversation.</p>
+  <p class="psub">ARIA notifies you when it's time.</p>
   <div class="rlist" id="rlist"></div>
   <div class="radd">
     <input id="rinput" placeholder="What to remind you about...">
@@ -267,16 +361,51 @@ body{display:flex;flex-direction:column}
   </div>
 </div>
 
+<!-- SETTINGS PANEL -->
+<div class="panel" id="settings">
+  <div class="ph"><div class="ptitle">⚙️ Settings</div><div class="pclose" onclick="closePanel('settings')">✕</div></div>
+  <div style="flex:1;overflow-y:auto">
+    <div class="setting-row">
+      <div><div class="setting-label">Personality</div><div class="setting-sub">How ARIA speaks to you</div></div>
+      <select class="setting-sel" id="set-personality" onchange="saveSetting('personality',this.value)">
+        <option value="friendly">Friendly</option>
+        <option value="professional">Professional</option>
+        <option value="motivating">Motivating</option>
+        <option value="blunt">Blunt</option>
+        <option value="mentor">Mentor</option>
+      </select>
+    </div>
+    <div class="setting-row">
+      <div><div class="setting-label">Voice speed</div><div class="setting-sub">How fast ARIA talks</div></div>
+      <select class="setting-sel" id="set-speed" onchange="saveSetting('voicespeed',this.value)">
+        <option value="0.85">Slow</option>
+        <option value="0.95">Normal</option>
+        <option value="1.1">Fast</option>
+        <option value="1.25">Very fast</option>
+      </select>
+    </div>
+    <div class="setting-row">
+      <div><div class="setting-label">NewsAPI key</div><div class="setting-sub">For live news & finance</div></div>
+      <input class="setting-sel" id="set-newskey" placeholder="your key" style="width:120px" onchange="saveSetting('newskey',this.value)">
+    </div>
+    <div class="setting-row" style="border:none">
+      <div><div class="setting-label">Clear all chat history</div><div class="setting-sub">Cannot be undone</div></div>
+      <button onclick="clearHistory()" style="background:var(--red);color:#fff;border:none;border-radius:var(--rs);padding:8px 12px;font-family:'DM Mono',monospace;font-size:12px;cursor:pointer">Clear</button>
+    </div>
+  </div>
+</div>
+
 <input type="file" id="camfile" accept="image/*" capture="environment" style="display:none" onchange="onImg(event)">
+<input type="file" id="emotionfile" accept="image/*" capture="user" style="display:none" onchange="onEmotionImg(event)">
 
 <!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-const ALLOWED_EMAIL = 'aadijha338@gmail.com';
-
-const firebaseConfig = {
+const ALLOWED = 'aadijha338@gmail.com';
+const fbConfig = {
   apiKey: "AIzaSyAMKd-wZiOTdAGtQ0DRxWHXCqWSp5HcQSc",
   authDomain: "aria-assistant-4deed.firebaseapp.com",
   projectId: "aria-assistant-4deed",
@@ -285,48 +414,44 @@ const firebaseConfig = {
   appId: "1:1029745466681:web:691db430ebe2ed517adce8"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+const fbApp = initializeApp(fbConfig);
+const auth = getAuth(fbApp);
+const db = getFirestore(fbApp);
 const provider = new GoogleAuthProvider();
 
 window.signInWithGoogle = async () => {
-  document.getElementById('login-loading').classList.add('show');
   document.getElementById('login-err').classList.remove('show');
   try {
-    const result = await signInWithPopup(auth, provider);
-    const email = result.user.email;
-    if(email !== ALLOWED_EMAIL) {
-      await fbSignOut(auth);
-      document.getElementById('login-loading').classList.remove('show');
-      document.getElementById('login-err').classList.add('show');
-    }
-  } catch(e) {
-    document.getElementById('login-loading').classList.remove('show');
-    if(e.code !== 'auth/popup-closed-by-user') {
-      document.getElementById('login-err').textContent = 'Sign-in failed: ' + e.message;
-      document.getElementById('login-err').classList.add('show');
-    }
-  }
+    const r = await signInWithPopup(auth, provider);
+    if(r.user.email !== ALLOWED){ await fbSignOut(auth); document.getElementById('login-err').classList.add('show'); }
+  } catch(e){ if(e.code!=='auth/popup-closed-by-user'){ document.getElementById('login-err').textContent='Error: '+e.message; document.getElementById('login-err').classList.add('show'); } }
 };
+window.signOut = async () => { await fbSignOut(auth); location.reload(); };
 
-window.signOut = async () => {
-  await fbSignOut(auth);
-  location.reload();
+// Firestore chat persistence
+window.saveChat = async (session) => {
+  try { await addDoc(collection(db,'chats'), {...session, ts: Date.now()}); } catch(e){}
+};
+window.loadHistory = async () => {
+  try {
+    const q = query(collection(db,'chats'), orderBy('ts','desc'), limit(50));
+    const snap = await getDocs(q);
+    const sessions = snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderHistory(sessions);
+  } catch(e){}
+};
+window.deleteSession = async (id) => {
+  try { await deleteDoc(doc(db,'chats',id)); loadHistory(); } catch(e){}
 };
 
 onAuthStateChanged(auth, user => {
-  if(user && user.email === ALLOWED_EMAIL) {
+  if(user && user.email === ALLOWED){
     document.getElementById('loginScreen').classList.add('gone');
     window.userName = user.displayName?.split(' ')[0] || 'Aaditya';
-    const key = localStorage.getItem('ak');
-    if(!key) {
-      document.getElementById('setupScreen').classList.remove('gone');
-    } else {
-      startApp();
-    }
-  } else if(!user) {
+    if(!localStorage.getItem('ak')){ document.getElementById('setupScreen').classList.remove('gone'); }
+    else { startApp(); }
+  } else if(!user){
     document.getElementById('loginScreen').classList.remove('gone');
-    document.getElementById('login-loading').classList.remove('show');
   }
 });
 </script>
@@ -334,13 +459,13 @@ onAuthStateChanged(auth, user => {
 <script>
 const API='https://api.anthropic.com/v1/messages';
 const MDL='claude-haiku-4-5-20251001';
-let key='', history=[], imgB64=null;
-let recog=null, isRec=false, busy=false;
-let wakeRecog=null, wakeActive=false;
-let userLat=null, userLon=null, userCity='';
-window.userName = 'Aaditya';
+let key='',newsKey='',history=[],imgB64=null;
+let recog=null,isRec=false,busy=false;
+let wakeRecog=null,wakeActive=false;
+let userLat=null,userLon=null,userCity='';
+let currentSession={msgs:[],start:new Date().toISOString()};
+window.userName='Aaditya';
 
-// Storage
 const S={
   set:(k,v)=>{try{localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v))}catch(e){}},
   get:(k,d='')=>{try{const v=localStorage.getItem(k);return v??d}catch(e){return d}},
@@ -351,9 +476,12 @@ function toggleEye(){const i=document.getElementById('skey');i.type=i.type==='pa
 
 function finishSetup(){
   const k=document.getElementById('skey').value.trim();
-  const b=document.getElementById('sbio').value.trim();
-  if(!k){document.getElementById('setup-err').classList.add('show');return;}
+  if(!k){alert('Please enter your API key');return;}
   S.set('ak',k);
+  S.set('newskey',document.getElementById('snewskey').value.trim());
+  S.set('personality',document.getElementById('spersonality').value);
+  S.set('voicespeed',document.getElementById('svoicespeed').value);
+  const b=document.getElementById('sbio').value.trim();
   const mems=S.json('mems',[]);
   if(window.userName) mems.unshift({id:Date.now(),t:'My name is '+window.userName});
   if(b) mems.push({id:Date.now()+1,t:b});
@@ -362,247 +490,373 @@ function finishSetup(){
   startApp();
 }
 
+function saveSetting(k,v){ S.set(k,v); if(k==='newskey') newsKey=v; }
+
 function startApp(){
   key=S.get('ak');
+  newsKey=S.get('newskey');
   document.getElementById('app').classList.add('on');
   document.getElementById('wtitle').textContent='Hey, '+window.userName+'!';
+  // Sync settings UI
+  document.getElementById('set-personality').value=S.get('personality','friendly');
+  document.getElementById('set-speed').value=S.get('voicespeed','0.95');
+  document.getElementById('set-newskey').value=newsKey;
   renderMems(); renderReminders();
   setInterval(checkReminders,30000);
   silentLocation();
   if('Notification'in window&&Notification.permission==='default') Notification.requestPermission();
-  // Auto-start wake word
-  setTimeout(()=>{ startWake(); }, 1000);
+  setTimeout(startWake,1000);
+  loadHistory();
+  loadNews('general',document.querySelector('.ntab'));
+  renderWatchlist();
 }
 
-// ── WAKE WORD "Yo ARIA" ──────────────────────────────────
-function toggleWake(){
-  wakeActive ? stopWake() : startWake();
+// ── TABS ──────────────────────────────────────────────────
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const tabs=['chat','finance','news','history'];
+  const idx=tabs.indexOf(name);
+  document.querySelectorAll('.tab')[idx].classList.add('active');
+  document.getElementById(name+'View').classList.add('active');
+  if(name==='history') loadHistory();
+  if(name==='news') {} // already loaded
 }
 
+// ── PERSONALITY ───────────────────────────────────────────
+function getPersonalityPrompt(){
+  const p=S.get('personality','friendly');
+  const styles={
+    friendly:"Be warm, casual, and friendly like a close friend.",
+    professional:"Be professional, precise, and formal.",
+    motivating:"Be energetic, uplifting, and motivating. Use enthusiasm.",
+    blunt:"Be direct and blunt. No fluff. Get to the point fast.",
+    mentor:"Be wise, thoughtful, and speak like an experienced mentor."
+  };
+  return styles[p]||styles.friendly;
+}
+
+// ── WAKE WORD ─────────────────────────────────────────────
+function toggleWake(){ wakeActive?stopWake():startWake(); }
 function startWake(){
-  if(!('webkitSpeechRecognition'in window||'SpeechRecognition'in window)) return;
-  if(wakeActive) return;
+  if(!('webkitSpeechRecognition'in window||'SpeechRecognition'in window))return;
+  if(wakeActive)return;
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  wakeRecog=new SR();
-  wakeRecog.continuous=true;
-  wakeRecog.interimResults=true;
-  wakeRecog.lang='en-US';
+  wakeRecog=new SR(); wakeRecog.continuous=true; wakeRecog.interimResults=true; wakeRecog.lang='en-US';
   wakeRecog.onresult=e=>{
     for(let i=e.resultIndex;i<e.results.length;i++){
       const t=e.results[i][0].transcript.toLowerCase().trim();
-      if(t.includes('yo aria')||t.includes('yo area')||t.includes('your aria')){
-        onWakeWord();
-        return;
-      }
+      if(t.includes('yo aria')||t.includes('yo area')||t.includes('hey aria')){onWakeWord();return;}
     }
   };
-  wakeRecog.onend=()=>{ if(wakeActive) wakeRecog.start(); };
+  wakeRecog.onend=()=>{ if(wakeActive) setTimeout(()=>{ try{wakeRecog.start()}catch(e){} },200); };
   wakeRecog.onerror=e=>{ if(e.error!=='no-speech'&&e.error!=='aborted') stopWake(); };
-  wakeRecog.start();
+  try{wakeRecog.start();}catch(e){return;}
   wakeActive=true;
   document.getElementById('wakechip').classList.add('wake-on');
   document.getElementById('wakechip').textContent='👂 Listening';
-  document.getElementById('wake-indicator').classList.add('listening');
+  document.getElementById('wake-bar').classList.add('on');
 }
-
 function stopWake(){
   try{wakeRecog&&wakeRecog.stop();}catch(e){}
   wakeActive=false;
   document.getElementById('wakechip').classList.remove('wake-on');
   document.getElementById('wakechip').textContent='👂 Yo ARIA';
-  document.getElementById('wake-indicator').classList.remove('listening');
+  document.getElementById('wake-bar').classList.remove('on');
 }
-
 function onWakeWord(){
-  // Stop wake listener temporarily
   try{wakeRecog.stop();}catch(e){}
-  // Show toast
   const toast=document.getElementById('wake-toast');
-  toast.classList.add('show');
-  setTimeout(()=>toast.classList.remove('show'),2000);
+  toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),2000);
   speak("Yeah?");
-  // Start active listening after brief delay
-  setTimeout(()=>{
-    startActiveListening();
-  },600);
+  switchTab('chat');
+  setTimeout(startActiveListening,700);
 }
-
 function startActiveListening(){
-  if(!('webkitSpeechRecognition'in window||'SpeechRecognition'in window)) return;
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  const r=new SR();
-  r.lang='en-US'; r.interimResults=false;
-  r.onresult=e=>{
-    const txt=e.results[0][0].transcript;
-    document.getElementById('tinput').value=txt;
-    send();
-    // Restart wake after response
-    setTimeout(()=>{ if(wakeActive||true) startWake(); },3000);
-  };
-  r.onerror=r.onend=()=>{
-    setTimeout(()=>{ if(!isRec) startWake(); },1000);
-  };
-  r.start();
-  setSt('listening...');
+  const r=new SR(); r.lang='en-US'; r.interimResults=false;
+  r.onresult=e=>{ document.getElementById('tinput').value=e.results[0][0].transcript; send(); setTimeout(()=>startWake(),4000); };
+  r.onerror=r.onend=()=>{ setTimeout(()=>{ if(!isRec)startWake(); },1000); };
+  try{r.start(); setSt('listening...');}catch(e){}
 }
 
-// ── LOCATION ────────────────────────────────────────────
+// ── LOCATION ─────────────────────────────────────────────
 function silentLocation(){
-  if(!navigator.geolocation) return;
+  if(!navigator.geolocation)return;
   navigator.geolocation.getCurrentPosition(pos=>{
     userLat=pos.coords.latitude; userLon=pos.coords.longitude;
     fetch(`https://nominatim.openstreetmap.org/reverse?lat=${userLat}&lon=${userLon}&format=json`)
-      .then(r=>r.json()).then(d=>{
-        userCity=d.address?.city||d.address?.town||d.address?.village||'your area';
-        S.set('city',userCity);
-      }).catch(()=>{});
+      .then(r=>r.json()).then(d=>{userCity=d.address?.city||d.address?.town||'your area';S.set('city',userCity);}).catch(()=>{});
   },()=>{},{timeout:8000,maximumAge:300000});
 }
-
 function getLocation(){
-  if(!navigator.geolocation){addBubble('a',"Location not supported.");return;}
+  if(!navigator.geolocation){addBubble('a','Location not supported.');return;}
   setSt('locating...');
   navigator.geolocation.getCurrentPosition(pos=>{
     userLat=pos.coords.latitude; userLon=pos.coords.longitude;
     fetch(`https://nominatim.openstreetmap.org/reverse?lat=${userLat}&lon=${userLon}&format=json`)
-      .then(r=>r.json()).then(d=>{
-        userCity=d.address?.city||d.address?.town||d.address?.village||'your area';
-        S.set('city',userCity);
-        addSys('📍 Location: '+userCity);
-        setSt('ready');
-      }).catch(()=>{addSys('📍 Location found');setSt('ready');});
-  },()=>{addBubble('a','Could not get location. Please allow location access.');setSt('ready');},{timeout:10000});
+      .then(r=>r.json()).then(d=>{userCity=d.address?.city||d.address?.town||'your area';S.set('city',userCity);addSys('📍 '+userCity);setSt('ready');}).catch(()=>{addSys('📍 Location found');setSt('ready');});
+  },()=>{addBubble('a','Could not get location.');setSt('ready');},{timeout:10000});
 }
-
 function locCtx(){
   if(userLat&&userLon) return `\n\nUser location: ${userCity||'unknown'} (lat:${userLat.toFixed(4)}, lon:${userLon.toFixed(4)}).`;
-  const c=S.get('city'); return c?`\n\nUser approximate location: ${c}.`:'';
+  const c=S.get('city'); return c?`\n\nUser location: ${c}.`:'';
 }
 
-// ── MEMORY ───────────────────────────────────────────────
+// ── MEMORY ────────────────────────────────────────────────
 function getMems(){return S.json('mems',[]);}
 function memCtx(){const m=getMems();return m.length?'\n\nWhat I know about the user:\n'+m.map(x=>'• '+x.t).join('\n'):'';}
 function addMem(){
-  const inp=document.getElementById('minput');
-  const t=inp.value.trim(); if(!t) return;
-  const m=getMems(); m.push({id:Date.now(),t});
-  S.set('mems',m); inp.value=''; renderMems();
+  const inp=document.getElementById('minput'); const t=inp.value.trim(); if(!t)return;
+  const m=getMems(); m.push({id:Date.now(),t}); S.set('mems',m); inp.value=''; renderMems();
   addBubble('a','✓ Remembered: "'+t+'"'); closePanel('mpanel');
 }
 function delMem(id){S.set('mems',getMems().filter(m=>m.id!==id));renderMems();}
 function renderMems(){
-  const el=document.getElementById('mlist');
-  const m=getMems();
+  const el=document.getElementById('mlist'); const m=getMems();
   el.innerHTML=m.length?m.map(x=>'<div class="mitem"><span class="mtext">'+esc(x.t)+'</span><span class="mdel" onclick="delMem('+x.id+')">✕</span></div>').join(''):'<p style="font-size:13px;color:var(--muted);padding:8px 0">No memories yet.</p>';
 }
 
-// ── REMINDERS ────────────────────────────────────────────
+// ── REMINDERS ─────────────────────────────────────────────
 function getReminders(){return S.json('reminders',[]);}
 function addReminder(){
-  const txt=document.getElementById('rinput').value.trim();
-  const time=document.getElementById('rtime').value;
-  if(!txt||!time){addBubble('a','Please enter a reminder and time.');return;}
-  const r=getReminders();
-  r.push({id:Date.now(),txt,time,done:false});
-  S.set('reminders',r); renderReminders();
-  document.getElementById('rinput').value='';
-  addBubble('a','⏰ Reminder set: "'+txt+'" at '+new Date(time).toLocaleString());
-  closePanel('rpanel');
+  const txt=document.getElementById('rinput').value.trim(); const time=document.getElementById('rtime').value;
+  if(!txt||!time){addBubble('a','Please fill in both fields.');return;}
+  const r=getReminders(); r.push({id:Date.now(),txt,time,done:false}); S.set('reminders',r);
+  document.getElementById('rinput').value=''; renderReminders();
+  addBubble('a','⏰ Set: "'+txt+'" at '+new Date(time).toLocaleString()); closePanel('rpanel');
 }
 function delReminder(id){S.set('reminders',getReminders().filter(r=>r.id!==id));renderReminders();}
 function renderReminders(){
-  const el=document.getElementById('rlist');
-  const r=getReminders().sort((a,b)=>new Date(a.time)-new Date(b.time));
-  el.innerHTML=r.length?r.map(x=>`<div class="ritem${x.done?' done':''}"><div class="rinfo"><div class="rtext">${esc(x.txt)}</div><div class="rtime">${new Date(x.time).toLocaleString()}</div></div><span class="rdel" onclick="delReminder(${x.id})">✕</span></div>`).join(''):'<p style="font-size:13px;color:var(--muted);padding:8px 0">No reminders set.</p>';
-  // Set default time
-  const dt=new Date(Date.now()+3600000);
-  const pad=n=>String(n).padStart(2,'0');
+  const el=document.getElementById('rlist'); const r=getReminders().sort((a,b)=>new Date(a.time)-new Date(b.time));
+  el.innerHTML=r.length?r.map(x=>`<div class="ritem${x.done?' done':''}"><div class="rinfo"><div class="rtext">${esc(x.txt)}</div><div class="rtime">${new Date(x.time).toLocaleString()}</div></div><span class="rdel" onclick="delReminder(${x.id})">✕</span></div>`).join(''):'<p style="font-size:13px;color:var(--muted);padding:8px 0">No reminders.</p>';
+  const dt=new Date(Date.now()+3600000); const pad=n=>String(n).padStart(2,'0');
   document.getElementById('rtime').value=`${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
 }
 function remCtx(){
-  const now=Date.now();
-  const up=getReminders().filter(r=>!r.done&&new Date(r.time).getTime()>now&&new Date(r.time).getTime()<now+172800000);
+  const now=Date.now(); const up=getReminders().filter(r=>!r.done&&new Date(r.time).getTime()>now&&new Date(r.time).getTime()<now+172800000);
   return up.length?'\n\nUpcoming reminders:\n'+up.map(r=>`• "${r.txt}" at ${new Date(r.time).toLocaleString()}`).join('\n'):'';
 }
 function checkReminders(){
-  const now=Date.now();
-  const reminders=getReminders(); let changed=false;
+  const now=Date.now(); const reminders=getReminders(); let changed=false;
   reminders.forEach(r=>{
     if(!r.done&&Math.abs(new Date(r.time).getTime()-now)<35000){
-      r.done=true; changed=true;
-      addSys('⏰ Reminder: '+r.txt);
-      speak('Reminder: '+r.txt);
+      r.done=true; changed=true; addSys('⏰ '+r.txt); speak('Reminder: '+r.txt);
       if(Notification.permission==='granted') new Notification('ARIA',{body:r.txt});
     }
   });
   if(changed) S.set('reminders',reminders);
 }
 
-// ── DAILY BRIEFING ───────────────────────────────────────
+// ── FINANCE ───────────────────────────────────────────────
+function getWatchlist(){return S.json('watchlist',[]);}
+function addAsset(){
+  const inp=document.getElementById('assetInput'); const name=inp.value.trim(); if(!name)return;
+  const w=getWatchlist();
+  if(w.find(a=>a.name.toLowerCase()===name.toLowerCase())){inp.value='';return;}
+  w.push({name,verdict:'analyzing',reasoning:'Fetching analysis...'});
+  S.set('watchlist',w); inp.value=''; renderWatchlist();
+  analyzeAsset(name);
+}
+function removeAsset(name){S.set('watchlist',getWatchlist().filter(a=>a.name!==name));renderWatchlist();}
+function renderWatchlist(){
+  const el=document.getElementById('watchlist'); const w=getWatchlist();
+  el.innerHTML=w.length?w.map(a=>`
+    <div class="asset-card" style="flex-direction:column;align-items:stretch">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span class="asset-name">${esc(a.name)}</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="asset-verdict ${a.verdict}">${a.verdict.toUpperCase()}</span>
+          <span style="color:var(--muted);cursor:pointer;font-size:16px" onclick="removeAsset('${esc(a.name)}')">✕</span>
+        </div>
+      </div>
+      <div class="asset-reasoning">${esc(a.reasoning)}</div>
+    </div>`).join(''):'<p style="font-size:13px;color:var(--muted);padding:8px 0">Add assets to your watchlist above.</p>';
+}
+async function analyzeAsset(name){
+  const w=getWatchlist(); const asset=w.find(a=>a.name===name); if(!asset)return;
+  try{
+    let newsContext='';
+    if(newsKey){
+      const r=await fetch(`https://newsapi.org/v2/everything?q=${encodeURIComponent(name)}&sortBy=publishedAt&pageSize=5&apiKey=${newsKey}`);
+      const d=await r.json();
+      if(d.articles) newsContext='Recent news:\n'+d.articles.map(a=>a.title).join('\n');
+    }
+    const prompt=`You are a financial analyst. Based on the following recent news about "${name}", give:
+1. A verdict: BUY, HOLD, or AVOID
+2. A 2-sentence reasoning
+
+${newsContext||'No live news available, use your general knowledge about '+name+' current market position.'}
+
+Respond in exactly this format:
+VERDICT: [BUY/HOLD/AVOID]
+REASONING: [your 2-sentence analysis]`;
+    const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MDL,max_tokens:200,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    const txt=data.content?.[0]?.text||'';
+    const verdictMatch=txt.match(/VERDICT:\s*(BUY|HOLD|AVOID)/i);
+    const reasoningMatch=txt.match(/REASONING:\s*(.+)/is);
+    const verdict=(verdictMatch?.[1]||'hold').toLowerCase();
+    const reasoning=reasoningMatch?.[1]?.trim()||'Analysis unavailable.';
+    const idx=w.findIndex(a=>a.name===name);
+    if(idx>=0){w[idx].verdict=verdict;w[idx].reasoning=reasoning;}
+    S.set('watchlist',w); renderWatchlist();
+  }catch(e){
+    const idx=w.findIndex(a=>a.name===name);
+    if(idx>=0){w[idx].verdict='hold';w[idx].reasoning='Could not fetch analysis. Check your connection.';}
+    S.set('watchlist',w); renderWatchlist();
+  }
+}
+function analyzeAll(){
+  const w=getWatchlist();
+  w.forEach(a=>{ a.verdict='analyzing'; a.reasoning='Refreshing...'; });
+  S.set('watchlist',w); renderWatchlist();
+  w.forEach(a=>analyzeAsset(a.name));
+}
+
+// ── NEWS ──────────────────────────────────────────────────
+async function loadNews(category, el){
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  const list=document.getElementById('newsList');
+  list.innerHTML='<p style="font-size:13px;color:var(--muted);padding:16px 0 0">Loading news...</p>';
+  if(!newsKey){
+    list.innerHTML='<p style="font-size:13px;color:var(--muted);padding:16px 0 0;line-height:1.6">Add your NewsAPI key in ⚙️ Settings to see live news. Get it free at newsapi.org</p>';
+    return;
+  }
+  try{
+    const r=await fetch(`https://newsapi.org/v2/top-headlines?category=${category}&language=en&pageSize=15&apiKey=${newsKey}`);
+    const d=await r.json();
+    if(!d.articles||!d.articles.length){list.innerHTML='<p style="font-size:13px;color:var(--muted);padding:8px 0">No articles found.</p>';return;}
+    list.innerHTML=d.articles.filter(a=>a.title&&a.title!=='[Removed]').map(a=>`
+      <div class="news-card" onclick="this.classList.toggle('expanded');askAboutNews('${esc(a.title).replace(/'/g,"\\'")}')">
+        <div class="news-source">${esc(a.source?.name||'News')}</div>
+        <div class="news-title">${esc(a.title)}</div>
+        <div class="news-time">${new Date(a.publishedAt).toLocaleString()}</div>
+        <div class="news-summary">${esc(a.description||'Tap again to ask ARIA about this story.')}</div>
+      </div>`).join('');
+  }catch(e){list.innerHTML='<p style="font-size:13px;color:var(--muted);padding:8px 0">Could not load news. Check your NewsAPI key.</p>';}
+}
+function askAboutNews(title){
+  switchTab('chat');
+  sq('Tell me more about this news story: '+title);
+}
+
+// ── CHAT HISTORY (Firestore) ──────────────────────────────
+function renderHistory(sessions){
+  const el=document.getElementById('historyList');
+  if(!sessions.length){el.innerHTML='<p style="font-size:13px;color:var(--muted);padding:8px 0">No chat history yet.</p>';return;}
+  el.innerHTML=sessions.map(s=>`
+    <div class="session-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div class="session-date">${new Date(s.ts).toLocaleString()}</div>
+          <div class="session-preview">${esc((s.msgs?.[0]?.content||'').substring(0,80))}...</div>
+          <div class="session-count">${s.msgs?.length||0} messages</div>
+        </div>
+        <span style="color:var(--muted);cursor:pointer;font-size:16px;padding:4px" onclick="deleteSession('${s.id}')">✕</span>
+      </div>
+    </div>`).join('');
+}
+function clearHistory(){ if(confirm('Clear all chat history?')) loadHistory(); }
+
+// ── EMOTION DETECTION ─────────────────────────────────────
+function detectEmotion(){ document.getElementById('emotionfile').click(); }
+async function onEmotionImg(e){
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=async ev=>{
+    const b64=ev.target.result.split(',')[1];
+    setSt('reading mood...');
+    try{
+      const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MDL,max_tokens:100,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},{type:'text',text:'Look at this face. In 5 words or less, what emotion do you see? Just the emotion words, nothing else.'}]}]})});
+      const data=await res.json();
+      const emotion=data.content?.[0]?.text?.trim()||'neutral';
+      const badge=document.getElementById('emotion-badge');
+      badge.textContent='😊 '+emotion; badge.classList.add('show');
+      setTimeout(()=>badge.classList.remove('show'),5000);
+      addSys('😊 Mood detected: '+emotion);
+      setSt('ready');
+      // Adjust response based on mood
+      S.set('currentMood',emotion);
+    }catch(e){setSt('ready');}
+  };
+  r.readAsDataURL(f); e.target.value='';
+}
+
+// ── BRIEFING ──────────────────────────────────────────────
 async function showBriefing(){
-  document.getElementById('briefing').classList.add('show');
-  document.getElementById('briefing-text').textContent='Building your briefing...';
+  switchTab('chat');
+  addSys('☀️ Generating your daily briefing...');
   const mems=getMems().map(m=>m.t).join(', ');
   const loc=userCity||S.get('city')||'unknown';
   const rem=remCtx();
-  const prompt=`Give a warm personal morning briefing for ${window.userName}. Include: greeting with current time, motivational thought, ${rem?'upcoming reminders: '+rem:'a suggested focus'}, one useful tip. Max 4 sentences. Sound like a caring personal assistant. Known about them: ${mems||'not much yet'}. Location: ${loc}.`;
+  const mood=S.get('currentMood','');
+  const prompt=`Give a warm personal morning briefing for ${window.userName}. Include: greeting with current time/day, motivational thought${mood?' (they seem '+mood+')':''}, ${rem?'upcoming reminders: '+rem:'a focus for today'}, one useful tip. Max 4 sentences. ${getPersonalityPrompt()} Known about them: ${mems||'not much yet'}. Location: ${loc}.`;
   try{
     const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MDL,max_tokens:300,messages:[{role:'user',content:prompt}]})});
-    const d=await r.json();
-    const txt=d.content?.[0]?.text||'Good morning! Have a great day.';
-    document.getElementById('briefing-text').textContent=txt;
-    speak(txt);
-  }catch(e){document.getElementById('briefing-text').textContent='Good morning, '+window.userName+'! Ready for a great day?';}
+    const d=await r.json(); const txt=d.content?.[0]?.text||'Good morning! Have a great day.';
+    addBubble('a',txt); speak(txt);
+  }catch(e){addBubble('a','Good morning, '+window.userName+'! Ready for a great day?');}
 }
 
-// ── CHAT ─────────────────────────────────────────────────
+// ── CHAT ──────────────────────────────────────────────────
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function nowT(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
 function addBubble(role,txt,img=null){
-  const wlc=document.getElementById('wlc'); if(wlc) wlc.remove();
-  const c=document.getElementById('msgs');
+  const wlc=document.getElementById('wlc'); if(wlc)wlc.remove();
+  const c=document.getElementById('chatView');
   const d=document.createElement('div'); d.className='msg '+role;
-  let h='';
-  if(img) h+='<img class="msg-img" src="'+img+'">';
+  let h=''; if(img)h+='<img class="msg-img" src="'+img+'">';
   h+='<div class="bub">'+esc(txt)+'</div><div class="ts">'+nowT()+'</div>';
   d.innerHTML=h; c.appendChild(d); c.scrollTop=c.scrollHeight;
 }
 function addSys(txt){
-  const wlc=document.getElementById('wlc'); if(wlc) wlc.remove();
-  const c=document.getElementById('msgs');
+  const wlc=document.getElementById('wlc'); if(wlc)wlc.remove();
+  const c=document.getElementById('chatView');
   const d=document.createElement('div'); d.className='msg sys';
   d.innerHTML='<div class="bub">'+esc(txt)+'</div>';
   c.appendChild(d); c.scrollTop=c.scrollHeight;
 }
 function addThink(){
-  const wlc=document.getElementById('wlc'); if(wlc) wlc.remove();
-  const c=document.getElementById('msgs');
+  const wlc=document.getElementById('wlc'); if(wlc)wlc.remove();
+  const c=document.getElementById('chatView');
   const d=document.createElement('div'); d.className='msg a'; d.id='thk';
   d.innerHTML='<div class="bub thinking">ARIA is thinking</div>';
   c.appendChild(d); c.scrollTop=c.scrollHeight;
 }
-function rmThink(){const e=document.getElementById('thk'); if(e) e.remove();}
+function rmThink(){const e=document.getElementById('thk'); if(e)e.remove();}
 function setSt(t){document.getElementById('stxt').textContent=t;}
-function newChat(){history=[];document.getElementById('msgs').innerHTML='';location.reload();}
+function newChat(){
+  if(history.length>0) saveSession();
+  history=[];
+  document.getElementById('chatView').innerHTML='';
+  const w=document.createElement('div'); w.className='welcome'; w.id='wlc';
+  w.innerHTML=`<div class="wico">✦</div><div class="wtitle">New chat</div><div class="wsub">Say <b style="color:var(--accent)">"Yo ARIA"</b> or type below.</div>`;
+  document.getElementById('chatView').appendChild(w);
+}
+function saveSession(){
+  if(!history.length)return;
+  const session={msgs:history,start:currentSession.start,end:new Date().toISOString()};
+  if(window.saveChat) window.saveChat(session);
+  currentSession={msgs:[],start:new Date().toISOString()};
+}
 
 async function send(){
-  if(busy) return;
-  const inp=document.getElementById('tinput');
-  const txt=inp.value.trim();
-  if(!txt&&!imgB64) return;
+  if(busy)return;
+  const inp=document.getElementById('tinput'); const txt=inp.value.trim();
+  if(!txt&&!imgB64)return;
   inp.value=''; resize(inp);
   busy=true; document.getElementById('sbtn').disabled=true; setSt('thinking...');
-  let content, display=txt||'Analyze this image.';
+  let content,display=txt||'Analyze this image.';
   if(imgB64){
-    content=[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:imgB64}},{type:'text',text:txt||'What do you see? Describe it clearly.'}];
-    addBubble('u',display,document.getElementById('ipreview').src);
-    clearImg();
-  } else {
-    content=txt; addBubble('u',txt);
-  }
+    content=[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:imgB64}},{type:'text',text:txt||'What do you see?'}];
+    addBubble('u',display,document.getElementById('ipreview').src); clearImg();
+  }else{content=txt; addBubble('u',txt);}
   history.push({role:'user',content});
   addThink();
-  const sys='You are ARIA, a warm smart personal AI assistant for '+window.userName+'.'+memCtx()+locCtx()+remCtx()+'\n\nPersonality: concise, warm, natural. Max 3 sentences unless asked for more. Use the user name occasionally. If asked to set a reminder tell them to tap ⏰. Current time: '+new Date().toLocaleString();
+  const mood=S.get('currentMood','');
+  const sys=`You are ARIA, a personal AI assistant for ${window.userName}. ${getPersonalityPrompt()}${memCtx()}${locCtx()}${remCtx()}${mood?'\n\nUser current mood: '+mood+'. Adjust your tone accordingly.':''}\n\nCurrent time: ${new Date().toLocaleString()}. Keep responses concise. If asked about markets/stocks/crypto, give clear analysis. If asked to set a reminder, tell them to tap ⏰.`;
   try{
     const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MDL,max_tokens:1024,system:sys,messages:history})});
     const data=await r.json(); rmThink();
@@ -610,24 +864,19 @@ async function send(){
       const reply=data.content[0].text;
       history.push({role:'assistant',content:reply});
       addBubble('a',reply); setSt('ready'); speak(reply);
-    } else {
-      addBubble('a','⚠️ '+(data.error?.message||'Error — check API key')); setSt('error');
-    }
-  } catch(e){
-    rmThink(); addBubble('a','⚠️ Network error. Check your connection.'); setSt('offline');
-  }
+      // Auto-save every 10 messages
+      if(history.length%10===0) saveSession();
+    }else{addBubble('a','⚠️ '+(data.error?.message||'Error'));setSt('error');}
+  }catch(e){rmThink();addBubble('a','⚠️ Network error.');setSt('offline');}
   busy=false; document.getElementById('sbtn').disabled=false;
 }
 
-function sq(t){document.getElementById('tinput').value=t; send();}
+function sq(t){switchTab('chat');document.getElementById('tinput').value=t;send();}
 function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
 function resize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';}
 
-// ── MANUAL VOICE ─────────────────────────────────────────
-function toggleMic(){
-  if(!('webkitSpeechRecognition'in window||'SpeechRecognition'in window)){addBubble('a','Voice needs Chrome browser.');return;}
-  isRec ? stopRec() : startRec();
-}
+// ── VOICE ─────────────────────────────────────────────────
+function toggleMic(){ if(!('webkitSpeechRecognition'in window||'SpeechRecognition'in window)){addBubble('a','Voice needs Chrome.');return;} isRec?stopRec():startRec(); }
 function startRec(){
   stopWake();
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -640,42 +889,35 @@ function startRec(){
 function stopRec(){
   try{recog&&recog.stop();}catch(e){} isRec=false;
   const c=document.getElementById('micchip'); c.textContent='🎤 Voice'; c.classList.remove('rec'); setSt('ready');
-  setTimeout(()=>startWake(),500);
+  setTimeout(startWake,500);
 }
-
-// ── VOICE OUTPUT ─────────────────────────────────────────
 function speak(txt){
-  if(!window.speechSynthesis) return;
+  if(!window.speechSynthesis)return;
   speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(txt.replace(/[✦✓⚠️🧠📷🌤⚡💡☀️⏰📍]/g,'').trim());
-  u.rate=0.95; u.pitch=1.05;
+  const u=new SpeechSynthesisUtterance(txt.replace(/[✦✓⚠️🧠📷🌤⚡💡☀️⏰📍😊📈📰🕐]/g,'').trim());
+  u.rate=parseFloat(S.get('voicespeed','0.95')); u.pitch=1.05;
   const vs=speechSynthesis.getVoices();
   const v=vs.find(v=>v.lang==='en-GB')||vs.find(v=>v.lang.startsWith('en'));
-  if(v) u.voice=v;
-  speechSynthesis.speak(u);
+  if(v)u.voice=v; speechSynthesis.speak(u);
 }
 speechSynthesis&&speechSynthesis.getVoices();
 
-// ── CAMERA ───────────────────────────────────────────────
+// ── CAMERA ────────────────────────────────────────────────
 function trigCam(){document.getElementById('camfile').click();}
 function onImg(e){
-  const f=e.target.files[0]; if(!f) return;
+  const f=e.target.files[0]; if(!f)return;
   const r=new FileReader();
-  r.onload=ev=>{
-    imgB64=ev.target.result.split(',')[1];
-    document.getElementById('ipreview').src=ev.target.result;
-    document.getElementById('ipw').classList.add('on');
-    document.getElementById('tinput').placeholder='Ask about this image...';
-    document.getElementById('tinput').focus();
-  };
+  r.onload=ev=>{imgB64=ev.target.result.split(',')[1];document.getElementById('ipreview').src=ev.target.result;document.getElementById('ipw').classList.add('on');document.getElementById('tinput').placeholder='Ask about this image...';document.getElementById('tinput').focus();};
   r.readAsDataURL(f); e.target.value='';
 }
 function clearImg(){imgB64=null;document.getElementById('ipw').classList.remove('on');document.getElementById('ipreview').src='';document.getElementById('tinput').placeholder='Message ARIA...';}
 
-// ── PANELS ───────────────────────────────────────────────
+// ── PANELS ────────────────────────────────────────────────
 function openPanel(id){document.getElementById(id).classList.add('open');}
 function closePanel(id){document.getElementById(id).classList.remove('open');}
+
+// Save session on page unload
+window.addEventListener('beforeunload',()=>{ if(history.length>0) saveSession(); });
 </script>
 </body>
 </html>
-
