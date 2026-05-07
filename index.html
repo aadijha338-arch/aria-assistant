@@ -5,163 +5,224 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>ARIA — Personal AI</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
   --bg:#080810;--s2:#161625;--s3:#1e1e30;--border:#252538;--border2:#2e2e48;
-  --accent:#6ee7f7;--accent2:#a78bfa;--text:#eeeef8;--muted:#6666a0;--muted2:#9999c0;
-  --green:#4ade80;--red:#f87171;--r:14px;--rs:8px
+  --accent:#6ee7f7;--accent2:#a78bfa;--accent3:#fb923c;
+  --text:#eeeef8;--muted:#6666a0;--muted2:#9999c0;
+  --green:#4ade80;--red:#f87171;--yellow:#fbbf24;--r:14px;--rs:8px
 }
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'DM Mono',monospace}
 body{display:flex;flex-direction:column}
 
-/* ── SETUP ── */
-#setup{position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;gap:20px;overflow-y:auto}
-#setup.gone{display:none}
-.logo{font-family:'Syne',sans-serif;font-size:52px;font-weight:800;letter-spacing:-3px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.tagline{font-size:13px;color:var(--muted);text-align:center;line-height:1.7;max-width:280px}
-.form{width:100%;max-width:340px;display:flex;flex-direction:column;gap:14px}
+/* LOGIN SCREEN */
+#loginScreen{position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:32px}
+#loginScreen.gone{display:none}
+.login-logo{font-family:'Syne',sans-serif;font-size:64px;font-weight:800;letter-spacing:-4px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.login-sub{font-size:14px;color:var(--muted);text-align:center;line-height:1.7;max-width:260px}
+.google-btn{display:flex;align-items:center;gap:12px;background:#fff;color:#1a1a1a;border:none;border-radius:12px;padding:14px 24px;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s;width:100%;max-width:280px;justify-content:center}
+.google-btn:active{opacity:.85}
+.google-icon{width:22px;height:22px}
+.login-note{font-size:11px;color:var(--muted);text-align:center;max-width:240px;line-height:1.6}
+#login-err{font-size:12px;color:var(--red);text-align:center;display:none;max-width:260px;line-height:1.6}
+#login-err.show{display:block}
+.login-loading{font-size:13px;color:var(--muted);display:none}
+.login-loading.show{display:block}
+
+/* SETUP (first time after login) */
+#setupScreen{position:fixed;inset:0;background:var(--bg);z-index:150;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px;gap:16px;overflow-y:auto}
+#setupScreen.gone{display:none}
+.setup-logo{font-family:'Syne',sans-serif;font-size:48px;font-weight:800;letter-spacing:-3px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.setup-sub{font-size:13px;color:var(--muted);text-align:center;line-height:1.7;max-width:280px}
+.form{width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px}
 .lbl{font-size:10px;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px}
-.inp{width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);padding:14px 16px;color:var(--text);font-family:'DM Mono',monospace;font-size:14px;outline:none;transition:border-color .2s}
+.inp{width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);padding:13px 16px;color:var(--text);font-family:'DM Mono',monospace;font-size:14px;outline:none;transition:border-color .2s}
 .inp:focus{border-color:var(--accent)}
 .inp::placeholder{color:var(--muted)}
 .inp-wrap{position:relative}
 .eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:16px;user-select:none}
 .launch-btn{width:100%;padding:16px;border-radius:var(--r);border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#080810;font-family:'Syne',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:opacity .2s;margin-top:4px}
 .launch-btn:active{opacity:.85}
-.err{background:#1a0808;border:1px solid #7f1d1d;border-radius:var(--rs);padding:10px 14px;font-size:12px;color:var(--red);display:none}
-.err.show{display:block}
+.setup-err{background:#1a0808;border:1px solid #7f1d1d;border-radius:var(--rs);padding:10px 14px;font-size:12px;color:var(--red);display:none}
+.setup-err.show{display:block}
 
-/* ── APP ── */
+/* APP */
 #app{display:flex;flex-direction:column;height:100%;opacity:0;transition:opacity .5s;pointer-events:none}
 #app.on{opacity:1;pointer-events:all}
 
-.hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;padding-top:max(14px,env(safe-area-inset-top));border-bottom:1px solid var(--border);flex-shrink:0}
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;padding-top:max(12px,env(safe-area-inset-top));border-bottom:1px solid var(--border);flex-shrink:0}
 .hdr-logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .hdr-mid{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.hdr-btns{display:flex;gap:6px}
-.hbtn{width:36px;height:36px;border-radius:var(--rs);border:1px solid var(--border);background:var(--s2);color:var(--muted2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;transition:all .15s;flex-shrink:0}
+.hdr-btns{display:flex;gap:5px}
+.hbtn{width:32px;height:32px;border-radius:var(--rs);border:1px solid var(--border);background:var(--s2);color:var(--muted2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:all .15s;flex-shrink:0}
 .hbtn:active{background:var(--s3);color:var(--accent)}
 
-#msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth}
+/* WAKE WORD INDICATOR */
+#wake-indicator{display:none;position:fixed;top:0;left:0;right:0;z-index:50;background:linear-gradient(90deg,var(--accent),var(--accent2));height:3px}
+#wake-indicator.listening{display:block;animation:scan 1.5s linear infinite}
+@keyframes scan{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
+#wake-toast{position:fixed;bottom:120px;left:50%;transform:translateX(-50%);background:var(--s3);border:1px solid var(--accent);border-radius:20px;padding:8px 18px;font-size:13px;color:var(--accent);display:none;z-index:60;white-space:nowrap}
+#wake-toast.show{display:block;animation:fadeup .3s ease-out}
+@keyframes fadeup{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* BRIEFING BANNER */
+#briefing{display:none;margin:10px 14px 0;background:linear-gradient(135deg,#1a1a3e,#1e1e30);border:1px solid var(--accent2);border-radius:var(--r);padding:12px 14px;font-size:13px;line-height:1.6;position:relative}
+#briefing.show{display:block}
+#briefing-close{position:absolute;top:8px;right:10px;color:var(--muted);cursor:pointer;font-size:16px}
+#briefing-text{color:var(--text);padding-right:20px}
+.briefing-label{font-size:10px;color:var(--accent2);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+
+/* MESSAGES */
+#msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth}
 #msgs::-webkit-scrollbar{width:2px}
 #msgs::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
-
 .msg{display:flex;flex-direction:column;gap:3px;animation:pop .2s ease-out}
 @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .msg.u{align-items:flex-end}
 .msg.a{align-items:flex-start}
+.msg.sys{align-items:center}
 .bub{max-width:84%;padding:11px 14px;border-radius:var(--r);line-height:1.65;font-size:14px;white-space:pre-wrap;word-break:break-word}
 .msg.u .bub{background:linear-gradient(135deg,#1a1a3e,#1d1d45);border:1px solid var(--accent2);border-bottom-right-radius:3px}
 .msg.a .bub{background:var(--s2);border:1px solid var(--border2);border-bottom-left-radius:3px}
+.msg.sys .bub{background:var(--s3);border:1px solid var(--border);font-size:12px;color:var(--muted2);border-radius:20px;padding:6px 14px;max-width:100%}
 .bub.thinking{color:var(--muted);font-style:italic}
 .bub.thinking::after{content:'';animation:th 1.2s infinite}
 @keyframes th{0%{content:' .'}33%{content:' ..'}66%{content:' ...'}100%{content:' .'}}
 .ts{font-size:10px;color:var(--muted);padding:0 3px}
 .msg-img{max-width:180px;border-radius:var(--rs);border:1px solid var(--border2);margin-bottom:4px;display:block}
 
-/* ── MEMORY PANEL ── */
-#mpanel{position:fixed;inset:0;background:rgba(8,8,16,.97);z-index:60;display:flex;flex-direction:column;padding:16px;padding-top:max(16px,env(safe-area-inset-top));transform:translateX(100%);transition:transform .28s ease}
-#mpanel.open{transform:none}
+/* PANELS */
+.panel{position:fixed;inset:0;background:rgba(8,8,16,.97);z-index:60;display:flex;flex-direction:column;padding:16px;padding-top:max(16px,env(safe-area-inset-top));transform:translateX(100%);transition:transform .28s ease}
+.panel.open{transform:none}
 .ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .ptitle{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--accent)}
 .pclose{font-size:22px;color:var(--muted);cursor:pointer;padding:4px 8px;line-height:1}
-.mlist{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin:12px 0}
-.mitem{background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);padding:11px 13px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.psub{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px}
+.mlist,.rlist{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.mitem,.ritem{background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);padding:11px 13px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.ritem{align-items:center}
+.ritem.done{opacity:.4}
 .mtext{font-size:13px;line-height:1.5;flex:1}
-.mdel{color:var(--muted);font-size:16px;cursor:pointer;flex-shrink:0;padding:0 3px;line-height:1}
-.mdel:active{color:var(--red)}
-.madd{display:flex;gap:8px;margin-top:auto}
-.madd input{flex:1;background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);padding:12px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;outline:none}
-.madd input:focus{border-color:var(--accent)}
-.madd input::placeholder{color:var(--muted)}
-.msavebtn{background:var(--accent);color:#080810;border:none;border-radius:var(--rs);padding:12px 16px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer}
+.rinfo{flex:1}
+.rtext{font-size:13px;line-height:1.4}
+.rtime{font-size:11px;color:var(--accent);margin-top:3px}
+.mdel,.rdel{color:var(--muted);font-size:16px;cursor:pointer;flex-shrink:0;padding:0 3px}
+.mdel:active,.rdel:active{color:var(--red)}
+.madd,.radd{display:flex;gap:8px}
+.radd{flex-direction:column}
+.madd input,.radd input,.radd select{background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);padding:12px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;outline:none;width:100%}
+.madd input:focus,.radd input:focus{border-color:var(--accent)}
+.madd input::placeholder,.radd input::placeholder{color:var(--muted)}
+.msavebtn{background:var(--accent);color:#080810;border:none;border-radius:var(--rs);padding:12px 16px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap}
+.rsavebtn{background:var(--accent3);color:#080810;border:none;border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;width:100%}
 
-/* ── INPUT BAR ── */
+/* INPUT BAR */
 .ibar{padding:10px 12px;padding-bottom:max(12px,env(safe-area-inset-bottom));border-top:1px solid var(--border);flex-shrink:0}
 .chips{display:flex;gap:6px;margin-bottom:8px;overflow-x:auto;padding-bottom:2px}
 .chips::-webkit-scrollbar{display:none}
 .chip{display:flex;align-items:center;gap:4px;padding:7px 12px;border-radius:20px;border:1px solid var(--border2);background:var(--s2);color:var(--muted2);font-size:12px;cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:'DM Mono',monospace;transition:all .15s}
 .chip:active,.chip.on{border-color:var(--accent);color:var(--accent);background:var(--s3)}
 .chip.rec{border-color:var(--red);color:var(--red);animation:rp 1s infinite}
+.chip.wake-on{border-color:var(--green);color:var(--green);background:#052e16}
 @keyframes rp{0%,100%{background:var(--s2)}50%{background:#1a0808}}
 .irow{display:flex;align-items:flex-end;gap:8px}
 #tinput{flex:1;background:var(--s2);border:1px solid var(--border2);border-radius:20px;padding:12px 16px;color:var(--text);font-family:'DM Mono',monospace;font-size:14px;outline:none;resize:none;max-height:100px;line-height:1.5;transition:border-color .2s}
 #tinput:focus{border-color:var(--accent)}
 #tinput::placeholder{color:var(--muted)}
-.sbtn{width:44px;height:44px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#080810;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .2s}
+.sbtn{width:44px;height:44px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#080810;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .sbtn:disabled{opacity:.25;pointer-events:none}
-
-/* image preview */
 #ipw{display:none;position:relative;margin-bottom:8px}
 #ipw.on{display:inline-block}
 #ipreview{width:72px;height:72px;object-fit:cover;border-radius:var(--rs);border:1px solid var(--accent)}
-#iclr{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--red);color:#fff;border:none;font-size:12px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center}
+#iclr{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--red);color:#fff;border:none;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 
-/* welcome */
-.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:14px;padding:24px;text-align:center;color:var(--muted)}
+/* WELCOME */
+.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:12px;padding:24px;text-align:center;color:var(--muted)}
 .wico{font-size:44px}
 .wtitle{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text)}
 .wsub{font-size:13px;line-height:1.7;max-width:260px}
-.qtips{display:flex;flex-direction:column;gap:8px;width:100%;max-width:290px;margin-top:6px}
+.qtips{display:flex;flex-direction:column;gap:7px;width:100%;max-width:300px;margin-top:6px}
 .qtip{background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 14px;font-size:12px;color:var(--muted2);text-align:left;cursor:pointer;transition:all .15s}
 .qtip:active{border-color:var(--accent);color:var(--accent)}
 </style>
 </head>
 <body>
 
-<!-- SETUP -->
-<div id="setup">
-  <div class="logo">ARIA</div>
-  <p class="tagline">Your personal AI — speaks, listens, sees, remembers you.</p>
+<!-- WAKE WORD INDICATOR -->
+<div id="wake-indicator"></div>
+<div id="wake-toast">🎤 Listening...</div>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-logo">ARIA</div>
+  <p class="login-sub">Your personal AI assistant — private and secure. Sign in to continue.</p>
+  <button class="google-btn" onclick="signInWithGoogle()">
+    <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+    Sign in with Google
+  </button>
+  <div id="login-loading" class="login-loading">Signing you in...</div>
+  <div id="login-err">Access denied. Only the authorised account can use ARIA.</div>
+  <p class="login-note">🔒 Only your Google account can access this app.</p>
+</div>
+
+<!-- SETUP SCREEN (first time) -->
+<div id="setupScreen" class="gone">
+  <div class="setup-logo">ARIA</div>
+  <p class="setup-sub">One last thing — tell me about yourself so I can personalise your experience.</p>
   <div class="form">
-    <div>
-      <div class="lbl">Your name</div>
-      <input class="inp" id="sname" placeholder="e.g. James" maxlength="40" autocomplete="name">
-    </div>
     <div>
       <div class="lbl">Anthropic API key</div>
       <div class="inp-wrap">
         <input class="inp" id="skey" placeholder="sk-ant-api03-..." type="password" autocomplete="off" style="padding-right:44px">
         <span class="eye" onclick="toggleEye()">👁</span>
       </div>
-      <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.6">Get your free key at <span style="color:var(--accent)">console.anthropic.com</span> → API Keys</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:5px;line-height:1.6">Get your free key at <span style="color:var(--accent)">console.anthropic.com</span> → API Keys</div>
     </div>
     <div>
       <div class="lbl">About you (optional)</div>
-      <input class="inp" id="sbio" placeholder="e.g. Student in London, 22 years old">
+      <input class="inp" id="sbio" placeholder="e.g. Student in London, 22, loves football">
     </div>
-    <div id="serr" class="err">Please enter your API key to continue.</div>
-    <button class="launch-btn" onclick="launch()">Launch ARIA →</button>
+    <div id="setup-err" class="setup-err">Please enter your API key.</div>
+    <button class="launch-btn" onclick="finishSetup()">Launch ARIA →</button>
   </div>
 </div>
 
-<!-- APP -->
+<!-- MAIN APP -->
 <div id="app">
   <div class="hdr">
     <div class="hdr-logo">ARIA</div>
     <div class="hdr-mid"><div class="dot"></div><span id="stxt">ready</span></div>
     <div class="hdr-btns">
-      <div class="hbtn" onclick="openMem()">🧠</div>
-      <div class="hbtn" onclick="newChat()">↺</div>
+      <div class="hbtn" onclick="showBriefing()" title="Daily briefing">☀️</div>
+      <div class="hbtn" onclick="openPanel('rpanel')" title="Reminders">⏰</div>
+      <div class="hbtn" onclick="openPanel('mpanel')" title="Memory">🧠</div>
+      <div class="hbtn" onclick="signOut()" title="Sign out">👤</div>
+      <div class="hbtn" onclick="newChat()" title="New chat">↺</div>
     </div>
+  </div>
+
+  <div id="briefing">
+    <div class="briefing-label">☀️ Daily Briefing</div>
+    <div id="briefing-text">Loading...</div>
+    <span id="briefing-close" onclick="document.getElementById('briefing').classList.remove('show')">✕</span>
   </div>
 
   <div id="msgs">
     <div class="welcome" id="wlc">
       <div class="wico">✦</div>
-      <div class="wtitle" id="wtitle">Hey there!</div>
-      <div class="wsub" id="wsub">I'm ARIA — I remember you, I hear you, I see what you see.</div>
+      <div class="wtitle" id="wtitle">Hey!</div>
+      <div class="wsub" id="wsub">I'm ARIA. Say <b style="color:var(--accent)">"Yo ARIA"</b> to wake me, or type below.</div>
       <div class="qtips">
-        <div class="qtip" onclick="sq('What can you help me with?')">What can you help me with?</div>
-        <div class="qtip" onclick="sq('What do you remember about me?')">What do you remember about me?</div>
-        <div class="qtip" onclick="sq('Give me a quick motivational boost')">Give me a quick motivational boost</div>
-        <div class="qtip" onclick="sq('What\'s a good thing I can do right now?')">What\'s a good thing I can do right now?</div>
+        <div class="qtip" onclick="sq('Give me my daily briefing')">☀️ Give me my daily briefing</div>
+        <div class="qtip" onclick="sq('What do you remember about me?')">🧠 What do you remember about me?</div>
+        <div class="qtip" onclick="sq('What\'s the weather near me?')">📍 What\'s the weather near me?</div>
+        <div class="qtip" onclick="sq('What should I focus on today?')">⚡ What should I focus on today?</div>
       </div>
     </div>
   </div>
@@ -169,12 +230,12 @@ body{display:flex;flex-direction:column}
   <div class="ibar">
     <div id="ipw"><img id="ipreview" src="" alt=""><button id="iclr" onclick="clearImg()">✕</button></div>
     <div class="chips">
+      <div class="chip" id="wakechip" onclick="toggleWake()">👂 Yo ARIA</div>
       <div class="chip" id="micchip" onclick="toggleMic()">🎤 Voice</div>
       <div class="chip" onclick="trigCam()">📷 Camera</div>
-      <div class="chip" onclick="openMem()">🧠 Memory</div>
-      <div class="chip" onclick="sq('What\'s the weather like today?')">🌤 Weather</div>
-      <div class="chip" onclick="sq('Give me 3 productive tasks I can do right now')">⚡ Focus</div>
-      <div class="chip" onclick="sq('Tell me something interesting I probably don\'t know')">💡 Surprise me</div>
+      <div class="chip" onclick="getLocation()">📍 Location</div>
+      <div class="chip" onclick="showBriefing()">☀️ Briefing</div>
+      <div class="chip" onclick="openPanel('rpanel')">⏰ Remind me</div>
     </div>
     <div class="irow">
       <textarea id="tinput" placeholder="Message ARIA..." rows="1" oninput="resize(this)" onkeydown="onKey(event)"></textarea>
@@ -184,112 +245,346 @@ body{display:flex;flex-direction:column}
 </div>
 
 <!-- MEMORY PANEL -->
-<div id="mpanel">
-  <div class="ph"><div class="ptitle">🧠 Memory</div><div class="pclose" onclick="closeMem()">✕</div></div>
-  <p style="font-size:12px;color:var(--muted);line-height:1.6">These facts are injected into every conversation so ARIA always knows you.</p>
+<div class="panel" id="mpanel">
+  <div class="ph"><div class="ptitle">🧠 Memory</div><div class="pclose" onclick="closePanel('mpanel')">✕</div></div>
+  <p class="psub">These facts are injected into every conversation so ARIA always knows you.</p>
   <div class="mlist" id="mlist"></div>
   <div class="madd">
-    <input id="minput" placeholder="Add a fact, e.g. I work as a chef" onkeydown="if(event.key==='Enter')addMem()">
+    <input id="minput" placeholder="e.g. I work as a chef in London" onkeydown="if(event.key==='Enter')addMem()">
     <button class="msavebtn" onclick="addMem()">Save</button>
+  </div>
+</div>
+
+<!-- REMINDERS PANEL -->
+<div class="panel" id="rpanel">
+  <div class="ph"><div class="ptitle">⏰ Reminders</div><div class="pclose" onclick="closePanel('rpanel')">✕</div></div>
+  <p class="psub">ARIA will notify you and mention upcoming reminders in conversation.</p>
+  <div class="rlist" id="rlist"></div>
+  <div class="radd">
+    <input id="rinput" placeholder="What to remind you about...">
+    <input type="datetime-local" id="rtime">
+    <button class="rsavebtn" onclick="addReminder()">Set Reminder</button>
   </div>
 </div>
 
 <input type="file" id="camfile" accept="image/*" capture="environment" style="display:none" onchange="onImg(event)">
 
-<script>
-const API = 'https://api.anthropic.com/v1/messages';
-const MDL = 'claude-haiku-4-5-20251001';
-let key='', name='', history=[], imgB64=null, recog=null, isRec=false, busy=false;
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
-// storage
-const S = {
+const ALLOWED_EMAIL = 'aadijha338@gmail.com';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAMKd-wZiOTdAGtQ0DRxWHXCqWSp5HcQSc",
+  authDomain: "aria-assistant-4deed.firebaseapp.com",
+  projectId: "aria-assistant-4deed",
+  storageBucket: "aria-assistant-4deed.firebasestorage.app",
+  messagingSenderId: "1029745466681",
+  appId: "1:1029745466681:web:691db430ebe2ed517adce8"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+window.signInWithGoogle = async () => {
+  document.getElementById('login-loading').classList.add('show');
+  document.getElementById('login-err').classList.remove('show');
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const email = result.user.email;
+    if(email !== ALLOWED_EMAIL) {
+      await fbSignOut(auth);
+      document.getElementById('login-loading').classList.remove('show');
+      document.getElementById('login-err').classList.add('show');
+    }
+  } catch(e) {
+    document.getElementById('login-loading').classList.remove('show');
+    if(e.code !== 'auth/popup-closed-by-user') {
+      document.getElementById('login-err').textContent = 'Sign-in failed: ' + e.message;
+      document.getElementById('login-err').classList.add('show');
+    }
+  }
+};
+
+window.signOut = async () => {
+  await fbSignOut(auth);
+  location.reload();
+};
+
+onAuthStateChanged(auth, user => {
+  if(user && user.email === ALLOWED_EMAIL) {
+    document.getElementById('loginScreen').classList.add('gone');
+    window.userName = user.displayName?.split(' ')[0] || 'Aaditya';
+    const key = localStorage.getItem('ak');
+    if(!key) {
+      document.getElementById('setupScreen').classList.remove('gone');
+    } else {
+      startApp();
+    }
+  } else if(!user) {
+    document.getElementById('loginScreen').classList.remove('gone');
+    document.getElementById('login-loading').classList.remove('show');
+  }
+});
+</script>
+
+<script>
+const API='https://api.anthropic.com/v1/messages';
+const MDL='claude-haiku-4-5-20251001';
+let key='', history=[], imgB64=null;
+let recog=null, isRec=false, busy=false;
+let wakeRecog=null, wakeActive=false;
+let userLat=null, userLon=null, userCity='';
+window.userName = 'Aaditya';
+
+// Storage
+const S={
   set:(k,v)=>{try{localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v))}catch(e){}},
   get:(k,d='')=>{try{const v=localStorage.getItem(k);return v??d}catch(e){return d}},
   json:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 };
 
-// init
-(function init(){
-  const k=S.get('ak'); if(!k) return;
-  key=k; name=S.get('an','friend');
-  showApp();
-})();
+function toggleEye(){const i=document.getElementById('skey');i.type=i.type==='password'?'text':'password';}
 
-function toggleEye(){
-  const i=document.getElementById('skey');
-  i.type=i.type==='password'?'text':'password';
-}
-
-function launch(){
+function finishSetup(){
   const k=document.getElementById('skey').value.trim();
-  const n=document.getElementById('sname').value.trim();
   const b=document.getElementById('sbio').value.trim();
-  const err=document.getElementById('serr');
-  if(!k){err.classList.add('show');return;}
-  err.classList.remove('show');
-  key=k; name=n||'friend';
-  S.set('ak',k); S.set('an',name);
+  if(!k){document.getElementById('setup-err').classList.add('show');return;}
+  S.set('ak',k);
   const mems=S.json('mems',[]);
-  if(n&&!mems.find(m=>m.t.toLowerCase().includes('name'))) mems.unshift({id:Date.now(),t:'My name is '+n});
+  if(window.userName) mems.unshift({id:Date.now(),t:'My name is '+window.userName});
   if(b) mems.push({id:Date.now()+1,t:b});
   S.set('mems',mems);
-  showApp();
+  document.getElementById('setupScreen').classList.add('gone');
+  startApp();
 }
 
-function showApp(){
-  document.getElementById('setup').classList.add('gone');
-  const app=document.getElementById('app');
-  app.classList.add('on');
-  document.getElementById('wtitle').textContent='Hey, '+name+'!';
-  document.getElementById('wsub').textContent="I'm ARIA — your personal AI. I remember you, I hear you, I see what you see.";
-  renderMems();
+function startApp(){
+  key=S.get('ak');
+  document.getElementById('app').classList.add('on');
+  document.getElementById('wtitle').textContent='Hey, '+window.userName+'!';
+  renderMems(); renderReminders();
+  setInterval(checkReminders,30000);
+  silentLocation();
+  if('Notification'in window&&Notification.permission==='default') Notification.requestPermission();
+  // Auto-start wake word
+  setTimeout(()=>{ startWake(); }, 1000);
 }
 
-// memory
+// ── WAKE WORD "Yo ARIA" ──────────────────────────────────
+function toggleWake(){
+  wakeActive ? stopWake() : startWake();
+}
+
+function startWake(){
+  if(!('webkitSpeechRecognition'in window||'SpeechRecognition'in window)) return;
+  if(wakeActive) return;
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  wakeRecog=new SR();
+  wakeRecog.continuous=true;
+  wakeRecog.interimResults=true;
+  wakeRecog.lang='en-US';
+  wakeRecog.onresult=e=>{
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const t=e.results[i][0].transcript.toLowerCase().trim();
+      if(t.includes('yo aria')||t.includes('yo area')||t.includes('your aria')){
+        onWakeWord();
+        return;
+      }
+    }
+  };
+  wakeRecog.onend=()=>{ if(wakeActive) wakeRecog.start(); };
+  wakeRecog.onerror=e=>{ if(e.error!=='no-speech'&&e.error!=='aborted') stopWake(); };
+  wakeRecog.start();
+  wakeActive=true;
+  document.getElementById('wakechip').classList.add('wake-on');
+  document.getElementById('wakechip').textContent='👂 Listening';
+  document.getElementById('wake-indicator').classList.add('listening');
+}
+
+function stopWake(){
+  try{wakeRecog&&wakeRecog.stop();}catch(e){}
+  wakeActive=false;
+  document.getElementById('wakechip').classList.remove('wake-on');
+  document.getElementById('wakechip').textContent='👂 Yo ARIA';
+  document.getElementById('wake-indicator').classList.remove('listening');
+}
+
+function onWakeWord(){
+  // Stop wake listener temporarily
+  try{wakeRecog.stop();}catch(e){}
+  // Show toast
+  const toast=document.getElementById('wake-toast');
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'),2000);
+  speak("Yeah?");
+  // Start active listening after brief delay
+  setTimeout(()=>{
+    startActiveListening();
+  },600);
+}
+
+function startActiveListening(){
+  if(!('webkitSpeechRecognition'in window||'SpeechRecognition'in window)) return;
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const r=new SR();
+  r.lang='en-US'; r.interimResults=false;
+  r.onresult=e=>{
+    const txt=e.results[0][0].transcript;
+    document.getElementById('tinput').value=txt;
+    send();
+    // Restart wake after response
+    setTimeout(()=>{ if(wakeActive||true) startWake(); },3000);
+  };
+  r.onerror=r.onend=()=>{
+    setTimeout(()=>{ if(!isRec) startWake(); },1000);
+  };
+  r.start();
+  setSt('listening...');
+}
+
+// ── LOCATION ────────────────────────────────────────────
+function silentLocation(){
+  if(!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(pos=>{
+    userLat=pos.coords.latitude; userLon=pos.coords.longitude;
+    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${userLat}&lon=${userLon}&format=json`)
+      .then(r=>r.json()).then(d=>{
+        userCity=d.address?.city||d.address?.town||d.address?.village||'your area';
+        S.set('city',userCity);
+      }).catch(()=>{});
+  },()=>{},{timeout:8000,maximumAge:300000});
+}
+
+function getLocation(){
+  if(!navigator.geolocation){addBubble('a',"Location not supported.");return;}
+  setSt('locating...');
+  navigator.geolocation.getCurrentPosition(pos=>{
+    userLat=pos.coords.latitude; userLon=pos.coords.longitude;
+    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${userLat}&lon=${userLon}&format=json`)
+      .then(r=>r.json()).then(d=>{
+        userCity=d.address?.city||d.address?.town||d.address?.village||'your area';
+        S.set('city',userCity);
+        addSys('📍 Location: '+userCity);
+        setSt('ready');
+      }).catch(()=>{addSys('📍 Location found');setSt('ready');});
+  },()=>{addBubble('a','Could not get location. Please allow location access.');setSt('ready');},{timeout:10000});
+}
+
+function locCtx(){
+  if(userLat&&userLon) return `\n\nUser location: ${userCity||'unknown'} (lat:${userLat.toFixed(4)}, lon:${userLon.toFixed(4)}).`;
+  const c=S.get('city'); return c?`\n\nUser approximate location: ${c}.`:'';
+}
+
+// ── MEMORY ───────────────────────────────────────────────
 function getMems(){return S.json('mems',[]);}
-function memCtx(){const m=getMems();return m.length?'\n\nWhat I know about you:\n'+m.map(x=>'• '+x.t).join('\n'):'';}
+function memCtx(){const m=getMems();return m.length?'\n\nWhat I know about the user:\n'+m.map(x=>'• '+x.t).join('\n'):'';}
 function addMem(){
   const inp=document.getElementById('minput');
   const t=inp.value.trim(); if(!t) return;
   const m=getMems(); m.push({id:Date.now(),t});
   S.set('mems',m); inp.value=''; renderMems();
-  addBubble('a','✓ Got it — remembered: "'+t+'"'); closeMem();
+  addBubble('a','✓ Remembered: "'+t+'"'); closePanel('mpanel');
 }
 function delMem(id){S.set('mems',getMems().filter(m=>m.id!==id));renderMems();}
 function renderMems(){
   const el=document.getElementById('mlist');
   const m=getMems();
-  el.innerHTML=m.length?m.map(x=>'<div class="mitem"><span class="mtext">'+esc(x.t)+'</span><span class="mdel" onclick="delMem('+x.id+')">✕</span></div>').join(''):'<p style="font-size:13px;color:var(--muted);padding:8px 0">No memories yet. Add facts about yourself!</p>';
+  el.innerHTML=m.length?m.map(x=>'<div class="mitem"><span class="mtext">'+esc(x.t)+'</span><span class="mdel" onclick="delMem('+x.id+')">✕</span></div>').join(''):'<p style="font-size:13px;color:var(--muted);padding:8px 0">No memories yet.</p>';
 }
-function openMem(){document.getElementById('mpanel').classList.add('open');renderMems();}
-function closeMem(){document.getElementById('mpanel').classList.remove('open');}
 
-// chat UI
+// ── REMINDERS ────────────────────────────────────────────
+function getReminders(){return S.json('reminders',[]);}
+function addReminder(){
+  const txt=document.getElementById('rinput').value.trim();
+  const time=document.getElementById('rtime').value;
+  if(!txt||!time){addBubble('a','Please enter a reminder and time.');return;}
+  const r=getReminders();
+  r.push({id:Date.now(),txt,time,done:false});
+  S.set('reminders',r); renderReminders();
+  document.getElementById('rinput').value='';
+  addBubble('a','⏰ Reminder set: "'+txt+'" at '+new Date(time).toLocaleString());
+  closePanel('rpanel');
+}
+function delReminder(id){S.set('reminders',getReminders().filter(r=>r.id!==id));renderReminders();}
+function renderReminders(){
+  const el=document.getElementById('rlist');
+  const r=getReminders().sort((a,b)=>new Date(a.time)-new Date(b.time));
+  el.innerHTML=r.length?r.map(x=>`<div class="ritem${x.done?' done':''}"><div class="rinfo"><div class="rtext">${esc(x.txt)}</div><div class="rtime">${new Date(x.time).toLocaleString()}</div></div><span class="rdel" onclick="delReminder(${x.id})">✕</span></div>`).join(''):'<p style="font-size:13px;color:var(--muted);padding:8px 0">No reminders set.</p>';
+  // Set default time
+  const dt=new Date(Date.now()+3600000);
+  const pad=n=>String(n).padStart(2,'0');
+  document.getElementById('rtime').value=`${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+}
+function remCtx(){
+  const now=Date.now();
+  const up=getReminders().filter(r=>!r.done&&new Date(r.time).getTime()>now&&new Date(r.time).getTime()<now+172800000);
+  return up.length?'\n\nUpcoming reminders:\n'+up.map(r=>`• "${r.txt}" at ${new Date(r.time).toLocaleString()}`).join('\n'):'';
+}
+function checkReminders(){
+  const now=Date.now();
+  const reminders=getReminders(); let changed=false;
+  reminders.forEach(r=>{
+    if(!r.done&&Math.abs(new Date(r.time).getTime()-now)<35000){
+      r.done=true; changed=true;
+      addSys('⏰ Reminder: '+r.txt);
+      speak('Reminder: '+r.txt);
+      if(Notification.permission==='granted') new Notification('ARIA',{body:r.txt});
+    }
+  });
+  if(changed) S.set('reminders',reminders);
+}
+
+// ── DAILY BRIEFING ───────────────────────────────────────
+async function showBriefing(){
+  document.getElementById('briefing').classList.add('show');
+  document.getElementById('briefing-text').textContent='Building your briefing...';
+  const mems=getMems().map(m=>m.t).join(', ');
+  const loc=userCity||S.get('city')||'unknown';
+  const rem=remCtx();
+  const prompt=`Give a warm personal morning briefing for ${window.userName}. Include: greeting with current time, motivational thought, ${rem?'upcoming reminders: '+rem:'a suggested focus'}, one useful tip. Max 4 sentences. Sound like a caring personal assistant. Known about them: ${mems||'not much yet'}. Location: ${loc}.`;
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MDL,max_tokens:300,messages:[{role:'user',content:prompt}]})});
+    const d=await r.json();
+    const txt=d.content?.[0]?.text||'Good morning! Have a great day.';
+    document.getElementById('briefing-text').textContent=txt;
+    speak(txt);
+  }catch(e){document.getElementById('briefing-text').textContent='Good morning, '+window.userName+'! Ready for a great day?';}
+}
+
+// ── CHAT ─────────────────────────────────────────────────
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function now(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+function nowT(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
 function addBubble(role,txt,img=null){
   const wlc=document.getElementById('wlc'); if(wlc) wlc.remove();
   const c=document.getElementById('msgs');
-  const d=document.createElement('div');
-  d.className='msg '+role;
+  const d=document.createElement('div'); d.className='msg '+role;
   let h='';
   if(img) h+='<img class="msg-img" src="'+img+'">';
-  h+='<div class="bub">'+esc(txt)+'</div><div class="ts">'+now()+'</div>';
+  h+='<div class="bub">'+esc(txt)+'</div><div class="ts">'+nowT()+'</div>';
   d.innerHTML=h; c.appendChild(d); c.scrollTop=c.scrollHeight;
+}
+function addSys(txt){
+  const wlc=document.getElementById('wlc'); if(wlc) wlc.remove();
+  const c=document.getElementById('msgs');
+  const d=document.createElement('div'); d.className='msg sys';
+  d.innerHTML='<div class="bub">'+esc(txt)+'</div>';
+  c.appendChild(d); c.scrollTop=c.scrollHeight;
 }
 function addThink(){
   const wlc=document.getElementById('wlc'); if(wlc) wlc.remove();
   const c=document.getElementById('msgs');
-  const d=document.createElement('div');
-  d.className='msg a'; d.id='thk';
+  const d=document.createElement('div'); d.className='msg a'; d.id='thk';
   d.innerHTML='<div class="bub thinking">ARIA is thinking</div>';
   c.appendChild(d); c.scrollTop=c.scrollHeight;
 }
-function rmThink(){const e=document.getElementById('thk');if(e)e.remove();}
+function rmThink(){const e=document.getElementById('thk'); if(e) e.remove();}
 function setSt(t){document.getElementById('stxt').textContent=t;}
 function newChat(){history=[];document.getElementById('msgs').innerHTML='';location.reload();}
 
-// send
 async function send(){
   if(busy) return;
   const inp=document.getElementById('tinput');
@@ -297,7 +592,6 @@ async function send(){
   if(!txt&&!imgB64) return;
   inp.value=''; resize(inp);
   busy=true; document.getElementById('sbtn').disabled=true; setSt('thinking...');
-
   let content, display=txt||'Analyze this image.';
   if(imgB64){
     content=[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:imgB64}},{type:'text',text:txt||'What do you see? Describe it clearly.'}];
@@ -308,63 +602,52 @@ async function send(){
   }
   history.push({role:'user',content});
   addThink();
-
-  const sys='You are ARIA, a warm smart personal AI assistant.'+memCtx()+'\n\nBe concise and natural — replies will be spoken aloud. Max 3 sentences unless asked for more. Use the user\'s name occasionally. Time: '+new Date().toLocaleString();
-
+  const sys='You are ARIA, a warm smart personal AI assistant for '+window.userName+'.'+memCtx()+locCtx()+remCtx()+'\n\nPersonality: concise, warm, natural. Max 3 sentences unless asked for more. Use the user name occasionally. If asked to set a reminder tell them to tap ⏰. Current time: '+new Date().toLocaleString();
   try{
-    const r=await fetch(API,{
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:MDL,max_tokens:1024,system:sys,messages:history})
-    });
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MDL,max_tokens:1024,system:sys,messages:history})});
     const data=await r.json(); rmThink();
     if(data.content?.[0]?.text){
       const reply=data.content[0].text;
       history.push({role:'assistant',content:reply});
       addBubble('a',reply); setSt('ready'); speak(reply);
     } else {
-      const msg=data.error?.message||('Status '+r.status);
-      addBubble('a','⚠️ '+msg); setSt('error');
+      addBubble('a','⚠️ '+(data.error?.message||'Error — check API key')); setSt('error');
     }
   } catch(e){
-    rmThink();
-    addBubble('a','⚠️ Could not reach the API. Check your internet connection.'); setSt('offline');
+    rmThink(); addBubble('a','⚠️ Network error. Check your connection.'); setSt('offline');
   }
   busy=false; document.getElementById('sbtn').disabled=false;
 }
 
-function sq(t){document.getElementById('tinput').value=t;send();}
+function sq(t){document.getElementById('tinput').value=t; send();}
 function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
 function resize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';}
 
-// voice input
+// ── MANUAL VOICE ─────────────────────────────────────────
 function toggleMic(){
-  if(!('webkitSpeechRecognition'in window||'SpeechRecognition'in window)){
-    addBubble('a','Voice input needs Chrome browser. Please open ARIA in Chrome.');return;
-  }
-  isRec?stopRec():startRec();
+  if(!('webkitSpeechRecognition'in window||'SpeechRecognition'in window)){addBubble('a','Voice needs Chrome browser.');return;}
+  isRec ? stopRec() : startRec();
 }
 function startRec(){
+  stopWake();
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   recog=new SR(); recog.lang='en-US'; recog.interimResults=false;
   recog.onresult=e=>{document.getElementById('tinput').value=e.results[0][0].transcript;stopRec();send();};
   recog.onerror=recog.onend=()=>stopRec();
   recog.start(); isRec=true;
-  const c=document.getElementById('micchip');
-  c.textContent='⏹ Stop'; c.classList.add('rec'); setSt('listening...');
+  const c=document.getElementById('micchip'); c.textContent='⏹ Stop'; c.classList.add('rec'); setSt('listening...');
 }
 function stopRec(){
-  try{recog&&recog.stop();}catch(e){}
-  isRec=false;
-  const c=document.getElementById('micchip');
-  c.textContent='🎤 Voice'; c.classList.remove('rec'); setSt('ready');
+  try{recog&&recog.stop();}catch(e){} isRec=false;
+  const c=document.getElementById('micchip'); c.textContent='🎤 Voice'; c.classList.remove('rec'); setSt('ready');
+  setTimeout(()=>startWake(),500);
 }
 
-// voice output
+// ── VOICE OUTPUT ─────────────────────────────────────────
 function speak(txt){
   if(!window.speechSynthesis) return;
   speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(txt.replace(/[✦✓⚠️🧠📷🌤⚡💡]/g,''));
+  const u=new SpeechSynthesisUtterance(txt.replace(/[✦✓⚠️🧠📷🌤⚡💡☀️⏰📍]/g,'').trim());
   u.rate=0.95; u.pitch=1.05;
   const vs=speechSynthesis.getVoices();
   const v=vs.find(v=>v.lang==='en-GB')||vs.find(v=>v.lang.startsWith('en'));
@@ -373,7 +656,7 @@ function speak(txt){
 }
 speechSynthesis&&speechSynthesis.getVoices();
 
-// camera
+// ── CAMERA ───────────────────────────────────────────────
 function trigCam(){document.getElementById('camfile').click();}
 function onImg(e){
   const f=e.target.files[0]; if(!f) return;
@@ -387,12 +670,12 @@ function onImg(e){
   };
   r.readAsDataURL(f); e.target.value='';
 }
-function clearImg(){
-  imgB64=null;
-  document.getElementById('ipw').classList.remove('on');
-  document.getElementById('ipreview').src='';
-  document.getElementById('tinput').placeholder='Message ARIA...';
-}
+function clearImg(){imgB64=null;document.getElementById('ipw').classList.remove('on');document.getElementById('ipreview').src='';document.getElementById('tinput').placeholder='Message ARIA...';}
+
+// ── PANELS ───────────────────────────────────────────────
+function openPanel(id){document.getElementById(id).classList.add('open');}
+function closePanel(id){document.getElementById(id).classList.remove('open');}
 </script>
 </body>
 </html>
+
