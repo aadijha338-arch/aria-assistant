@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>ARIA — Personal AI</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#080810;--s2:#161625;--s3:#1e1e30;--border:#252538;--border2:#2e2e48;
+  --accent:#6ee7f7;--accent2:#a78bfa;--text:#eeeef8;--muted:#6666a0;--muted2:#9999c0;
+  --green:#4ade80;--red:#f87171;--r:14px;--rs:8px
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'DM Mono',monospace}
+body{display:flex;flex-direction:column}
+
+/* ── SETUP ── */
+#setup{position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;gap:20px;overflow-y:auto}
+#setup.gone{display:none}
+.logo{font-family:'Syne',sans-serif;font-size:52px;font-weight:800;letter-spacing:-3px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.tagline{font-size:13px;color:var(--muted);text-align:center;line-height:1.7;max-width:280px}
+.form{width:100%;max-width:340px;display:flex;flex-direction:column;gap:14px}
+.lbl{font-size:10px;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px}
+.inp{width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);padding:14px 16px;color:var(--text);font-family:'DM Mono',monospace;font-size:14px;outline:none;transition:border-color .2s}
+.inp:focus{border-color:var(--accent)}
+.inp::placeholder{color:var(--muted)}
+.inp-wrap{position:relative}
+.eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);font-size:16px;user-select:none}
+.launch-btn{width:100%;padding:16px;border-radius:var(--r);border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#080810;font-family:'Syne',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:opacity .2s;margin-top:4px}
+.launch-btn:active{opacity:.85}
+.err{background:#1a0808;border:1px solid #7f1d1d;border-radius:var(--rs);padding:10px 14px;font-size:12px;color:var(--red);display:none}
+.err.show{display:block}
+
+/* ── APP ── */
+#app{display:flex;flex-direction:column;height:100%;opacity:0;transition:opacity .5s;pointer-events:none}
+#app.on{opacity:1;pointer-events:all}
+
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;padding-top:max(14px,env(safe-area-inset-top));border-bottom:1px solid var(--border);flex-shrink:0}
+.hdr-logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hdr-mid{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.hdr-btns{display:flex;gap:6px}
+.hbtn{width:36px;height:36px;border-radius:var(--rs);border:1px solid var(--border);background:var(--s2);color:var(--muted2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;transition:all .15s;flex-shrink:0}
+.hbtn:active{background:var(--s3);color:var(--accent)}
+
+#msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth}
+#msgs::-webkit-scrollbar{width:2px}
+#msgs::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+.msg{display:flex;flex-direction:column;gap:3px;animation:pop .2s ease-out}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.msg.u{align-items:flex-end}
+.msg.a{align-items:flex-start}
+.bub{max-width:84%;padding:11px 14px;border-radius:var(--r);line-height:1.65;font-size:14px;white-space:pre-wrap;word-break:break-word}
+.msg.u .bub{background:linear-gradient(135deg,#1a1a3e,#1d1d45);border:1px solid var(--accent2);border-bottom-right-radius:3px}
+.msg.a .bub{background:var(--s2);border:1px solid var(--border2);border-bottom-left-radius:3px}
+.bub.thinking{color:var(--muted);font-style:italic}
+.bub.thinking::after{content:'';animation:th 1.2s infinite}
+@keyframes th{0%{content:' .'}33%{content:' ..'}66%{content:' ...'}100%{content:' .'}}
+.ts{font-size:10px;color:var(--muted);padding:0 3px}
+.msg-img{max-width:180px;border-radius:var(--rs);border:1px solid var(--border2);margin-bottom:4px;display:block}
+
+/* ── MEMORY PANEL ── */
+#mpanel{position:fixed;inset:0;background:rgba(8,8,16,.97);z-index:60;display:flex;flex-direction:column;padding:16px;padding-top:max(16px,env(safe-area-inset-top));transform:translateX(100%);transition:transform .28s ease}
+#mpanel.open{transform:none}
+.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.ptitle{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--accent)}
+.pclose{font-size:22px;color:var(--muted);cursor:pointer;padding:4px 8px;line-height:1}
+.mlist{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.mitem{background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);padding:11px 13px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.mtext{font-size:13px;line-height:1.5;flex:1}
+.mdel{color:var(--muted);font-size:16px;cursor:pointer;flex-shrink:0;padding:0 3px;line-height:1}
+.mdel:active{color:var(--red)}
+.madd{display:flex;gap:8px;margin-top:auto}
+.madd input{flex:1;background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);padding:12px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;outline:none}
+.madd input:focus{border-color:var(--accent)}
+.madd input::placeholder{color:var(--muted)}
+.msavebtn{background:var(--accent);color:#080810;border:none;border-radius:var(--rs);padding:12px 16px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer}
+
+/* ── INPUT BAR ── */
+.ibar{padding:10px 12px;padding-bottom:max(12px,env(safe-area-inset-bottom));border-top:1px solid var(--border);flex-shrink:0}
+.chips{display:flex;gap:6px;margin-bottom:8px;overflow-x:auto;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{display:flex;align-items:center;gap:4px;padding:7px 12px;border-radius:20px;border:1px solid var(--border2);background:var(--s2);color:var(--muted2);font-size:12px;cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:'DM Mono',monospace;transition:all .15s}
+.chip:active,.chip.on{border-color:var(--accent);color:var(--accent);background:var(--s3)}
+.chip.rec{border-color:var(--red);color:var(--red);animation:rp 1s infinite}
+@keyframes rp{0%,100%{background:var(--s2)}50%{background:#1a0808}}
+.irow{display:flex;align-items:flex-end;gap:8px}
+#tinput{flex:1;background:var(--s2);border:1px solid var(--border2);border-radius:20px;padding:12px 16px;color:var(--text);font-family:'DM Mono',monospace;font-size:14px;outline:none;resize:none;max-height:100px;line-height:1.5;transition:border-color .2s}
+#tinput:focus{border-color:var(--accent)}
+#tinput::placeholder{color:var(--muted)}
+.sbtn{width:44px;height:44px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#080810;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .2s}
+.sbtn:disabled{opacity:.25;pointer-events:none}
+
+/* image preview */
+#ipw{display:none;position:relative;margin-bottom:8px}
+#ipw.on{display:inline-block}
+#ipreview{width:72px;height:72px;object-fit:cover;border-radius:var(--rs);border:1px solid var(--accent)}
+#iclr{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--red);color:#fff;border:none;font-size:12px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center}
+
+/* welcome */
+.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:14px;padding:24px;text-align:center;color:var(--muted)}
+.wico{font-size:44px}
+.wtitle{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text)}
+.wsub{font-size:13px;line-height:1.7;max-width:260px}
+.qtips{display:flex;flex-direction:column;gap:8px;width:100%;max-width:290px;margin-top:6px}
+.qtip{background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 14px;font-size:12px;color:var(--muted2);text-align:left;cursor:pointer;transition:all .15s}
+.qtip:active{border-color:var(--accent);color:var(--accent)}
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div id="setup">
+  <div class="logo">ARIA</div>
+  <p class="tagline">Your personal AI — speaks, listens, sees, remembers you.</p>
+  <div class="form">
+    <div>
+      <div class="lbl">Your name</div>
+      <input class="inp" id="sname" placeholder="e.g. James" maxlength="40" autocomplete="name">
+    </div>
+    <div>
+      <div class="lbl">Anthropic API key</div>
+      <div class="inp-wrap">
+        <input class="inp" id="skey" placeholder="sk-ant-api03-..." type="password" autocomplete="off" style="padding-right:44px">
+        <span class="eye" onclick="toggleEye()">👁</span>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.6">Get your free key at <span style="color:var(--accent)">console.anthropic.com</span> → API Keys</div>
+    </div>
+    <div>
+      <div class="lbl">About you (optional)</div>
+      <input class="inp" id="sbio" placeholder="e.g. Student in London, 22 years old">
+    </div>
+    <div id="serr" class="err">Please enter your API key to continue.</div>
+    <button class="launch-btn" onclick="launch()">Launch ARIA →</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="hdr">
+    <div class="hdr-logo">ARIA</div>
+    <div class="hdr-mid"><div class="dot"></div><span id="stxt">ready</span></div>
+    <div class="hdr-btns">
+      <div class="hbtn" onclick="openMem()">🧠</div>
+      <div class="hbtn" onclick="newChat()">↺</div>
+    </div>
+  </div>
+
+  <div id="msgs">
+    <div class="welcome" id="wlc">
+      <div class="wico">✦</div>
+      <div class="wtitle" id="wtitle">Hey there!</div>
+      <div class="wsub" id="wsub">I'm ARIA — I remember you, I hear you, I see what you see.</div>
+      <div class="qtips">
+        <div class="qtip" onclick="sq('What can you help me with?')">What can you help me with?</div>
+        <div class="qtip" onclick="sq('What do you remember about me?')">What do you remember about me?</div>
+        <div class="qtip" onclick="sq('Give me a quick motivational boost')">Give me a quick motivational boost</div>
+        <div class="qtip" onclick="sq('What\'s a good thing I can do right now?')">What\'s a good thing I can do right now?</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ibar">
+    <div id="ipw"><img id="ipreview" src="" alt=""><button id="iclr" onclick="clearImg()">✕</button></div>
+    <div class="chips">
+      <div class="chip" id="micchip" onclick="toggleMic()">🎤 Voice</div>
+      <div class="chip" onclick="trigCam()">📷 Camera</div>
+      <div class="chip" onclick="openMem()">🧠 Memory</div>
+      <div class="chip" onclick="sq('What\'s the weather like today?')">🌤 Weather</div>
+      <div class="chip" onclick="sq('Give me 3 productive tasks I can do right now')">⚡ Focus</div>
+      <div class="chip" onclick="sq('Tell me something interesting I probably don\'t know')">💡 Surprise me</div>
+    </div>
+    <div class="irow">
+      <textarea id="tinput" placeholder="Message ARIA..." rows="1" oninput="resize(this)" onkeydown="onKey(event)"></textarea>
+      <button class="sbtn" id="sbtn" onclick="send()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- MEMORY PANEL -->
+<div id="mpanel">
+  <div class="ph"><div class="ptitle">🧠 Memory</div><div class="pclose" onclick="closeMem()">✕</div></div>
+  <p style="font-size:12px;color:var(--muted);line-height:1.6">These facts are injected into every conversation so ARIA always knows you.</p>
+  <div class="mlist" id="mlist"></div>
+  <div class="madd">
+    <input id="minput" placeholder="Add a fact, e.g. I work as a chef" onkeydown="if(event.key==='Enter')addMem()">
+    <button class="msavebtn" onclick="addMem()">Save</button>
+  </div>
+</div>
+
+<input type="file" id="camfile" accept="image/*" capture="environment" style="display:none" onchange="onImg(event)">
+
+<script>
+const API = 'https://api.anthropic.com/v1/messages';
+const MDL = 'claude-haiku-4-5-20251001';
+let key='', name='', history=[], imgB64=null, recog=null, isRec=false, busy=false;
+
+// storage
+const S = {
+  set:(k,v)=>{try{localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v))}catch(e){}},
+  get:(k,d='')=>{try{const v=localStorage.getItem(k);return v??d}catch(e){return d}},
+  json:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+};
+
+// init
+(function init(){
+  const k=S.get('ak'); if(!k) return;
+  key=k; name=S.get('an','friend');
+  showApp();
+})();
+
+function toggleEye(){
+  const i=document.getElementById('skey');
+  i.type=i.type==='password'?'text':'password';
+}
+
+function launch(){
+  const k=document.getElementById('skey').value.trim();
+  const n=document.getElementById('sname').value.trim();
+  const b=document.getElementById('sbio').value.trim();
+  const err=document.getElementById('serr');
+  if(!k){err.classList.add('show');return;}
+  err.classList.remove('show');
+  key=k; name=n||'friend';
+  S.set('ak',k); S.set('an',name);
+  const mems=S.json('mems',[]);
+  if(n&&!mems.find(m=>m.t.toLowerCase().includes('name'))) mems.unshift({id:Date.now(),t:'My name is '+n});
+  if(b) mems.push({id:Date.now()+1,t:b});
+  S.set('mems',mems);
+  showApp();
+}
+
+function showApp(){
+  document.getElementById('setup').classList.add('gone');
+  const app=document.getElementById('app');
+  app.classList.add('on');
+  document.getElementById('wtitle').textContent='Hey, '+name+'!';
+  document.getElementById('wsub').textContent="I'm ARIA — your personal AI. I remember you, I hear you, I see what you see.";
+  renderMems();
+}
+
+// memory
+function getMems(){return S.json('mems',[]);}
+function memCtx(){const m=getMems();return m.length?'\n\nWhat I know about you:\n'+m.map(x=>'• '+x.t).join('\n'):'';}
+function addMem(){
+  const inp=document.getElementById('minput');
+  const t=inp.value.trim(); if(!t) return;
+  const m=getMems(); m.push({id:Date.now(),t});
+  S.set('mems',m); inp.value=''; renderMems();
+  addBubble('a','✓ Got it — remembered: "'+t+'"'); closeMem();
+}
+function delMem(id){S.set('mems',getMems().filter(m=>m.id!==id));renderMems();}
+function renderMems(){
+  const el=document.getElementById('mlist');
+  const m=getMems();
+  el.innerHTML=m.length?m.map(x=>'<div class="mitem"><span class="mtext">'+esc(x.t)+'</span><span class="mdel" onclick="delMem('+x.id+')">✕</span></div>').join(''):'<p style="font-size:13px;color:var(--muted);padding:8px 0">No memories yet. Add facts about yourself!</p>';
+}
+function openMem(){document.getElementById('mpanel').classList.add('open');renderMems();}
+function closeMem(){document.getElementById('mpanel').classList.remove('open');}
+
+// chat UI
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function now(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+function addBubble(role,txt,img=null){
+  const wlc=document.getElementById('wlc'); if(wlc) wlc.remove();
+  const c=document.getElementById('msgs');
+  const d=document.createElement('div');
+  d.className='msg '+role;
+  let h='';
+  if(img) h+='<img class="msg-img" src="'+img+'">';
+  h+='<div class="bub">'+esc(txt)+'</div><div class="ts">'+now()+'</div>';
+  d.innerHTML=h; c.appendChild(d); c.scrollTop=c.scrollHeight;
+}
+function addThink(){
+  const wlc=document.getElementById('wlc'); if(wlc) wlc.remove();
+  const c=document.getElementById('msgs');
+  const d=document.createElement('div');
+  d.className='msg a'; d.id='thk';
+  d.innerHTML='<div class="bub thinking">ARIA is thinking</div>';
+  c.appendChild(d); c.scrollTop=c.scrollHeight;
+}
+function rmThink(){const e=document.getElementById('thk');if(e)e.remove();}
+function setSt(t){document.getElementById('stxt').textContent=t;}
+function newChat(){history=[];document.getElementById('msgs').innerHTML='';location.reload();}
+
+// send
+async function send(){
+  if(busy) return;
+  const inp=document.getElementById('tinput');
+  const txt=inp.value.trim();
+  if(!txt&&!imgB64) return;
+  inp.value=''; resize(inp);
+  busy=true; document.getElementById('sbtn').disabled=true; setSt('thinking...');
+
+  let content, display=txt||'Analyze this image.';
+  if(imgB64){
+    content=[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:imgB64}},{type:'text',text:txt||'What do you see? Describe it clearly.'}];
+    addBubble('u',display,document.getElementById('ipreview').src);
+    clearImg();
+  } else {
+    content=txt; addBubble('u',txt);
+  }
+  history.push({role:'user',content});
+  addThink();
+
+  const sys='You are ARIA, a warm smart personal AI assistant.'+memCtx()+'\n\nBe concise and natural — replies will be spoken aloud. Max 3 sentences unless asked for more. Use the user\'s name occasionally. Time: '+new Date().toLocaleString();
+
+  try{
+    const r=await fetch(API,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:MDL,max_tokens:1024,system:sys,messages:history})
+    });
+    const data=await r.json(); rmThink();
+    if(data.content?.[0]?.text){
+      const reply=data.content[0].text;
+      history.push({role:'assistant',content:reply});
+      addBubble('a',reply); setSt('ready'); speak(reply);
+    } else {
+      const msg=data.error?.message||('Status '+r.status);
+      addBubble('a','⚠️ '+msg); setSt('error');
+    }
+  } catch(e){
+    rmThink();
+    addBubble('a','⚠️ Could not reach the API. Check your internet connection.'); setSt('offline');
+  }
+  busy=false; document.getElementById('sbtn').disabled=false;
+}
+
+function sq(t){document.getElementById('tinput').value=t;send();}
+function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
+function resize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';}
+
+// voice input
+function toggleMic(){
+  if(!('webkitSpeechRecognition'in window||'SpeechRecognition'in window)){
+    addBubble('a','Voice input needs Chrome browser. Please open ARIA in Chrome.');return;
+  }
+  isRec?stopRec():startRec();
+}
+function startRec(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recog=new SR(); recog.lang='en-US'; recog.interimResults=false;
+  recog.onresult=e=>{document.getElementById('tinput').value=e.results[0][0].transcript;stopRec();send();};
+  recog.onerror=recog.onend=()=>stopRec();
+  recog.start(); isRec=true;
+  const c=document.getElementById('micchip');
+  c.textContent='⏹ Stop'; c.classList.add('rec'); setSt('listening...');
+}
+function stopRec(){
+  try{recog&&recog.stop();}catch(e){}
+  isRec=false;
+  const c=document.getElementById('micchip');
+  c.textContent='🎤 Voice'; c.classList.remove('rec'); setSt('ready');
+}
+
+// voice output
+function speak(txt){
+  if(!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(txt.replace(/[✦✓⚠️🧠📷🌤⚡💡]/g,''));
+  u.rate=0.95; u.pitch=1.05;
+  const vs=speechSynthesis.getVoices();
+  const v=vs.find(v=>v.lang==='en-GB')||vs.find(v=>v.lang.startsWith('en'));
+  if(v) u.voice=v;
+  speechSynthesis.speak(u);
+}
+speechSynthesis&&speechSynthesis.getVoices();
+
+// camera
+function trigCam(){document.getElementById('camfile').click();}
+function onImg(e){
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    imgB64=ev.target.result.split(',')[1];
+    document.getElementById('ipreview').src=ev.target.result;
+    document.getElementById('ipw').classList.add('on');
+    document.getElementById('tinput').placeholder='Ask about this image...';
+    document.getElementById('tinput').focus();
+  };
+  r.readAsDataURL(f); e.target.value='';
+}
+function clearImg(){
+  imgB64=null;
+  document.getElementById('ipw').classList.remove('on');
+  document.getElementById('ipreview').src='';
+  document.getElementById('tinput').placeholder='Message ARIA...';
+}
+</script>
+</body>
+</html>
