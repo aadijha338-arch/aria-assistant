@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html><!-- ARIA v20260508200046 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -547,7 +547,7 @@ function renderWatchlist(){
 async function analyzeAsset(name){
   try{const slug=name.toLowerCase().replace(/ /g,'-');const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids='+slug+'&vs_currencies=usd&include_24hr_change=true');const d=await r.json();if(d[slug]?.usd){const w=getWatchlist();const i=w.findIndex(a=>a.name===name);if(i>=0){w[i].price='$'+d[slug].usd.toLocaleString()+(d[slug].usd_24h_change?' ('+(d[slug].usd_24h_change>0?'+':'')+d[slug].usd_24h_change.toFixed(2)+'%)':'');S.set('watchlist',w);}}}catch(e){}
   const headlines=await fetchMarketNews(name);const w=getWatchlist();const idx=w.findIndex(a=>a.name===name);if(idx<0)return;
-  try{const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':window.getKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:200,messages:[{role:'user',content:'Financial analyst: analyze "'+name+'". '+(headlines.length?'Live headlines:\n'+headlines.join('\n'):'Use general knowledge.')+' Reply EXACTLY:\nVERDICT: [BUY or HOLD or AVOID]\nREASONING: [2 sentences]'}]})});const data=await res.json();const txt=data.content?.[0]?.text||'';const vm=txt.match(/VERDICT:\s*(BUY|HOLD|AVOID)/i);const rm=txt.match(/REASONING:\s*(.+)/is);w[idx].verdict=(vm?.[1]||'hold').toLowerCase();w[idx].reason=rm?.[1]?.trim()||'Analysis unavailable.';w[idx].headlines=headlines.slice(0,2);}catch(e){w[idx].verdict='hold';w[idx].reason='Analysis failed.';}
+  try{const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':window.getKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:200,messages:[{role:'user',content:'Financial analyst: analyze '+JSON.stringify(name)+'. '+(headlines.length?'Headlines: '+headlines.join('. '):'Use general knowledge.')+' Reply: VERDICT: BUY or HOLD or AVOID then REASONING: 2 sentences.'}]})});const data=await res.json();const txt=data.content?.[0]?.text||'';const vm=txt.match(/VERDICT[^:]*:\s*(BUY|HOLD|AVOID)/i);const rm=txt.match(/REASONING[^:]*:\s*(.+)/is);w[idx].verdict=(vm?.[1]||'hold').toLowerCase();w[idx].reason=rm?.[1]?.trim()||'Analysis unavailable.';w[idx].headlines=headlines.slice(0,2);}catch(e){w[idx].verdict='hold';w[idx].reason='Analysis failed.';}
   S.set('watchlist',w);renderWatchlist();
 }
 function refreshMarkets(){const w=getWatchlist();w.forEach(a=>{a.verdict='analyzing';a.reason='Refreshing...';a.headlines=[];a.price='';});S.set('watchlist',w);renderWatchlist();w.forEach(a=>analyzeAsset(a.name));loadLivePrices();}
