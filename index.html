@@ -1145,8 +1145,7 @@ async function webSearch(query){
     if(data.AbstractText&&data.AbstractText.length>20) results.push(data.AbstractText.substring(0,400));
     if(data.Answer) results.push('Answer: '+data.Answer);
   }catch(e){}
-  return results.length?results.join('
-'):'';
+  return results.length?results.join('\n'):'';
 }
 
 async function send(){
@@ -1320,7 +1319,7 @@ function getBestVoice(){
 
 function splitIntoChunks(text,maxLen){
   if(text.length<=maxLen)return[text];
-  const chunks=[];const sentences=text.split(/(?<=[.!?।])\s+/);
+  const chunks=[];const sentences=text.split(/[.!?।]+\s+/);
   let cur='';
   for(const s of sentences){if((cur+s).length>maxLen&&cur){chunks.push(cur.trim());cur=s;}else cur+=(cur?' ':'')+s;}
   if(cur)chunks.push(cur.trim());
