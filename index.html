@@ -657,6 +657,10 @@ async function startApp(){
   }
   setSt('ready');
   setTimeout(startWake,1000);
+  // Override send button with agent-aware version
+  document.getElementById('sbtn').onclick=sendWithAgent;
+  const origKeydown=document.getElementById('tinput').onkeydown;
+  document.getElementById('tinput').onkeydown=function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendWithAgent();}};
   loadHistory();
   loadNews('general',document.querySelector('.ntab'));
   renderWatchlist();
@@ -1034,7 +1038,7 @@ async function showBriefing(){
   const profile=window.userProfile?'\n\nProfile:\n'+window.userProfile.substring(0,300):'';
   const prompt=`Personal morning briefing for ${window.userName}. ${getPersonality()} ${langNote} Include: greeting with time, ${weather?'weather update ('+weather+'),':''} motivational thought${mood?' (mood: '+mood+')':''}, ${rem?'reminders: '+rem:'focus suggestion'}, one tip. Max 5 sentences.${profile} Location: ${loc}.`;
   try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MDL,max_tokens:400,messages:[{role:'user',content:prompt}]})});
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:getModel(),max_tokens:400,messages:[{role:'user',content:prompt}]})});
     const d=await r.json();const txt=d.content?.[0]?.text||'Good morning!';
     addBubble('a',txt);speak(txt);
   }catch(e){addBubble('a',lang==='nepali'?'शुभप्रभात, '+window.userName+'!':'Good morning, '+window.userName+'!');}
@@ -1191,7 +1195,6 @@ ${webCtx?'IMPORTANT: You have live web data above. Use it to give an accurate, u
 function sq(t){switchTab('chat');document.getElementById('tinput').value=t;send();}
 
 // Override send to check for agent commands first  
-const _originalSend = send;
 async function sendWithAgent(){
   const inp=document.getElementById('tinput');
   const txt=inp.value.trim();
