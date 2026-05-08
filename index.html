@@ -17,7 +17,6 @@
 }
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'DM Mono',monospace}
 body{display:flex;flex-direction:column}
-
 #loginScreen{position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:32px}
 #loginScreen.gone{display:none}
 .login-logo{font-family:'Syne',sans-serif;font-size:64px;font-weight:800;letter-spacing:-4px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
@@ -26,7 +25,6 @@ body{display:flex;flex-direction:column}
 .google-btn:active{opacity:.85}
 #login-err{font-size:12px;color:var(--red);text-align:center;display:none;max-width:260px;line-height:1.6}
 #login-err.show{display:block}
-
 #setupScreen{position:fixed;inset:0;background:var(--bg);z-index:150;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px;gap:16px;overflow-y:auto}
 #setupScreen.gone{display:none}
 .setup-logo{font-family:'Syne',sans-serif;font-size:48px;font-weight:800;letter-spacing:-3px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
@@ -40,16 +38,13 @@ body{display:flex;flex-direction:column}
 .sel{width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);padding:13px 16px;color:var(--text);font-family:'DM Mono',monospace;font-size:14px;outline:none}
 .sel option{background:var(--s2)}
 .launch-btn{width:100%;padding:16px;border-radius:var(--r);border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#080810;font-family:'Syne',sans-serif;font-size:16px;font-weight:700;cursor:pointer;margin-top:4px}
-
 #app{display:flex;flex-direction:column;height:100%;opacity:0;transition:opacity .5s;pointer-events:none}
 #app.on{opacity:1;pointer-events:all}
-
 #wake-bar{display:none;position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));z-index:50;animation:scan 1.5s linear infinite}
 @keyframes scan{0%{opacity:1}50%{opacity:.3}100%{opacity:1}}
 #wake-bar.on{display:block}
 #wake-toast{position:fixed;bottom:130px;left:50%;transform:translateX(-50%);background:var(--s3);border:1px solid var(--accent);border-radius:20px;padding:8px 18px;font-size:13px;color:var(--accent);display:none;z-index:60;white-space:nowrap}
 #wake-toast.show{display:block}
-
 .hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;padding-top:max(12px,env(safe-area-inset-top));border-bottom:1px solid var(--border);flex-shrink:0}
 .hdr-logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .hdr-mid{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
@@ -58,19 +53,24 @@ body{display:flex;flex-direction:column}
 .hdr-btns{display:flex;gap:5px}
 .hbtn{width:32px;height:32px;border-radius:var(--rs);border:1px solid var(--border);background:var(--s2);color:var(--muted2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;flex-shrink:0}
 .hbtn:active{background:var(--s3);color:var(--accent)}
-
+/* WEATHER CARD */
+#weatherCard{display:none;margin:10px 14px 0;background:linear-gradient(135deg,#0f1a2e,#1a1a3e);border:1px solid var(--accent2);border-radius:var(--r);padding:12px 14px;flex-shrink:0}
+#weatherCard.show{display:flex;align-items:center;gap:12px}
+.weather-icon{font-size:32px}
+.weather-info{flex:1}
+.weather-temp{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--text)}
+.weather-desc{font-size:12px;color:var(--muted2);margin-top:2px}
+.weather-loc{font-size:11px;color:var(--accent);margin-top:2px}
+.weather-close{color:var(--muted);cursor:pointer;font-size:18px;padding:4px}
 .tabbar{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto}
 .tabbar::-webkit-scrollbar{display:none}
 .tab{flex:1;padding:10px 8px;font-size:11px;color:var(--muted);cursor:pointer;text-align:center;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;font-family:'DM Mono',monospace}
 .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
-
 .view{display:none;flex:1;overflow-y:auto;flex-direction:column}
 .view.active{display:flex}
-
 #chatView{padding:14px;gap:12px;scroll-behavior:smooth}
 #chatView::-webkit-scrollbar{width:2px}
 #chatView::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
-
 .msg{display:flex;flex-direction:column;gap:3px;animation:pop .2s ease-out}
 @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .msg.u{align-items:flex-end}
@@ -85,7 +85,6 @@ body{display:flex;flex-direction:column}
 @keyframes th{0%{content:' .'}33%{content:' ..'}66%{content:' ...'}100%{content:' .'}}
 .ts{font-size:10px;color:var(--muted);padding:0 3px}
 .msg-img{max-width:180px;border-radius:var(--rs);border:1px solid var(--border2);margin-bottom:4px;display:block}
-
 .welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:12px;padding:24px;text-align:center;color:var(--muted)}
 .wico{font-size:44px}
 .wtitle{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text)}
@@ -93,8 +92,7 @@ body{display:flex;flex-direction:column}
 .qtips{display:flex;flex-direction:column;gap:7px;width:100%;max-width:300px;margin-top:6px}
 .qtip{background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 14px;font-size:12px;color:var(--muted2);text-align:left;cursor:pointer}
 .qtip:active{border-color:var(--accent);color:var(--accent)}
-
-/* PROFILE VIEW */
+/* PROFILE */
 #profileView{padding:14px;gap:12px}
 .profile-header{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--accent)}
 .profile-card{background:var(--s2);border:1px solid var(--border2);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:6px}
@@ -104,7 +102,6 @@ body{display:flex;flex-direction:column}
 .profile-stat:last-child{border:none}
 .profile-stat-val{color:var(--accent);font-family:'Syne',sans-serif;font-weight:700}
 .refresh-profile-btn{width:100%;padding:12px;border-radius:var(--rs);border:1px solid var(--accent2);background:transparent;color:var(--accent2);font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer}
-
 /* FINANCE */
 #financeView{padding:14px;gap:12px}
 .fin-header{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--accent)}
@@ -112,23 +109,29 @@ body{display:flex;flex-direction:column}
 .asset-card{background:var(--s2);border:1px solid var(--border2);border-radius:var(--r);padding:13px;display:flex;flex-direction:column;gap:8px}
 .asset-top{display:flex;justify-content:space-between;align-items:center}
 .asset-name{font-size:14px;font-weight:500}
+.asset-price{font-size:13px;color:var(--accent);font-family:'DM Mono',monospace;margin-top:2px}
 .asset-verdict{font-size:11px;padding:3px 8px;border-radius:4px;font-family:'DM Mono',monospace}
 .buy{background:#052e16;color:var(--green);border:1px solid #166534}
 .hold{background:#422006;color:var(--yellow);border:1px solid #78350f}
 .avoid{background:#3b0000;color:var(--red);border:1px solid #7f1d1d}
 .analyzing{background:var(--s3);color:var(--muted);border:1px solid var(--border)}
 .asset-reasoning{font-size:12px;color:var(--muted2);line-height:1.5}
-.asset-news{font-size:11px;color:var(--muted);line-height:1.5;border-top:1px solid var(--border);padding-top:6px}
+.asset-headlines{font-size:11px;color:var(--muted);line-height:1.5;border-top:1px solid var(--border);padding-top:6px}
 .add-asset{display:flex;gap:8px}
 .add-asset input{flex:1;background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);padding:11px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;outline:none}
 .add-asset input:focus{border-color:var(--accent)}
 .add-asset input::placeholder{color:var(--muted)}
 .add-btn{background:var(--accent);color:#080810;border:none;border-radius:var(--rs);padding:11px 16px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer}
+.market-overview{background:linear-gradient(135deg,#1a1a3e,#0f1a2e);border:1px solid var(--accent2);border-radius:var(--r);padding:13px}
+.mo-title{font-size:10px;color:var(--accent2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.mo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mo-item{background:var(--s3);border-radius:var(--rs);padding:8px 10px}
+.mo-name{font-size:10px;color:var(--muted);margin-bottom:4px}
+.mo-price{font-size:14px;font-family:'Syne',sans-serif;font-weight:700;color:var(--text)}
+.mo-change.pos{color:var(--green);font-size:12px}
+.mo-change.neg{color:var(--red);font-size:12px}
 .refresh-btn{width:100%;padding:12px;border-radius:var(--rs);border:1px solid var(--accent);background:transparent;color:var(--accent);font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer}
 .fin-disclaimer{font-size:11px;color:var(--muted);line-height:1.6;padding:10px;background:var(--s3);border-radius:var(--rs);border:1px solid var(--border)}
-.market-summary{background:linear-gradient(135deg,#1a1a3e,#0f1a2e);border:1px solid var(--accent2);border-radius:var(--r);padding:13px}
-.market-summary-title{font-size:10px;color:var(--accent2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
-
 /* NEWS */
 #newsView{padding:14px;gap:10px}
 .news-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;flex-shrink:0}
@@ -136,20 +139,17 @@ body{display:flex;flex-direction:column}
 .ntab{padding:6px 12px;border-radius:20px;border:1px solid var(--border2);background:var(--s2);color:var(--muted2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:'DM Mono',monospace}
 .ntab.active{border-color:var(--accent);color:var(--accent);background:var(--s3)}
 .news-card{background:var(--s2);border:1px solid var(--border2);border-radius:var(--r);padding:13px;cursor:pointer;flex-shrink:0}
-.news-card:active{border-color:var(--accent)}
 .news-source{font-size:10px;color:var(--accent2);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
 .news-title{font-size:13px;line-height:1.5;margin-bottom:4px}
 .news-time{font-size:11px;color:var(--muted)}
 .news-desc{font-size:12px;color:var(--muted2);margin-top:6px;line-height:1.5;display:none}
 .news-card.expanded .news-desc{display:block}
-
 /* HISTORY */
 #historyView{padding:14px;gap:8px}
 .session-card{background:var(--s2);border:1px solid var(--border2);border-radius:var(--r);padding:13px;flex-shrink:0}
 .session-date{font-size:11px;color:var(--accent2);margin-bottom:4px}
 .session-preview{font-size:13px;color:var(--muted2);line-height:1.5}
 .session-count{font-size:11px;color:var(--muted);margin-top:4px}
-
 /* PANELS */
 .panel{position:fixed;inset:0;background:rgba(8,8,16,.97);z-index:60;display:flex;flex-direction:column;padding:16px;padding-top:max(16px,env(safe-area-inset-top));transform:translateX(100%);transition:transform .28s ease}
 .panel.open{transform:none}
@@ -177,10 +177,8 @@ body{display:flex;flex-direction:column}
 .setting-label{font-size:13px}
 .setting-sub{font-size:11px;color:var(--muted);margin-top:2px}
 .setting-sel{background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);padding:8px 12px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;outline:none}
-
 #emotion-badge{position:fixed;top:60px;right:14px;background:var(--s3);border:1px solid var(--border2);border-radius:20px;padding:4px 10px;font-size:11px;color:var(--muted2);display:none;z-index:40}
 #emotion-badge.show{display:block}
-
 .ibar{padding:10px 12px;padding-bottom:max(12px,env(safe-area-inset-bottom));border-top:1px solid var(--border);flex-shrink:0}
 .chips{display:flex;gap:6px;margin-bottom:8px;overflow-x:auto;padding-bottom:2px}
 .chips::-webkit-scrollbar{display:none}
@@ -202,15 +200,14 @@ body{display:flex;flex-direction:column}
 </style>
 </head>
 <body>
-
 <div id="wake-bar"></div>
-<div id="wake-toast">🎤 Listening...</div>
+<div id="wake-toast">🎤 सुन्दैछु... / Listening...</div>
 <div id="emotion-badge"></div>
 
 <!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-logo">ARIA</div>
-  <p class="login-sub">Your personal AI — private and secure.</p>
+  <p class="login-sub">Your personal AI — private and secure.<br>तपाईंको व्यक्तिगत AI</p>
   <button class="google-btn" onclick="signInWithGoogle()">
     <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
     Sign in with Google
@@ -222,7 +219,7 @@ body{display:flex;flex-direction:column}
 <!-- SETUP -->
 <div id="setupScreen" class="gone">
   <div class="setup-logo">ARIA</div>
-  <p style="font-size:13px;color:var(--muted);text-align:center;line-height:1.7;max-width:280px">Let's personalise your experience.</p>
+  <p style="font-size:13px;color:var(--muted);text-align:center;line-height:1.7;max-width:280px">Let's personalise your experience. / आफ्नो अनुभव व्यक्तिगत बनाउनुहोस्।</p>
   <div class="form">
     <div>
       <div class="lbl">Anthropic API key</div>
@@ -236,17 +233,25 @@ body{display:flex;flex-direction:column}
       <input class="inp" id="snewskey" placeholder="paste your key here">
     </div>
     <div>
-      <div class="lbl">About you</div>
+      <div class="lbl">About you / आफ्नो बारेमा</div>
       <input class="inp" id="sbio" placeholder="e.g. Student in London, loves football">
     </div>
     <div>
-      <div class="lbl">ARIA's personality</div>
+      <div class="lbl">Language / भाषा</div>
+      <select class="sel" id="slanguage">
+        <option value="english">English</option>
+        <option value="nepali">नेपाली (Nepali)</option>
+        <option value="both">Both / दुवै</option>
+      </select>
+    </div>
+    <div>
+      <div class="lbl">Personality</div>
       <select class="sel" id="spersonality">
-        <option value="friendly">Friendly & casual</option>
-        <option value="professional">Professional & formal</option>
-        <option value="motivating">Motivating & energetic</option>
-        <option value="blunt">Direct & blunt</option>
-        <option value="mentor">Wise mentor</option>
+        <option value="friendly">Friendly / मित्रवत</option>
+        <option value="professional">Professional</option>
+        <option value="motivating">Motivating / उत्साहजनक</option>
+        <option value="blunt">Blunt / सिधा</option>
+        <option value="mentor">Mentor / गुरु</option>
       </select>
     </div>
     <div>
@@ -268,12 +273,25 @@ body{display:flex;flex-direction:column}
     <div class="hdr-logo">ARIA</div>
     <div class="hdr-mid"><div class="dot"></div><span id="stxt">ready</span></div>
     <div class="hdr-btns">
+      <div class="hbtn" onclick="fetchWeather()">🌤</div>
       <div class="hbtn" onclick="openPanel('mpanel')">🧠</div>
       <div class="hbtn" onclick="openPanel('rpanel')">⏰</div>
       <div class="hbtn" onclick="openPanel('settings')">⚙️</div>
       <div class="hbtn" onclick="signOut()">👤</div>
     </div>
   </div>
+
+  <!-- WEATHER CARD -->
+  <div id="weatherCard">
+    <div class="weather-icon" id="w-icon">🌤</div>
+    <div class="weather-info">
+      <div class="weather-temp" id="w-temp">--°C</div>
+      <div class="weather-desc" id="w-desc">Loading...</div>
+      <div class="weather-loc" id="w-loc">Getting location...</div>
+    </div>
+    <div class="weather-close" onclick="document.getElementById('weatherCard').classList.remove('show')">✕</div>
+  </div>
+
   <div class="tabbar">
     <div class="tab active" onclick="switchTab('chat')">💬 Chat</div>
     <div class="tab" onclick="switchTab('profile')">🧬 Profile</div>
@@ -286,49 +304,54 @@ body{display:flex;flex-direction:column}
   <div class="view active" id="chatView">
     <div class="welcome" id="wlc">
       <div class="wico">✦</div>
-      <div class="wtitle" id="wtitle">Hey!</div>
-      <div class="wsub" id="wsub">Say <b style="color:var(--accent)">"Yo ARIA"</b> or type below. I grow smarter every conversation.</div>
+      <div class="wtitle" id="wtitle">नमस्ते! / Hey!</div>
+      <div class="wsub" id="wsub">Say <b style="color:var(--accent)">"Yo ARIA"</b> or type below.<br>नेपालीमा पनि कुरा गर्न सकिन्छ!</div>
       <div class="qtips">
-        <div class="qtip" onclick="sq('Give me my daily briefing')">☀️ Daily briefing</div>
-        <div class="qtip" onclick="sq('What have you learned about me so far?')">🧬 What do you know about me?</div>
-        <div class="qtip" onclick="sq('What happened in markets today?')">📈 Market update</div>
-        <div class="qtip" onclick="sq('Based on everything you know about me, what should I focus on this week?')">🎯 What should I focus on?</div>
+        <div class="qtip" onclick="sq('मलाई आजको मौसम बताउनुहोस्')">🌤 आजको मौसम / Today's weather</div>
+        <div class="qtip" onclick="sq('आजको बजार कस्तो छ?')">📈 बजार अपडेट / Market update</div>
+        <div class="qtip" onclick="sq('आजको समाचार के छ?')">📰 समाचार / Today's news</div>
+        <div class="qtip" onclick="sq('तिमीले मेरो बारेमा के थाहा छ?')">🧬 What do you know about me?</div>
       </div>
     </div>
   </div>
 
   <!-- PROFILE -->
   <div class="view" id="profileView">
-    <div class="profile-header">🧬 Your Profile</div>
-    <p style="font-size:12px;color:var(--muted);line-height:1.6">ARIA builds this from every conversation. It grows smarter over time.</p>
-    <div class="profile-card" id="profile-stats">
+    <div class="profile-header">🧬 Your Profile / तपाईंको प्रोफाइल</div>
+    <p style="font-size:12px;color:var(--muted);line-height:1.6">ARIA builds this from every conversation forever.</p>
+    <div class="profile-card">
       <div class="profile-section">Stats</div>
       <div class="profile-stat"><span>Total conversations</span><span class="profile-stat-val" id="stat-convos">0</span></div>
       <div class="profile-stat"><span>Total messages</span><span class="profile-stat-val" id="stat-msgs">0</span></div>
-      <div class="profile-stat"><span>Profile last updated</span><span class="profile-stat-val" id="stat-updated">never</span></div>
+      <div class="profile-stat"><span>Profile updated</span><span class="profile-stat-val" id="stat-updated">never</span></div>
     </div>
     <div class="profile-card">
-      <div class="profile-section">What ARIA knows about you</div>
-      <div class="profile-text" id="profile-text" style="color:var(--muted)">Loading your profile...</div>
+      <div class="profile-section">What ARIA knows about you / ARIA ले तपाईंको बारेमा के थाहा छ</div>
+      <div class="profile-text" id="profile-text" style="color:var(--muted)">Loading profile...</div>
     </div>
-    <button class="refresh-profile-btn" onclick="rebuildProfile()">🔄 Rebuild profile from all history</button>
+    <button class="refresh-profile-btn" onclick="rebuildProfile()">🔄 Rebuild from all history</button>
   </div>
 
   <!-- FINANCE -->
   <div class="view" id="financeView">
-    <div class="fin-header">📈 Market Watchlist</div>
-    <div class="market-summary" id="market-summary" style="display:none">
-      <div class="market-summary-title">📊 Market Overview</div>
-      <div id="market-summary-text" style="font-size:13px;color:var(--muted2);line-height:1.6"></div>
+    <div class="fin-header">📈 Market Watchlist / बजार</div>
+    <div class="market-overview" id="market-overview">
+      <div class="mo-title">📊 Live Prices / लाइभ मूल्य</div>
+      <div class="mo-grid" id="mo-grid">
+        <div class="mo-item"><div class="mo-name">Bitcoin</div><div class="mo-price" id="p-btc">Loading...</div><div class="mo-change" id="c-btc"></div></div>
+        <div class="mo-item"><div class="mo-name">Ethereum</div><div class="mo-price" id="p-eth">Loading...</div><div class="mo-change" id="c-eth"></div></div>
+        <div class="mo-item"><div class="mo-name">S&P 500</div><div class="mo-price" id="p-sp">Loading...</div><div class="mo-change" id="c-sp"></div></div>
+        <div class="mo-item"><div class="mo-name">Gold</div><div class="mo-price" id="p-gold">Loading...</div><div class="mo-change" id="c-gold"></div></div>
+      </div>
     </div>
-    <p style="font-size:12px;color:var(--muted);line-height:1.6">Live news analysis → Buy / Hold / Avoid verdict.</p>
+    <p style="font-size:12px;color:var(--muted);line-height:1.6">AI analysis → Buy / Hold / Avoid verdict.</p>
     <div class="add-asset">
       <input id="assetInput" placeholder="Add asset (Bitcoin, AAPL, Tesla...)" onkeydown="if(event.key==='Enter')addAsset()">
       <button class="add-btn" onclick="addAsset()">Add</button>
     </div>
     <div class="watchlist" id="watchlist"></div>
-    <button class="refresh-btn" onclick="analyzeAll()">🔄 Refresh all</button>
-    <div class="fin-disclaimer">⚠️ AI analysis only — not regulated financial advice.</div>
+    <button class="refresh-btn" onclick="refreshMarkets()">🔄 Refresh all</button>
+    <div class="fin-disclaimer">⚠️ AI analysis only — not regulated financial advice. / केवल AI विश्लेषण — वित्तीय सल्लाह होइन।</div>
   </div>
 
   <!-- NEWS -->
@@ -339,6 +362,7 @@ body{display:flex;flex-direction:column}
       <div class="ntab" onclick="loadNews('technology',this)">💻 Tech</div>
       <div class="ntab" onclick="loadNews('sports',this)">⚽ Sports</div>
       <div class="ntab" onclick="loadNews('health',this)">🏥 Health</div>
+      <div class="ntab" onclick="loadNepalNews(this)">🇳🇵 Nepal</div>
     </div>
     <div id="newsList" style="display:flex;flex-direction:column;gap:10px;padding-top:4px;padding-bottom:8px"></div>
   </div>
@@ -357,11 +381,11 @@ body{display:flex;flex-direction:column}
       <div class="chip" id="micchip" onclick="toggleMic()">🎤 Voice</div>
       <div class="chip" onclick="trigCam()">📷 Camera</div>
       <div class="chip" onclick="detectEmotion()">😊 Mood</div>
-      <div class="chip" onclick="getLocation()">📍 Location</div>
+      <div class="chip" onclick="fetchWeather()">🌤 Weather</div>
       <div class="chip" onclick="showBriefing()">☀️ Briefing</div>
     </div>
     <div class="irow">
-      <textarea id="tinput" placeholder="Message ARIA..." rows="1" oninput="resize(this)" onkeydown="onKey(event)"></textarea>
+      <textarea id="tinput" placeholder="Message ARIA... / ARIA लाई सन्देश..." rows="1" oninput="resize(this)" onkeydown="onKey(event)"></textarea>
       <button class="sbtn" id="sbtn" onclick="send()">➤</button>
     </div>
   </div>
@@ -369,18 +393,18 @@ body{display:flex;flex-direction:column}
 
 <!-- MEMORY PANEL -->
 <div class="panel" id="mpanel">
-  <div class="ph"><div class="ptitle">🧠 Memory</div><div class="pclose" onclick="closePanel('mpanel')">✕</div></div>
-  <p class="psub">Permanent facts ARIA always knows.</p>
+  <div class="ph"><div class="ptitle">🧠 Memory / सम्झना</div><div class="pclose" onclick="closePanel('mpanel')">✕</div></div>
+  <p class="psub">Permanent facts ARIA always knows about you.</p>
   <div class="mlist" id="mlist"></div>
   <div class="madd">
-    <input id="minput" placeholder="Add a fact..." onkeydown="if(event.key==='Enter')addMem()">
+    <input id="minput" placeholder="Add a fact... / तथ्य थप्नुहोस्..." onkeydown="if(event.key==='Enter')addMem()">
     <button class="msavebtn" onclick="addMem()">Save</button>
   </div>
 </div>
 
 <!-- REMINDERS PANEL -->
 <div class="panel" id="rpanel">
-  <div class="ph"><div class="ptitle">⏰ Reminders</div><div class="pclose" onclick="closePanel('rpanel')">✕</div></div>
+  <div class="ph"><div class="ptitle">⏰ Reminders / सम्झाउनुहोस्</div><div class="pclose" onclick="closePanel('rpanel')">✕</div></div>
   <p class="psub">ARIA notifies you when it's time.</p>
   <div class="rlist" id="rlist"></div>
   <div class="radd">
@@ -395,7 +419,15 @@ body{display:flex;flex-direction:column}
   <div class="ph"><div class="ptitle">⚙️ Settings</div><div class="pclose" onclick="closePanel('settings')">✕</div></div>
   <div style="flex:1;overflow-y:auto">
     <div class="setting-row">
-      <div><div class="setting-label">Personality</div><div class="setting-sub">How ARIA speaks</div></div>
+      <div><div class="setting-label">Language / भाषा</div><div class="setting-sub">ARIA's response language</div></div>
+      <select class="setting-sel" id="set-language" onchange="saveSetting('language',this.value)">
+        <option value="english">English</option>
+        <option value="nepali">नेपाली</option>
+        <option value="both">Both / दुवै</option>
+      </select>
+    </div>
+    <div class="setting-row">
+      <div><div class="setting-label">Personality</div></div>
       <select class="setting-sel" id="set-personality" onchange="saveSetting('personality',this.value)">
         <option value="friendly">Friendly</option>
         <option value="professional">Professional</option>
@@ -432,190 +464,86 @@ body{display:flex;flex-direction:column}
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-
-const ALLOWED = 'aadijha338@gmail.com';
-const fbConfig = {
-  apiKey: "AIzaSyAMKd-wZiOTdAGtQ0DRxWHXCqWSp5HcQSc",
-  authDomain: "aria-assistant-4deed.firebaseapp.com",
-  projectId: "aria-assistant-4deed",
-  storageBucket: "aria-assistant-4deed.firebasestorage.app",
-  messagingSenderId: "1029745466681",
-  appId: "1:1029745466681:web:691db430ebe2ed517adce8"
-};
-
-const fbApp = initializeApp(fbConfig);
-const auth = getAuth(fbApp);
-const db = getFirestore(fbApp);
-const provider = new GoogleAuthProvider();
-
-window._db = db;
-
-window.signInWithGoogle = async () => {
+const ALLOWED='aadijha338@gmail.com';
+const fbConfig={apiKey:"AIzaSyAMKd-wZiOTdAGtQ0DRxWHXCqWSp5HcQSc",authDomain:"aria-assistant-4deed.firebaseapp.com",projectId:"aria-assistant-4deed",storageBucket:"aria-assistant-4deed.firebasestorage.app",messagingSenderId:"1029745466681",appId:"1:1029745466681:web:691db430ebe2ed517adce8"};
+const fbApp=initializeApp(fbConfig);
+const auth=getAuth(fbApp);
+const db=getFirestore(fbApp);
+const provider=new GoogleAuthProvider();
+window._db=db;
+window.signInWithGoogle=async()=>{
   document.getElementById('login-err').classList.remove('show');
-  try {
-    const r = await signInWithPopup(auth, provider);
-    if(r.user.email !== ALLOWED){ await fbSignOut(auth); document.getElementById('login-err').classList.add('show'); }
-  } catch(e){ if(e.code!=='auth/popup-closed-by-user'){ document.getElementById('login-err').textContent='Error: '+e.message; document.getElementById('login-err').classList.add('show'); } }
+  try{const r=await signInWithPopup(auth,provider);if(r.user.email!==ALLOWED){await fbSignOut(auth);document.getElementById('login-err').classList.add('show');}}
+  catch(e){if(e.code!=='auth/popup-closed-by-user'){document.getElementById('login-err').textContent='Error: '+e.message;document.getElementById('login-err').classList.add('show');}}
 };
-window.signOut = async () => { if(window.saveCurrentSession) await window.saveCurrentSession(); await fbSignOut(auth); location.reload(); };
-
-// ── SAVE SESSION ─────────────────────────────────────────
-window.saveSession = async (msgs, summary) => {
-  if(!msgs||!msgs.length) return;
-  try {
-    const clean = msgs.map(m=>({role:m.role, content:typeof m.content==='string'?m.content:'[image]'}));
-    await addDoc(collection(db,'chats'), { msgs:clean, summary:summary||'', ts:Date.now(), msgCount:clean.length });
-  } catch(e){}
+window.signOut=async()=>{if(window.saveCurrentSession)await window.saveCurrentSession();await fbSignOut(auth);location.reload();};
+window.saveSession=async(msgs,summary)=>{
+  if(!msgs||!msgs.length)return;
+  try{const clean=msgs.map(m=>({role:m.role,content:typeof m.content==='string'?m.content:'[image]'}));
+  await addDoc(collection(db,'chats'),{msgs:clean,summary:summary||'',ts:Date.now(),msgCount:clean.length});}catch(e){}
 };
-
-// ── LOAD PROFILE ─────────────────────────────────────────
-window.loadProfile = async () => {
-  try {
-    const ref = doc(db, 'profile', 'main');
-    const snap = await getDoc(ref);
-    if(snap.exists()){
-      const data = snap.data();
-      window.userProfile = data.profile || '';
-      window.profileUpdatedAt = data.updatedAt || 0;
-      window.totalConvos = data.totalConvos || 0;
-      window.totalMsgs = data.totalMsgs || 0;
-      renderProfileView();
-      return data.profile || '';
-    }
-  } catch(e){}
-  return '';
+window.loadProfile=async()=>{
+  try{const snap=await getDoc(doc(db,'profile','main'));
+  if(snap.exists()){const d=snap.data();window.userProfile=d.profile||'';window.profileUpdatedAt=d.updatedAt||0;window.totalConvos=d.totalConvos||0;window.totalMsgs=d.totalMsgs||0;renderProfileView();return d.profile||'';}}catch(e){}return '';
 };
-
-// ── SAVE PROFILE ─────────────────────────────────────────
-window.saveProfile = async (profileText, convos, msgs) => {
-  try {
-    await setDoc(doc(db,'profile','main'), {
-      profile: profileText,
-      updatedAt: Date.now(),
-      totalConvos: convos,
-      totalMsgs: msgs
-    });
-  } catch(e){}
+window.saveProfile=async(profileText,convos,msgs)=>{
+  try{await setDoc(doc(db,'profile','main'),{profile:profileText,updatedAt:Date.now(),totalConvos:convos,totalMsgs:msgs});}catch(e){}
 };
-
-// ── UPDATE PROFILE after each session ────────────────────
-window.updateProfileFromSession = async (sessionMsgs) => {
-  if(!sessionMsgs||!sessionMsgs.length) return;
-  const existing = window.userProfile || 'No profile yet.';
-  const convoText = sessionMsgs.filter(m=>typeof m.content==='string').map(m=>m.role+': '+m.content).join('\n');
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':window._ariaKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body: JSON.stringify({
-        model:'claude-haiku-4-5-20251001',
-        max_tokens:800,
-        messages:[{role:'user',content:`You maintain a growing profile of a user named ${window.userName} based on their conversations with their AI assistant ARIA.
-
-EXISTING PROFILE:
-${existing}
-
-NEW CONVERSATION TO LEARN FROM:
-${convoText}
-
-Update the profile by merging new information. Extract: goals, interests, personality traits, life events, habits, preferences, financial interests, relationships, problems they're solving. 
-
-Write the updated profile as bullet points grouped by category. Be specific and personal. Max 600 words. Do not repeat existing info — merge and update it.`}]
-      })
-    });
-    const data = await res.json();
-    const newProfile = data.content?.[0]?.text || existing;
-    window.userProfile = newProfile;
-    window.totalConvos = (window.totalConvos||0) + 1;
-    window.totalMsgs = (window.totalMsgs||0) + sessionMsgs.length;
-    await window.saveProfile(newProfile, window.totalConvos, window.totalMsgs);
-    renderProfileView();
-  } catch(e){}
+window.updateProfileFromSession=async(sessionMsgs)=>{
+  if(!sessionMsgs||!sessionMsgs.length)return;
+  const existing=window.userProfile||'No profile yet.';
+  const convoText=sessionMsgs.filter(m=>typeof m.content==='string').map(m=>m.role+': '+m.content).join('\n');
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':window._ariaKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:800,messages:[{role:'user',content:`You maintain a growing profile of a user named ${window.userName}. 
+EXISTING PROFILE:\n${existing}\nNEW CONVERSATION:\n${convoText}
+Update the profile merging new info. Extract: goals, interests, personality, life events, habits, preferences, financial interests, language preference (do they speak Nepali?), relationships, problems. Write as bullet points by category. Max 600 words. Don't repeat existing info.`}]})});
+    const data=await res.json();const newProfile=data.content?.[0]?.text||existing;
+    window.userProfile=newProfile;window.totalConvos=(window.totalConvos||0)+1;window.totalMsgs=(window.totalMsgs||0)+sessionMsgs.length;
+    await window.saveProfile(newProfile,window.totalConvos,window.totalMsgs);renderProfileView();
+  }catch(e){}
 };
-
-// ── REBUILD PROFILE from ALL history ─────────────────────
-window.rebuildProfile = async () => {
-  document.getElementById('profile-text').textContent = 'Rebuilding from all conversations... this may take a moment.';
-  try {
-    const q = query(collection(db,'chats'), orderBy('ts','asc'));
-    const snap = await getDocs(q);
-    const allMsgs = [];
-    snap.docs.forEach(d => {
-      const data = d.data();
-      if(data.msgs) allMsgs.push(...data.msgs.filter(m=>typeof m.content==='string'));
-    });
-    if(!allMsgs.length){ document.getElementById('profile-text').textContent = 'No conversations yet.'; return; }
-    // Process in chunks if large
-    const chunk = allMsgs.slice(-100); // use last 100 msgs max
-    const convoText = chunk.map(m=>m.role+': '+m.content).join('\n');
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':window._ariaKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body: JSON.stringify({
-        model:'claude-haiku-4-5-20251001',
-        max_tokens:800,
-        messages:[{role:'user',content:`Build a comprehensive profile of ${window.userName} based on ALL their conversations with ARIA. Extract everything meaningful: goals, interests, personality, life events, habits, preferences, financial interests, relationships, recurring topics.
-
-CONVERSATIONS:
-${convoText}
-
-Write as detailed bullet points by category. Be specific. Max 700 words.`}]
-      })
-    });
-    const data = await res.json();
-    const profile = data.content?.[0]?.text || 'Could not build profile.';
-    window.userProfile = profile;
-    window.totalConvos = snap.docs.length;
-    await window.saveProfile(profile, snap.docs.length, allMsgs.length);
-    renderProfileView();
-    addSys('🧬 Profile rebuilt from '+snap.docs.length+' conversations!');
-  } catch(e){ document.getElementById('profile-text').textContent = 'Error rebuilding. Check connection.'; }
+window.rebuildProfile=async()=>{
+  document.getElementById('profile-text').textContent='Rebuilding... / पुनर्निर्माण गर्दैछु...';
+  try{
+    const q=query(collection(db,'chats'),orderBy('ts','asc'));
+    const snap=await getDocs(q);
+    const allMsgs=[];
+    snap.docs.forEach(d=>{const data=d.data();if(data.msgs)allMsgs.push(...data.msgs.filter(m=>typeof m.content==='string'));});
+    if(!allMsgs.length){document.getElementById('profile-text').textContent='No conversations yet.';return;}
+    const chunk=allMsgs.slice(-100);
+    const convoText=chunk.map(m=>m.role+': '+m.content).join('\n');
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':window._ariaKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:800,messages:[{role:'user',content:`Build a comprehensive profile of ${window.userName} from ALL conversations. Extract: goals, interests, personality, life events, habits, preferences, language, financial interests, relationships. Write as bullet points by category. Max 700 words.\n\nCONVERSATIONS:\n${convoText}`}]})});
+    const data=await res.json();const profile=data.content?.[0]?.text||'Could not build.';
+    window.userProfile=profile;window.totalConvos=snap.docs.length;
+    await window.saveProfile(profile,snap.docs.length,allMsgs.length);
+    renderProfileView();addSys('🧬 Profile rebuilt from '+snap.docs.length+' conversations!');
+  }catch(e){document.getElementById('profile-text').textContent='Error. Check connection.';}
 };
-
-// ── LOAD HISTORY ─────────────────────────────────────────
-window.loadHistory = async () => {
-  try {
-    const q = query(collection(db,'chats'), orderBy('ts','desc'), limit(100));
-    const snap = await getDocs(q);
-    renderHistory(snap.docs.map(d=>({id:d.id,...d.data()})));
-  } catch(e){}
+window.loadHistory=async()=>{
+  try{const q=query(collection(db,'chats'),orderBy('ts','desc'),limit(100));const snap=await getDocs(q);renderHistory(snap.docs.map(d=>({id:d.id,...d.data()})));}catch(e){}
 };
-
-window.deleteSession = async (id) => {
-  try { await deleteDoc(doc(db,'chats',id)); loadHistory(); } catch(e){}
+window.deleteSession=async(id)=>{try{await deleteDoc(doc(db,'chats',id));loadHistory();}catch(e){}};
+window.clearAllHistory=async()=>{
+  if(!confirm('Delete ALL chat history and profile?'))return;
+  try{const q=query(collection(db,'chats'),orderBy('ts','desc'),limit(200));const snap=await getDocs(q);
+  for(const d of snap.docs)await deleteDoc(doc(db,'chats',d.id));
+  await setDoc(doc(db,'profile','main'),{profile:'',updatedAt:0,totalConvos:0,totalMsgs:0});
+  window.userProfile='';loadHistory();renderProfileView();}catch(e){}
 };
-
-window.clearAllHistory = async () => {
-  if(!confirm('Delete ALL chat history and profile? Cannot be undone.')) return;
-  try {
-    const q = query(collection(db,'chats'), orderBy('ts','desc'), limit(200));
-    const snap = await getDocs(q);
-    for(const d of snap.docs) await deleteDoc(doc(db,'chats',d.id));
-    await setDoc(doc(db,'profile','main'),{profile:'',updatedAt:0,totalConvos:0,totalMsgs:0});
-    window.userProfile=''; loadHistory(); renderProfileView();
-  } catch(e){}
+window.loadRecentContext=async()=>{
+  try{const q=query(collection(db,'chats'),orderBy('ts','desc'),limit(3));const snap=await getDocs(q);
+  const recent=snap.docs.map(d=>d.data()).reverse();const last=recent[recent.length-1];
+  window.recentHistory=last?.msgs?.slice(-4)||[];}catch(e){window.recentHistory=[];}
 };
-
-// ── LOAD RECENT CONTEXT for chat continuity ───────────────
-window.loadRecentContext = async () => {
-  try {
-    const q = query(collection(db,'chats'), orderBy('ts','desc'), limit(3));
-    const snap = await getDocs(q);
-    const recent = snap.docs.map(d=>d.data()).reverse();
-    const lastSession = recent[recent.length-1];
-    window.recentHistory = lastSession?.msgs?.slice(-4)||[];
-  } catch(e){ window.recentHistory = []; }
-};
-
-onAuthStateChanged(auth, user => {
-  if(user && user.email === ALLOWED){
+onAuthStateChanged(auth,user=>{
+  if(user&&user.email===ALLOWED){
     document.getElementById('loginScreen').classList.add('gone');
-    window.userName = user.displayName?.split(' ')[0] || 'Aaditya';
-    if(!localStorage.getItem('ak')){ document.getElementById('setupScreen').classList.remove('gone'); }
-    else { startApp(); }
-  } else if(!user){
-    document.getElementById('loginScreen').classList.remove('gone');
-  }
+    window.userName=user.displayName?.split(' ')[0]||'Aaditya';
+    if(!localStorage.getItem('ak')){document.getElementById('setupScreen').classList.remove('gone');}
+    else{startApp();}
+  }else if(!user){document.getElementById('loginScreen').classList.remove('gone');}
 });
 </script>
 
@@ -627,7 +555,7 @@ let key='',newsKey='',history=[],imgB64=null;
 let recog=null,isRec=false,busy=false;
 let wakeRecog=null,wakeActive=false;
 let userLat=null,userLon=null,userCity='';
-let sessionSaved=false;
+let weatherData=null;
 window.userName='Aaditya';
 window.userProfile='';
 window.recentHistory=[];
@@ -645,35 +573,43 @@ function toggleEye(){const i=document.getElementById('skey');i.type=i.type==='pa
 function finishSetup(){
   const k=document.getElementById('skey').value.trim();
   if(!k){alert('Please enter your API key');return;}
-  S.set('ak',k); S.set('newskey',document.getElementById('snewskey').value.trim());
+  S.set('ak',k);S.set('newskey',document.getElementById('snewskey').value.trim());
+  S.set('language',document.getElementById('slanguage').value);
   S.set('personality',document.getElementById('spersonality').value);
   S.set('voicespeed',document.getElementById('svoicespeed').value);
   const b=document.getElementById('sbio').value.trim();
   const mems=S.json('mems',[]);
-  if(window.userName&&!mems.find(m=>m.t.includes('name'))) mems.unshift({id:Date.now(),t:'My name is '+window.userName});
-  if(b) mems.push({id:Date.now()+1,t:b});
+  if(window.userName&&!mems.find(m=>m.t.includes('name')))mems.unshift({id:Date.now(),t:'My name is '+window.userName});
+  if(b)mems.push({id:Date.now()+1,t:b});
   S.set('mems',mems);
   document.getElementById('setupScreen').classList.add('gone');
   startApp();
 }
-function saveSetting(k,v){ S.set(k,v); if(k==='newskey') newsKey=v; }
+function saveSetting(k,v){S.set(k,v);if(k==='newskey')newsKey=v;}
 
 async function startApp(){
-  key=S.get('ak'); newsKey=S.get('newskey');
+  key=S.get('ak');newsKey=S.get('newskey');
   window._ariaKey=key;
   document.getElementById('app').classList.add('on');
-  document.getElementById('wtitle').textContent='Hey, '+window.userName+'!';
+  // Set language welcome
+  const lang=S.get('language','english');
+  if(lang==='nepali'){
+    document.getElementById('wtitle').textContent='नमस्ते, '+window.userName+'!';
+    document.getElementById('wsub').textContent='"Yo ARIA" भन्नुहोस् वा तल टाइप गर्नुहोस्। म सबै कुरा सम्झन्छु।';
+  }else{
+    document.getElementById('wtitle').textContent='Hey, '+window.userName+'!';
+    document.getElementById('wsub').textContent='Say "Yo ARIA" or type below. I remember everything forever.';
+  }
+  document.getElementById('set-language').value=S.get('language','english');
   document.getElementById('set-personality').value=S.get('personality','friendly');
   document.getElementById('set-speed').value=S.get('voicespeed','0.95');
   document.getElementById('set-newskey').value=newsKey;
-  renderMems(); renderReminders();
+  renderMems();renderReminders();
   setInterval(checkReminders,30000);
   silentLocation();
-  if('Notification'in window&&Notification.permission==='default') Notification.requestPermission();
-  // Load lifetime profile and recent context
+  if('Notification'in window&&Notification.permission==='default')Notification.requestPermission();
   setSt('loading memory...');
-  await Promise.all([window.loadProfile(), window.loadRecentContext()]);
-  // Pre-load recent messages for continuity
+  await Promise.all([window.loadProfile(),window.loadRecentContext()]);
   if(window.recentHistory&&window.recentHistory.length){
     history=window.recentHistory;
     addSys('🧬 Memory loaded — I remember everything.');
@@ -683,7 +619,16 @@ async function startApp(){
   loadHistory();
   loadNews('general',document.querySelector('.ntab'));
   renderWatchlist();
-  loadMarketSummary();
+  loadLivePrices();
+  setInterval(loadLivePrices,60000); // refresh prices every minute
+}
+
+// ── LANGUAGE ──────────────────────────────────────────────
+function getLangPrompt(){
+  const l=S.get('language','english');
+  if(l==='nepali') return 'IMPORTANT: Always respond in Nepali (नेपाली भाषामा जवाफ दिनुहोस्). Use Devanagari script. Be natural and conversational in Nepali.';
+  if(l==='both') return 'Respond in both English and Nepali. First answer in English, then translate key points to Nepali (नेपाली).';
+  return '';
 }
 
 // ── TABS ──────────────────────────────────────────────────
@@ -693,13 +638,11 @@ function switchTab(name){
   const tabs=['chat','profile','finance','news','history'];
   document.querySelectorAll('.tab')[tabs.indexOf(name)].classList.add('active');
   document.getElementById(name+'View').classList.add('active');
-  if(name==='history') loadHistory();
-  if(name==='profile') renderProfileView();
+  if(name==='history')loadHistory();
+  if(name==='profile')renderProfileView();
 }
-
 function renderProfileView(){
-  const profile=window.userProfile;
-  document.getElementById('profile-text').textContent=profile||'No profile yet. Chat with ARIA and it will build over time!';
+  document.getElementById('profile-text').textContent=window.userProfile||'No profile yet. Chat with ARIA and it will build over time!';
   document.getElementById('stat-convos').textContent=window.totalConvos||0;
   document.getElementById('stat-msgs').textContent=window.totalMsgs||0;
   document.getElementById('stat-updated').textContent=window.profileUpdatedAt?new Date(window.profileUpdatedAt).toLocaleDateString():'never';
@@ -707,30 +650,442 @@ function renderProfileView(){
 
 // ── PERSONALITY ───────────────────────────────────────────
 function getPersonality(){
-  return {friendly:"Be warm and casual.",professional:"Be professional and precise.",motivating:"Be energetic and uplifting.",blunt:"Be direct. No fluff.",mentor:"Be wise like a mentor."}[S.get('personality','friendly')]||"Be warm and helpful.";
+  return {friendly:'Be warm and casual.',professional:'Be professional and precise.',motivating:'Be energetic and uplifting.',blunt:'Be direct. No fluff.',mentor:'Be wise like a mentor.'}[S.get('personality','friendly')]||'Be warm and helpful.';
+}
+function profileCtx(){return window.userProfile?'\n\n=== LIFETIME PROFILE ===\n'+window.userProfile+'\n=== END ===':'';}
+
+// ── LIVE WEATHER ──────────────────────────────────────────
+async function fetchWeather(){
+  const card=document.getElementById('weatherCard');
+  card.classList.add('show');
+  document.getElementById('w-desc').textContent='Getting location...';
+  if(!navigator.geolocation){document.getElementById('w-desc').textContent='Location not supported';return;}
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    userLat=pos.coords.latitude;userLon=pos.coords.longitude;
+    try{
+      // Open-Meteo — completely free, no API key needed
+      const url=`https://api.open-meteo.com/v1/forecast?latitude=${userLat}&longitude=${userLon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&timezone=auto`;
+      const r=await fetch(url);const d=await r.json();
+      const temp=Math.round(d.current.temperature_2m);
+      const code=d.current.weather_code;
+      const humidity=d.current.relative_humidity_2m;
+      const wind=Math.round(d.current.wind_speed_10m);
+      // Get city name
+      const geo=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${userLat}&lon=${userLon}&format=json`);
+      const geoData=await geo.json();
+      userCity=geoData.address?.city||geoData.address?.town||geoData.address?.village||'Your location';
+      S.set('city',userCity);
+      const icon=weatherIcon(code);
+      const desc=weatherDesc(code);
+      document.getElementById('w-icon').textContent=icon;
+      document.getElementById('w-temp').textContent=temp+'°C';
+      document.getElementById('w-desc').textContent=desc+' • '+humidity+'% humidity • '+wind+' km/h wind';
+      document.getElementById('w-loc').textContent='📍 '+userCity;
+      weatherData={temp,desc,humidity,wind,city:userCity,icon};
+      setSt('ready');
+    }catch(e){document.getElementById('w-desc').textContent='Could not load weather';}
+  },()=>{document.getElementById('w-desc').textContent='Location permission denied';},{timeout:10000});
 }
 
-// ── PROFILE CONTEXT ───────────────────────────────────────
-function profileCtx(){
-  if(!window.userProfile) return '';
-  return '\n\n=== LIFETIME PROFILE (built from all past conversations) ===\n'+window.userProfile+'\n=== END PROFILE ===';
+function weatherIcon(code){
+  if(code===0)return '☀️';
+  if(code<=2)return '⛅';
+  if(code<=3)return '☁️';
+  if(code<=48)return '🌫️';
+  if(code<=57)return '🌧️';
+  if(code<=67)return '🌧️';
+  if(code<=77)return '❄️';
+  if(code<=82)return '🌦️';
+  if(code<=86)return '🌨️';
+  if(code<=99)return '⛈️';
+  return '🌤️';
 }
+function weatherDesc(code){
+  if(code===0)return 'Clear sky';
+  if(code<=2)return 'Partly cloudy';
+  if(code<=3)return 'Overcast';
+  if(code<=48)return 'Foggy';
+  if(code<=57)return 'Drizzle';
+  if(code<=67)return 'Rainy';
+  if(code<=77)return 'Snowy';
+  if(code<=82)return 'Rain showers';
+  if(code<=86)return 'Snow showers';
+  if(code<=99)return 'Thunderstorm';
+  return 'Unknown';
+}
+function weatherCtx(){
+  if(!weatherData)return '';
+  return `\n\nCurrent weather in ${weatherData.city}: ${weatherData.temp}°C, ${weatherData.desc}, ${weatherData.humidity}% humidity, ${weatherData.wind} km/h wind.`;
+}
+
+function silentLocation(){
+  if(!navigator.geolocation)return;
+  navigator.geolocation.getCurrentPosition(pos=>{
+    userLat=pos.coords.latitude;userLon=pos.coords.longitude;
+    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${userLat}&lon=${userLon}&format=json`)
+      .then(r=>r.json()).then(d=>{userCity=d.address?.city||d.address?.town||'your area';S.set('city',userCity);}).catch(()=>{});
+  },()=>{},{timeout:8000,maximumAge:300000});
+}
+function getLocation(){fetchWeather();}
+function locCtx(){if(userLat&&userLon)return `\n\nUser location: ${userCity||'unknown'} (${userLat.toFixed(4)}, ${userLon.toFixed(4)}).`;const c=S.get('city');return c?`\n\nUser location: ${c}.`:'';}
+
+// ── LIVE PRICES (CoinGecko — free, no key) ───────────────
+async function loadLivePrices(){
+  try{
+    // Crypto prices — CoinGecko free API
+    const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true');
+    const d=await r.json();
+    if(d.bitcoin){
+      document.getElementById('p-btc').textContent='$'+d.bitcoin.usd.toLocaleString();
+      const btcChange=d.bitcoin.usd_24h_change?.toFixed(2);
+      const btcEl=document.getElementById('c-btc');
+      btcEl.textContent=(btcChange>0?'▲':'▼')+Math.abs(btcChange)+'%';
+      btcEl.className='mo-change '+(btcChange>0?'pos':'neg');
+    }
+    if(d.ethereum){
+      document.getElementById('p-eth').textContent='$'+d.ethereum.usd.toLocaleString();
+      const ethChange=d.ethereum.usd_24h_change?.toFixed(2);
+      const ethEl=document.getElementById('c-eth');
+      ethEl.textContent=(ethChange>0?'▲':'▼')+Math.abs(ethChange)+'%';
+      ethEl.className='mo-change '+(ethChange>0?'pos':'neg');
+    }
+  }catch(e){}
+  try{
+    // Gold price via metals API (free)
+    const r2=await fetch('https://api.metals.live/v1/spot/gold');
+    const d2=await r2.json();
+    if(d2&&d2[0]?.gold){document.getElementById('p-gold').textContent='$'+Math.round(d2[0].gold)+'/oz';}
+  }catch(e){document.getElementById('p-gold').textContent='N/A';}
+  // S&P via Yahoo Finance RSS proxy
+  try{
+    const rssUrl='https://feeds.finance.yahoo.com/rss/2.0/headline?s=^GSPC&region=US&lang=en-US';
+    const r3=await fetch(PROXY+encodeURIComponent(rssUrl));
+    const d3=await r3.json();
+    const xml=new DOMParser().parseFromString(d3.contents,'text/xml');
+    const title=xml.querySelector('item title')?.textContent||'';
+    const match=title.match(/[\d,]+\.\d+/);
+    if(match)document.getElementById('p-sp').textContent=match[0];
+    else document.getElementById('p-sp').textContent='See Yahoo';
+  }catch(e){document.getElementById('p-sp').textContent='N/A';}
+}
+
+// ── FINANCE ───────────────────────────────────────────────
+async function fetchMarketNews(asset){
+  const rssUrl=`https://feeds.finance.yahoo.com/rss/2.0/headline?s=${encodeURIComponent(asset)}&region=US&lang=en-US`;
+  try{
+    const r=await fetch(PROXY+encodeURIComponent(rssUrl));
+    const d=await r.json();
+    const xml=new DOMParser().parseFromString(d.contents,'text/xml');
+    return Array.from(xml.querySelectorAll('item')).slice(0,5).map(i=>i.querySelector('title')?.textContent||'').filter(Boolean);
+  }catch(e){
+    if(newsKey){try{const r2=await fetch(`https://newsapi.org/v2/everything?q=${encodeURIComponent(asset)}&sortBy=publishedAt&pageSize=5&apiKey=${newsKey}`);const d2=await r2.json();return(d2.articles||[]).map(a=>a.title).filter(Boolean);}catch(e2){}}
+    return [];
+  }
+}
+function getWatchlist(){return S.json('watchlist',[]);}
+function addAsset(){
+  const inp=document.getElementById('assetInput');const name=inp.value.trim();if(!name)return;
+  const w=getWatchlist();
+  if(w.find(a=>a.name.toLowerCase()===name.toLowerCase())){inp.value='';return;}
+  w.push({name,verdict:'analyzing',reasoning:'Fetching live data...',headlines:[],price:''});
+  S.set('watchlist',w);inp.value='';renderWatchlist();analyzeAsset(name);
+}
+function removeAsset(name){S.set('watchlist',getWatchlist().filter(a=>a.name!==name));renderWatchlist();}
+function renderWatchlist(){
+  const el=document.getElementById('watchlist');const w=getWatchlist();
+  el.innerHTML=w.length?w.map(a=>`
+    <div class="asset-card">
+      <div class="asset-top">
+        <div><span class="asset-name">${esc(a.name)}</span>${a.price?'<div class="asset-price">'+esc(a.price)+'</div>':''}</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="asset-verdict ${a.verdict}">${a.verdict.toUpperCase()}</span>
+          <span style="color:var(--muted);cursor:pointer;font-size:16px" onclick="removeAsset('${esc(a.name)}')">✕</span>
+        </div>
+      </div>
+      <div class="asset-reasoning">${esc(a.reasoning)}</div>
+      ${a.headlines?.length?'<div class="asset-headlines">📰 '+a.headlines.slice(0,2).map(h=>esc(h)).join('<br>📰 ')+'</div>':''}
+    </div>`).join(''):'<p style="font-size:13px;color:var(--muted);padding:8px 0">Add assets above. / माथि असेट थप्नुहोस्।</p>';
+}
+async function analyzeAsset(name){
+  // Try to get live price first
+  try{
+    const slug=name.toLowerCase().replace(/ /g,'-');
+    const r=await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${slug}&vs_currencies=usd&include_24hr_change=true`);
+    const d=await r.json();
+    if(d[slug]?.usd){
+      const w=getWatchlist();const idx=w.findIndex(a=>a.name===name);
+      if(idx>=0){w[idx].price='$'+d[slug].usd.toLocaleString()+(d[slug].usd_24h_change?' ('+(d[slug].usd_24h_change>0?'+':'')+d[slug].usd_24h_change.toFixed(2)+'%)':'');S.set('watchlist',w);}
+    }
+  }catch(e){}
+  const headlines=await fetchMarketNews(name);
+  const w=getWatchlist();const idx=w.findIndex(a=>a.name===name);if(idx<0)return;
+  try{
+    const lang=S.get('language','english');
+    const langNote=lang==='nepali'?'Reply in Nepali (नेपाली)':'';
+    const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:MDL,max_tokens:200,messages:[{role:'user',content:`Financial analyst: analyze "${name}". ${langNote}
+${headlines.length?'Live headlines:\n'+headlines.join('\n'):'Use general knowledge.'}
+Reply EXACTLY:
+VERDICT: [BUY or HOLD or AVOID]
+REASONING: [2 sentences]`}]})});
+    const data=await res.json();const txt=data.content?.[0]?.text||'';
+    const vm=txt.match(/VERDICT:\s*(BUY|HOLD|AVOID)/i);const rm=txt.match(/REASONING:\s*(.+)/is);
+    w[idx].verdict=(vm?.[1]||'hold').toLowerCase();w[idx].reasoning=rm?.[1]?.trim()||'Analysis unavailable.';w[idx].headlines=headlines.slice(0,2);
+  }catch(e){w[idx].verdict='hold';w[idx].reasoning='Analysis failed.';}
+  S.set('watchlist',w);renderWatchlist();
+}
+function refreshMarkets(){
+  const w=getWatchlist();w.forEach(a=>{a.verdict='analyzing';a.reasoning='Refreshing...';a.headlines=[];a.price='';});
+  S.set('watchlist',w);renderWatchlist();w.forEach(a=>analyzeAsset(a.name));loadLivePrices();
+}
+
+// ── LIVE NEWS ─────────────────────────────────────────────
+async function loadNews(category,el){
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');
+  const list=document.getElementById('newsList');
+  list.innerHTML='<p style="font-size:13px;color:var(--muted);padding:16px 0">Loading...</p>';
+  if(!newsKey){list.innerHTML='<p style="font-size:13px;color:var(--muted);padding:16px 0;line-height:1.6">Add NewsAPI key in ⚙️ Settings.<br>Get free at <b style="color:var(--accent)">newsapi.org</b></p>';return;}
+  try{
+    const r=await fetch(`https://newsapi.org/v2/top-headlines?category=${category}&language=en&pageSize=15&apiKey=${newsKey}`);
+    const d=await r.json();
+    if(!d.articles?.length){list.innerHTML='<p style="font-size:13px;color:var(--muted)">No articles found.</p>';return;}
+    list.innerHTML=d.articles.filter(a=>a.title&&a.title!=='[Removed]').map(a=>`
+      <div class="news-card" onclick="this.classList.toggle('expanded')">
+        <div class="news-source">${esc(a.source?.name||'News')}</div>
+        <div class="news-title">${esc(a.title)}</div>
+        <div class="news-time">${new Date(a.publishedAt).toLocaleString()}</div>
+        <div class="news-desc">${esc(a.description||'')} <span style="color:var(--accent);cursor:pointer" onclick="event.stopPropagation();sq('Tell me more about: ${esc(a.title).replace(/'/g,"\\'")}')">Ask ARIA →</span></div>
+      </div>`).join('');
+  }catch(e){list.innerHTML='<p style="font-size:13px;color:var(--muted)">Could not load. Check NewsAPI key.</p>';}
+}
+
+async function loadNepalNews(el){
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');
+  const list=document.getElementById('newsList');
+  list.innerHTML='<p style="font-size:13px;color:var(--muted);padding:16px 0">Loading Nepal news...</p>';
+  // Try multiple Nepal RSS sources via proxy
+  const nepaliSources=[
+    'https://kathmandupost.com/rss',
+    'https://myrepublica.nagariknetwork.com/rss/news.xml',
+  ];
+  try{
+    const r=await fetch(PROXY+encodeURIComponent(nepaliSources[0]));
+    const d=await r.json();
+    const xml=new DOMParser().parseFromString(d.contents,'text/xml');
+    const items=Array.from(xml.querySelectorAll('item')).slice(0,15);
+    if(!items.length)throw new Error('No items');
+    list.innerHTML=items.map(item=>{
+      const title=item.querySelector('title')?.textContent||'';
+      const desc=item.querySelector('description')?.textContent?.replace(/<[^>]*>/g,'')||'';
+      const pubDate=item.querySelector('pubDate')?.textContent||'';
+      return `<div class="news-card" onclick="this.classList.toggle('expanded')">
+        <div class="news-source">🇳🇵 Kathmandu Post</div>
+        <div class="news-title">${esc(title)}</div>
+        <div class="news-time">${pubDate?new Date(pubDate).toLocaleString():''}</div>
+        <div class="news-desc">${esc(desc.substring(0,200))} <span style="color:var(--accent);cursor:pointer" onclick="event.stopPropagation();sq('नेपाली समाचारको बारेमा बताउनुहोस्: ${esc(title).replace(/'/g,"\\'")}')">Ask ARIA →</span></div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    // Fallback: search Nepal news via NewsAPI
+    if(newsKey){
+      try{
+        const r2=await fetch(`https://newsapi.org/v2/everything?q=Nepal&language=en&sortBy=publishedAt&pageSize=15&apiKey=${newsKey}`);
+        const d2=await r2.json();
+        if(d2.articles?.length){
+          list.innerHTML=d2.articles.filter(a=>a.title&&a.title!=='[Removed]').map(a=>`
+            <div class="news-card" onclick="this.classList.toggle('expanded')">
+              <div class="news-source">🇳🇵 ${esc(a.source?.name||'Nepal News')}</div>
+              <div class="news-title">${esc(a.title)}</div>
+              <div class="news-time">${new Date(a.publishedAt).toLocaleString()}</div>
+              <div class="news-desc">${esc(a.description||'')} <span style="color:var(--accent);cursor:pointer" onclick="event.stopPropagation();sq('Tell me about this Nepal news: ${esc(a.title).replace(/'/g,"\\'")}')">Ask ARIA →</span></div>
+            </div>`).join('');
+        }else{list.innerHTML='<p style="font-size:13px;color:var(--muted)">No Nepal news found.</p>';}
+      }catch(e2){list.innerHTML='<p style="font-size:13px;color:var(--muted)">Could not load Nepal news.</p>';}
+    }else{list.innerHTML='<p style="font-size:13px;color:var(--muted);line-height:1.6">Add NewsAPI key in ⚙️ for Nepal news.<br>नेपाली समाचारका लागि NewsAPI key थप्नुहोस्।</p>';}
+  }
+}
+
+// ── HISTORY ───────────────────────────────────────────────
+function renderHistory(sessions){
+  const el=document.getElementById('historyList');
+  if(!sessions.length){el.innerHTML='<p style="font-size:13px;color:var(--muted);padding:8px 0">No history yet.</p>';return;}
+  el.innerHTML=sessions.map(s=>`
+    <div class="session-card">
+      <div style="display:flex;justify-content:space-between">
+        <div style="flex:1">
+          <div class="session-date">${new Date(s.ts).toLocaleString()}</div>
+          <div class="session-preview">${esc(s.summary||(s.msgs?.[0]?.content||'').substring(0,80)||'Chat session')}</div>
+          <div class="session-count">${s.msgs?.length||0} messages</div>
+        </div>
+        <span style="color:var(--muted);cursor:pointer;font-size:16px;padding:4px;flex-shrink:0" onclick="deleteSession('${s.id}')">✕</span>
+      </div>
+    </div>`).join('');
+}
+
+// ── MEMORY ────────────────────────────────────────────────
+function getMems(){return S.json('mems',[]);}
+function memCtx(){const m=getMems();return m.length?'\n\nPinned facts:\n'+m.map(x=>'• '+x.t).join('\n'):'';}
+function addMem(){
+  const inp=document.getElementById('minput');const t=inp.value.trim();if(!t)return;
+  const m=getMems();m.push({id:Date.now(),t});S.set('mems',m);inp.value='';renderMems();
+  addBubble('a','✓ Remembered / सम्झियो: "'+t+'"');closePanel('mpanel');
+}
+function delMem(id){S.set('mems',getMems().filter(m=>m.id!==id));renderMems();}
+function renderMems(){
+  const el=document.getElementById('mlist');const m=getMems();
+  el.innerHTML=m.length?m.map(x=>'<div class="mitem"><span class="mtext">'+esc(x.t)+'</span><span class="mdel" onclick="delMem('+x.id+')">✕</span></div>').join(''):'<p style="font-size:13px;color:var(--muted);padding:8px 0">No memories yet.</p>';
+}
+
+// ── REMINDERS ─────────────────────────────────────────────
+function getReminders(){return S.json('reminders',[]);}
+function addReminder(){
+  const txt=document.getElementById('rinput').value.trim();const time=document.getElementById('rtime').value;
+  if(!txt||!time)return;
+  const r=getReminders();r.push({id:Date.now(),txt,time,done:false});S.set('reminders',r);
+  document.getElementById('rinput').value='';renderReminders();
+  addBubble('a','⏰ Set: "'+txt+'" at '+new Date(time).toLocaleString());closePanel('rpanel');
+}
+function delReminder(id){S.set('reminders',getReminders().filter(r=>r.id!==id));renderReminders();}
+function renderReminders(){
+  const el=document.getElementById('rlist');const r=getReminders().sort((a,b)=>new Date(a.time)-new Date(b.time));
+  el.innerHTML=r.length?r.map(x=>`<div class="ritem${x.done?' done':''}"><div class="rinfo"><div class="rtext">${esc(x.txt)}</div><div class="rtime">${new Date(x.time).toLocaleString()}</div></div><span class="rdel" onclick="delReminder(${x.id})">✕</span></div>`).join(''):'<p style="font-size:13px;color:var(--muted);padding:8px 0">No reminders.</p>';
+  const dt=new Date(Date.now()+3600000);const pad=n=>String(n).padStart(2,'0');
+  document.getElementById('rtime').value=`${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+}
+function remCtx(){
+  const now=Date.now();const up=getReminders().filter(r=>!r.done&&new Date(r.time)>now&&new Date(r.time)<now+172800000);
+  return up.length?'\n\nUpcoming reminders:\n'+up.map(r=>`• "${r.txt}" at ${new Date(r.time).toLocaleString()}`).join('\n'):'';
+}
+function checkReminders(){
+  const now=Date.now();const reminders=getReminders();let changed=false;
+  reminders.forEach(r=>{if(!r.done&&Math.abs(new Date(r.time)-now)<35000){r.done=true;changed=true;addSys('⏰ '+r.txt);speak('Reminder: '+r.txt);if(Notification.permission==='granted')new Notification('ARIA',{body:r.txt});}});
+  if(changed)S.set('reminders',reminders);
+}
+
+// ── EMOTION ───────────────────────────────────────────────
+function detectEmotion(){document.getElementById('emotionfile').click();}
+async function onEmotionImg(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=async ev=>{
+    setSt('reading mood...');
+    try{
+      const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:MDL,max_tokens:50,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:ev.target.result.split(',')[1]}},{type:'text',text:'What emotion does this face show? 3 words max.'}]}]})});
+      const data=await res.json();const emotion=data.content?.[0]?.text?.trim()||'neutral';
+      const badge=document.getElementById('emotion-badge');badge.textContent='😊 '+emotion;badge.classList.add('show');
+      setTimeout(()=>badge.classList.remove('show'),5000);
+      addSys('😊 Mood: '+emotion);S.set('currentMood',emotion);setSt('ready');
+    }catch(e){setSt('ready');}
+  };
+  r.readAsDataURL(f);e.target.value='';
+}
+
+// ── BRIEFING ──────────────────────────────────────────────
+async function showBriefing(){
+  switchTab('chat');addSys('☀️ Building briefing...');
+  const mems=getMems().map(m=>m.t).join(', ');const loc=userCity||S.get('city')||'unknown';
+  const rem=remCtx();const mood=S.get('currentMood','');const weather=weatherCtx();
+  const lang=S.get('language','english');
+  const langNote=lang==='nepali'?'Reply entirely in Nepali.':lang==='both'?'Reply in both English and Nepali.':'';
+  const profile=window.userProfile?'\n\nProfile:\n'+window.userProfile.substring(0,300):'';
+  const prompt=`Personal morning briefing for ${window.userName}. ${getPersonality()} ${langNote} Include: greeting with time, ${weather?'weather update ('+weather+'),':''} motivational thought${mood?' (mood: '+mood+')':''}, ${rem?'reminders: '+rem:'focus suggestion'}, one tip. Max 5 sentences.${profile} Location: ${loc}.`;
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MDL,max_tokens:400,messages:[{role:'user',content:prompt}]})});
+    const d=await r.json();const txt=d.content?.[0]?.text||'Good morning!';
+    addBubble('a',txt);speak(txt);
+  }catch(e){addBubble('a',lang==='nepali'?'शुभप्रभात, '+window.userName+'!':'Good morning, '+window.userName+'!');}
+}
+
+// ── CHAT ──────────────────────────────────────────────────
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function nowT(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+function addBubble(role,txt,img=null){
+  const wlc=document.getElementById('wlc');if(wlc)wlc.remove();
+  const c=document.getElementById('chatView');
+  const d=document.createElement('div');d.className='msg '+role;
+  let h='';if(img)h+='<img class="msg-img" src="'+img+'">';
+  h+='<div class="bub">'+esc(txt)+'</div><div class="ts">'+nowT()+'</div>';
+  d.innerHTML=h;c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+function addSys(txt){
+  const wlc=document.getElementById('wlc');if(wlc)wlc.remove();
+  const c=document.getElementById('chatView');
+  const d=document.createElement('div');d.className='msg sys';
+  d.innerHTML='<div class="bub">'+esc(txt)+'</div>';
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+function addThink(){
+  const wlc=document.getElementById('wlc');if(wlc)wlc.remove();
+  const c=document.getElementById('chatView');
+  const d=document.createElement('div');d.className='msg a';d.id='thk';
+  d.innerHTML='<div class="bub thinking">ARIA is thinking...</div>';
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+function rmThink(){const e=document.getElementById('thk');if(e)e.remove();}
+function setSt(t){document.getElementById('stxt').textContent=t;}
+
+window.saveCurrentSession=async()=>{
+  if(!history.length)return;
+  try{
+    const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:MDL,max_tokens:80,messages:[{role:'user',content:'Summarize in 1 sentence (English): '+history.filter(m=>typeof m.content==='string').slice(-6).map(m=>m.role+': '+m.content).join(' | ')}]})});
+    const d=await res.json();const summary=d.content?.[0]?.text||'';
+    await window.saveSession(history,summary);
+    await window.updateProfileFromSession(history);
+  }catch(e){await window.saveSession(history,'');}
+};
+
+async function send(){
+  if(busy)return;
+  const inp=document.getElementById('tinput');const txt=inp.value.trim();
+  if(!txt&&!imgB64)return;
+  inp.value='';resize(inp);
+  busy=true;document.getElementById('sbtn').disabled=true;setSt('thinking...');
+  let content,display=txt||'Analyze this image.';
+  if(imgB64){
+    content=[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:imgB64}},{type:'text',text:txt||'What do you see?'}];
+    addBubble('u',display,document.getElementById('ipreview').src);clearImg();
+  }else{content=txt;addBubble('u',txt);}
+  history.push({role:'user',content});
+  addThink();
+  const mood=S.get('currentMood','');
+  const sys=`You are ARIA, a personal AI assistant for ${window.userName}. ${getPersonality()} ${getLangPrompt()}${memCtx()}${locCtx()}${remCtx()}${weatherCtx()}${profileCtx()}${mood?'\n\nCurrent mood: '+mood+'.':''}\n\nYou have lifetime memory of this user. Reference past conversations naturally when relevant. Current time: ${new Date().toLocaleString()}.`;
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MDL,max_tokens:1024,system:sys,messages:history})});
+    const data=await r.json();rmThink();
+    if(data.content?.[0]?.text){
+      const reply=data.content[0].text;
+      history.push({role:'assistant',content:reply});
+      addBubble('a',reply);setSt('ready');speak(reply);
+      // Save after every message
+      window.saveCurrentSession();
+    }else{addBubble('a','⚠️ '+(data.error?.message||'Error'));setSt('error');}
+  }catch(e){rmThink();addBubble('a','⚠️ Network error. / नेटवर्क त्रुटि।');setSt('offline');}
+  busy=false;document.getElementById('sbtn').disabled=false;
+}
+
+function sq(t){switchTab('chat');document.getElementById('tinput').value=t;send();}
+function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
+function resize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';}
 
 // ── WAKE WORD ─────────────────────────────────────────────
-function toggleWake(){ wakeActive?stopWake():startWake(); }
+function toggleWake(){wakeActive?stopWake():startWake();}
 function startWake(){
-  if(!('webkitSpeechRecognition'in window||'SpeechRecognition'in window)) return;
-  if(wakeActive) return;
+  if(!('webkitSpeechRecognition'in window||'SpeechRecognition'in window))return;
+  if(wakeActive)return;
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  wakeRecog=new SR(); wakeRecog.continuous=true; wakeRecog.interimResults=true; wakeRecog.lang='en-US';
+  wakeRecog=new SR();wakeRecog.continuous=true;wakeRecog.interimResults=true;wakeRecog.lang='en-US';
   wakeRecog.onresult=e=>{
     for(let i=e.resultIndex;i<e.results.length;i++){
       const t=e.results[i][0].transcript.toLowerCase().trim();
       if(t.includes('yo aria')||t.includes('hey aria')||t.includes('yo area')){onWakeWord();return;}
     }
   };
-  wakeRecog.onend=()=>{ if(wakeActive) setTimeout(()=>{try{wakeRecog.start()}catch(e){}},300); };
-  wakeRecog.onerror=e=>{ if(e.error!=='no-speech'&&e.error!=='aborted') stopWake(); };
+  wakeRecog.onend=()=>{if(wakeActive)setTimeout(()=>{try{wakeRecog.start()}catch(e){}},300);};
+  wakeRecog.onerror=e=>{if(e.error!=='no-speech'&&e.error!=='aborted')stopWake();};
   try{wakeRecog.start();}catch(e){return;}
   wakeActive=true;
   document.getElementById('wakechip').classList.add('wake-on');
@@ -746,336 +1101,69 @@ function stopWake(){
 }
 function onWakeWord(){
   try{wakeRecog.stop();}catch(e){}
-  const t=document.getElementById('wake-toast'); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000);
-  speak("Yeah?"); switchTab('chat');
-  setTimeout(startActiveListening,700);
+  const t=document.getElementById('wake-toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);
+  speak(S.get('language','english')==='nepali'?'हजुर?':'Yeah?');
+  switchTab('chat');setTimeout(startActiveListening,700);
 }
 function startActiveListening(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  const r=new SR(); r.lang='en-US'; r.interimResults=false;
-  r.onresult=e=>{ document.getElementById('tinput').value=e.results[0][0].transcript; send(); setTimeout(()=>{ if(!isRec) startWake(); },4000); };
-  r.onerror=r.onend=()=>{ setTimeout(()=>{ if(!isRec) startWake(); },1000); };
-  try{r.start(); setSt('listening...');}catch(e){}
+  const lang=S.get('language','english')==='nepali'?'ne-NP':'en-US';
+  const r=new SR();r.lang=lang;r.interimResults=false;
+  r.onresult=e=>{document.getElementById('tinput').value=e.results[0][0].transcript;send();setTimeout(()=>{if(!isRec)startWake();},4000);};
+  r.onerror=r.onend=()=>{setTimeout(()=>{if(!isRec)startWake();},1000);};
+  try{r.start();setSt('listening...');}catch(e){}
 }
-
-// ── LOCATION ─────────────────────────────────────────────
-function silentLocation(){
-  if(!navigator.geolocation) return;
-  navigator.geolocation.getCurrentPosition(pos=>{
-    userLat=pos.coords.latitude; userLon=pos.coords.longitude;
-    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${userLat}&lon=${userLon}&format=json`)
-      .then(r=>r.json()).then(d=>{userCity=d.address?.city||d.address?.town||'your area';S.set('city',userCity);}).catch(()=>{});
-  },()=>{},{timeout:8000,maximumAge:300000});
-}
-function getLocation(){
-  setSt('locating...');
-  navigator.geolocation.getCurrentPosition(pos=>{
-    userLat=pos.coords.latitude; userLon=pos.coords.longitude;
-    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${userLat}&lon=${userLon}&format=json`)
-      .then(r=>r.json()).then(d=>{userCity=d.address?.city||d.address?.town||'your area';S.set('city',userCity);addSys('📍 '+userCity);setSt('ready');}).catch(()=>{setSt('ready');});
-  },()=>{addBubble('a','Could not get location.');setSt('ready');},{timeout:10000});
-}
-function locCtx(){ if(userLat&&userLon) return `\n\nUser location: ${userCity||'unknown'} (${userLat.toFixed(4)}, ${userLon.toFixed(4)}).`; const c=S.get('city'); return c?`\n\nUser location: ${c}.`:''; }
-
-// ── MEMORY ────────────────────────────────────────────────
-function getMems(){return S.json('mems',[]);}
-function memCtx(){const m=getMems();return m.length?'\n\nPinned facts:\n'+m.map(x=>'• '+x.t).join('\n'):'';}
-function addMem(){
-  const inp=document.getElementById('minput'); const t=inp.value.trim(); if(!t) return;
-  const m=getMems(); m.push({id:Date.now(),t}); S.set('mems',m); inp.value=''; renderMems();
-  addBubble('a','✓ Remembered: "'+t+'"'); closePanel('mpanel');
-}
-function delMem(id){S.set('mems',getMems().filter(m=>m.id!==id));renderMems();}
-function renderMems(){
-  const el=document.getElementById('mlist'); const m=getMems();
-  el.innerHTML=m.length?m.map(x=>'<div class="mitem"><span class="mtext">'+esc(x.t)+'</span><span class="mdel" onclick="delMem('+x.id+')">✕</span></div>').join(''):'<p style="font-size:13px;color:var(--muted);padding:8px 0">No pinned memories.</p>';
-}
-
-// ── REMINDERS ─────────────────────────────────────────────
-function getReminders(){return S.json('reminders',[]);}
-function addReminder(){
-  const txt=document.getElementById('rinput').value.trim(); const time=document.getElementById('rtime').value;
-  if(!txt||!time) return;
-  const r=getReminders(); r.push({id:Date.now(),txt,time,done:false}); S.set('reminders',r);
-  document.getElementById('rinput').value=''; renderReminders();
-  addBubble('a','⏰ Set: "'+txt+'" at '+new Date(time).toLocaleString()); closePanel('rpanel');
-}
-function delReminder(id){S.set('reminders',getReminders().filter(r=>r.id!==id));renderReminders();}
-function renderReminders(){
-  const el=document.getElementById('rlist'); const r=getReminders().sort((a,b)=>new Date(a.time)-new Date(b.time));
-  el.innerHTML=r.length?r.map(x=>`<div class="ritem${x.done?' done':''}"><div class="rinfo"><div class="rtext">${esc(x.txt)}</div><div class="rtime">${new Date(x.time).toLocaleString()}</div></div><span class="rdel" onclick="delReminder(${x.id})">✕</span></div>`).join(''):'<p style="font-size:13px;color:var(--muted);padding:8px 0">No reminders.</p>';
-  const dt=new Date(Date.now()+3600000); const pad=n=>String(n).padStart(2,'0');
-  document.getElementById('rtime').value=`${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
-}
-function remCtx(){
-  const now=Date.now(); const up=getReminders().filter(r=>!r.done&&new Date(r.time)>now&&new Date(r.time)<now+172800000);
-  return up.length?'\n\nUpcoming reminders:\n'+up.map(r=>`• "${r.txt}" at ${new Date(r.time).toLocaleString()}`).join('\n'):'';
-}
-function checkReminders(){
-  const now=Date.now(); const reminders=getReminders(); let changed=false;
-  reminders.forEach(r=>{ if(!r.done&&Math.abs(new Date(r.time)-now)<35000){ r.done=true; changed=true; addSys('⏰ '+r.txt); speak('Reminder: '+r.txt); if(Notification.permission==='granted') new Notification('ARIA',{body:r.txt}); } });
-  if(changed) S.set('reminders',reminders);
-}
-
-// ── LIVE MARKET DATA ──────────────────────────────────────
-async function fetchMarketNews(asset){
-  const rssUrl=`https://feeds.finance.yahoo.com/rss/2.0/headline?s=${encodeURIComponent(asset)}&region=US&lang=en-US`;
-  try{
-    const r=await fetch(PROXY+encodeURIComponent(rssUrl));
-    const d=await r.json();
-    const xml=new DOMParser().parseFromString(d.contents,'text/xml');
-    return Array.from(xml.querySelectorAll('item')).slice(0,5).map(i=>i.querySelector('title')?.textContent||'').filter(Boolean);
-  }catch(e){
-    if(newsKey){
-      try{
-        const r2=await fetch(`https://newsapi.org/v2/everything?q=${encodeURIComponent(asset)}&sortBy=publishedAt&pageSize=5&apiKey=${newsKey}`);
-        const d2=await r2.json();
-        return (d2.articles||[]).map(a=>a.title).filter(Boolean);
-      }catch(e2){}
-    }
-    return [];
-  }
-}
-async function loadMarketSummary(){
-  try{
-    const rssUrl='https://feeds.finance.yahoo.com/rss/2.0/headline?s=^GSPC,BTC-USD&region=US&lang=en-US';
-    const r=await fetch(PROXY+encodeURIComponent(rssUrl));
-    const d=await r.json();
-    const xml=new DOMParser().parseFromString(d.contents,'text/xml');
-    const headlines=Array.from(xml.querySelectorAll('item')).slice(0,4).map(i=>i.querySelector('title')?.textContent||'').filter(Boolean);
-    if(!headlines.length) return;
-    document.getElementById('market-summary').style.display='block';
-    const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MDL,max_tokens:120,messages:[{role:'user',content:'Summarize market mood in 2 sentences: '+headlines.join('. ')}]})});
-    const data=await res.json();
-    document.getElementById('market-summary-text').textContent=data.content?.[0]?.text||headlines.join(' | ');
-  }catch(e){}
-}
-function getWatchlist(){return S.json('watchlist',[]);}
-function addAsset(){
-  const inp=document.getElementById('assetInput'); const name=inp.value.trim(); if(!name) return;
-  const w=getWatchlist();
-  if(w.find(a=>a.name.toLowerCase()===name.toLowerCase())){ inp.value=''; return; }
-  w.push({name,verdict:'analyzing',reasoning:'Fetching live data...',headlines:[]});
-  S.set('watchlist',w); inp.value=''; renderWatchlist(); analyzeAsset(name);
-}
-function removeAsset(name){S.set('watchlist',getWatchlist().filter(a=>a.name!==name));renderWatchlist();}
-function renderWatchlist(){
-  const el=document.getElementById('watchlist'); const w=getWatchlist();
-  el.innerHTML=w.length?w.map(a=>`
-    <div class="asset-card">
-      <div class="asset-top">
-        <span class="asset-name">${esc(a.name)}</span>
-        <div style="display:flex;gap:8px;align-items:center">
-          <span class="asset-verdict ${a.verdict}">${a.verdict.toUpperCase()}</span>
-          <span style="color:var(--muted);cursor:pointer;font-size:16px" onclick="removeAsset('${esc(a.name)}')">✕</span>
-        </div>
-      </div>
-      <div class="asset-reasoning">${esc(a.reasoning)}</div>
-      ${a.headlines?.length?'<div class="asset-news">📰 '+a.headlines.slice(0,2).map(h=>esc(h)).join('<br>📰 ')+'</div>':''}
-    </div>`).join(''):'<p style="font-size:13px;color:var(--muted);padding:8px 0">Add assets above to track them.</p>';
-}
-async function analyzeAsset(name){
-  const headlines=await fetchMarketNews(name);
-  const w=getWatchlist(); const idx=w.findIndex(a=>a.name===name); if(idx<0) return;
-  try{
-    const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MDL,max_tokens:200,messages:[{role:'user',content:`Financial analyst: analyze "${name}".
-${headlines.length?'Live headlines:\n'+headlines.join('\n'):'Use general knowledge.'}
-Reply EXACTLY:
-VERDICT: [BUY or HOLD or AVOID]
-REASONING: [2 sentences]`}]})});
-    const data=await res.json(); const txt=data.content?.[0]?.text||'';
-    const vm=txt.match(/VERDICT:\s*(BUY|HOLD|AVOID)/i); const rm=txt.match(/REASONING:\s*(.+)/is);
-    w[idx].verdict=(vm?.[1]||'hold').toLowerCase(); w[idx].reasoning=rm?.[1]?.trim()||'Analysis unavailable.'; w[idx].headlines=headlines.slice(0,2);
-  }catch(e){ w[idx].verdict='hold'; w[idx].reasoning='Analysis failed.'; }
-  S.set('watchlist',w); renderWatchlist();
-}
-function analyzeAll(){ const w=getWatchlist(); w.forEach(a=>{a.verdict='analyzing';a.reasoning='Refreshing...';a.headlines=[];}); S.set('watchlist',w); renderWatchlist(); w.forEach(a=>analyzeAsset(a.name)); loadMarketSummary(); }
-
-// ── NEWS ──────────────────────────────────────────────────
-async function loadNews(category, el){
-  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
-  if(el) el.classList.add('active');
-  const list=document.getElementById('newsList');
-  list.innerHTML='<p style="font-size:13px;color:var(--muted);padding:16px 0">Loading...</p>';
-  if(!newsKey){ list.innerHTML='<p style="font-size:13px;color:var(--muted);padding:16px 0;line-height:1.6">Add your NewsAPI key in ⚙️ Settings.<br>Get it free at <b style="color:var(--accent)">newsapi.org</b></p>'; return; }
-  try{
-    const r=await fetch(`https://newsapi.org/v2/top-headlines?category=${category}&language=en&pageSize=15&apiKey=${newsKey}`);
-    const d=await r.json();
-    if(!d.articles?.length){ list.innerHTML='<p style="font-size:13px;color:var(--muted)">No articles found.</p>'; return; }
-    list.innerHTML=d.articles.filter(a=>a.title&&a.title!=='[Removed]').map(a=>`
-      <div class="news-card" onclick="this.classList.toggle('expanded')">
-        <div class="news-source">${esc(a.source?.name||'News')}</div>
-        <div class="news-title">${esc(a.title)}</div>
-        <div class="news-time">${new Date(a.publishedAt).toLocaleString()}</div>
-        <div class="news-desc">${esc(a.description||'')} <span style="color:var(--accent);cursor:pointer" onclick="event.stopPropagation();sq('Tell me more about: ${esc(a.title).replace(/'/g,"\\'")}')">Ask ARIA →</span></div>
-      </div>`).join('');
-  }catch(e){ list.innerHTML='<p style="font-size:13px;color:var(--muted)">Could not load. Check your NewsAPI key.</p>'; }
-}
-
-// ── HISTORY ───────────────────────────────────────────────
-function renderHistory(sessions){
-  const el=document.getElementById('historyList');
-  if(!sessions.length){ el.innerHTML='<p style="font-size:13px;color:var(--muted);padding:8px 0">No history yet.</p>'; return; }
-  el.innerHTML=sessions.map(s=>`
-    <div class="session-card">
-      <div style="display:flex;justify-content:space-between">
-        <div style="flex:1">
-          <div class="session-date">${new Date(s.ts).toLocaleString()}</div>
-          <div class="session-preview">${esc(s.summary||(s.msgs?.[0]?.content||'').substring(0,80)||'Chat session')}</div>
-          <div class="session-count">${s.msgs?.length||0} messages</div>
-        </div>
-        <span style="color:var(--muted);cursor:pointer;font-size:16px;padding:4px;flex-shrink:0" onclick="deleteSession('${s.id}')">✕</span>
-      </div>
-    </div>`).join('');
-}
-
-// ── EMOTION ───────────────────────────────────────────────
-function detectEmotion(){ document.getElementById('emotionfile').click(); }
-async function onEmotionImg(e){
-  const f=e.target.files[0]; if(!f) return;
-  const r=new FileReader();
-  r.onload=async ev=>{
-    setSt('reading mood...');
-    try{
-      const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MDL,max_tokens:50,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:ev.target.result.split(',')[1]}},{type:'text',text:'What emotion does this face show? 3 words max.'}]}]})});
-      const data=await res.json(); const emotion=data.content?.[0]?.text?.trim()||'neutral';
-      const badge=document.getElementById('emotion-badge'); badge.textContent='😊 '+emotion; badge.classList.add('show');
-      setTimeout(()=>badge.classList.remove('show'),5000);
-      addSys('😊 Mood: '+emotion); S.set('currentMood',emotion); setSt('ready');
-    }catch(e){ setSt('ready'); }
-  };
-  r.readAsDataURL(f); e.target.value='';
-}
-
-// ── BRIEFING ──────────────────────────────────────────────
-async function showBriefing(){
-  switchTab('chat'); addSys('☀️ Building briefing...');
-  const mems=getMems().map(m=>m.t).join(', '); const loc=userCity||S.get('city')||'unknown';
-  const rem=remCtx(); const mood=S.get('currentMood','');
-  const profile=window.userProfile?'\n\nWhat I know about them:\n'+window.userProfile.substring(0,400):'';
-  const prompt=`Personal morning briefing for ${window.userName}. ${getPersonality()} Include: greeting with time, motivational thought${mood?' (mood: '+mood+')':''}, ${rem?'reminders: '+rem:'focus suggestion'}, one personalised tip. Max 4 sentences.${profile} Location: ${loc}.`;
-  try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MDL,max_tokens:300,messages:[{role:'user',content:prompt}]})});
-    const d=await r.json(); const txt=d.content?.[0]?.text||'Good morning!';
-    addBubble('a',txt); speak(txt);
-  }catch(e){ addBubble('a','Good morning, '+window.userName+'!'); }
-}
-
-// ── CHAT ──────────────────────────────────────────────────
-function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function nowT(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
-function addBubble(role,txt,img=null){
-  const wlc=document.getElementById('wlc'); if(wlc) wlc.remove();
-  const c=document.getElementById('chatView');
-  const d=document.createElement('div'); d.className='msg '+role;
-  let h=''; if(img) h+='<img class="msg-img" src="'+img+'">';
-  h+='<div class="bub">'+esc(txt)+'</div><div class="ts">'+nowT()+'</div>';
-  d.innerHTML=h; c.appendChild(d); c.scrollTop=c.scrollHeight;
-}
-function addSys(txt){
-  const wlc=document.getElementById('wlc'); if(wlc) wlc.remove();
-  const c=document.getElementById('chatView');
-  const d=document.createElement('div'); d.className='msg sys';
-  d.innerHTML='<div class="bub">'+esc(txt)+'</div>';
-  c.appendChild(d); c.scrollTop=c.scrollHeight;
-}
-function addThink(){
-  const wlc=document.getElementById('wlc'); if(wlc) wlc.remove();
-  const c=document.getElementById('chatView');
-  const d=document.createElement('div'); d.className='msg a'; d.id='thk';
-  d.innerHTML='<div class="bub thinking">ARIA is thinking</div>';
-  c.appendChild(d); c.scrollTop=c.scrollHeight;
-}
-function rmThink(){const e=document.getElementById('thk'); if(e) e.remove();}
-function setSt(t){document.getElementById('stxt').textContent=t;}
-
-window.saveCurrentSession = async () => {
-  if(!history.length) return;
-  try{
-    const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MDL,max_tokens:80,messages:[{role:'user',content:'Summarize in 1 sentence: '+history.filter(m=>typeof m.content==='string').slice(-6).map(m=>m.role+': '+m.content).join(' | ')}]})});
-    const d=await res.json(); const summary=d.content?.[0]?.text||'';
-    await window.saveSession(history,summary);
-    // Update lifetime profile
-    await window.updateProfileFromSession(history);
-  }catch(e){ await window.saveSession(history,''); }
-};
-
-async function send(){
-  if(busy) return;
-  const inp=document.getElementById('tinput'); const txt=inp.value.trim();
-  if(!txt&&!imgB64) return;
-  inp.value=''; resize(inp);
-  busy=true; document.getElementById('sbtn').disabled=true; setSt('thinking...');
-  let content,display=txt||'Analyze this image.';
-  if(imgB64){
-    content=[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:imgB64}},{type:'text',text:txt||'What do you see?'}];
-    addBubble('u',display,document.getElementById('ipreview').src); clearImg();
-  }else{ content=txt; addBubble('u',txt); }
-  history.push({role:'user',content});
-  addThink();
-  const mood=S.get('currentMood','');
-  const sys=`You are ARIA, a deeply personal AI assistant for ${window.userName}. ${getPersonality()}${memCtx()}${locCtx()}${remCtx()}${profileCtx()}${mood?'\n\nCurrent mood: '+mood+'.':''}\n\nYou have a lifetime memory of this user. Reference past conversations naturally when relevant. Current time: ${new Date().toLocaleString()}.`;
-  try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MDL,max_tokens:1024,system:sys,messages:history})});
-    const data=await r.json(); rmThink();
-    if(data.content?.[0]?.text){
-      const reply=data.content[0].text;
-      history.push({role:'assistant',content:reply});
-      addBubble('a',reply); setSt('ready'); speak(reply);
-      sessionSaved=false;
-      // Save after every single message so memory is never lost
-      window.saveCurrentSession();
-    }else{ addBubble('a','⚠️ '+(data.error?.message||'Error')); setSt('error'); }
-  }catch(e){ rmThink(); addBubble('a','⚠️ Network error.'); setSt('offline'); }
-  busy=false; document.getElementById('sbtn').disabled=false;
-}
-
-function sq(t){ switchTab('chat'); document.getElementById('tinput').value=t; send(); }
-function onKey(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); send(); } }
-function resize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,100)+'px'; }
 
 // ── VOICE ─────────────────────────────────────────────────
-function toggleMic(){ if(!('webkitSpeechRecognition'in window||'SpeechRecognition'in window)){ addBubble('a','Voice needs Chrome.'); return; } isRec?stopRec():startRec(); }
+function toggleMic(){if(!('webkitSpeechRecognition'in window||'SpeechRecognition'in window)){addBubble('a','Voice needs Chrome.');return;}isRec?stopRec():startRec();}
 function startRec(){
   stopWake();
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  recog=new SR(); recog.lang='en-US'; recog.interimResults=false;
-  recog.onresult=e=>{ document.getElementById('tinput').value=e.results[0][0].transcript; stopRec(); send(); };
+  const lang=S.get('language','english')==='nepali'?'ne-NP':'en-US';
+  recog=new SR();recog.lang=lang;recog.interimResults=false;
+  recog.onresult=e=>{document.getElementById('tinput').value=e.results[0][0].transcript;stopRec();send();};
   recog.onerror=recog.onend=()=>stopRec();
-  recog.start(); isRec=true;
-  const c=document.getElementById('micchip'); c.textContent='⏹ Stop'; c.classList.add('rec'); setSt('listening...');
+  recog.start();isRec=true;
+  const c=document.getElementById('micchip');c.textContent='⏹ Stop';c.classList.add('rec');setSt('listening...');
 }
 function stopRec(){
-  try{recog&&recog.stop();}catch(e){} isRec=false;
-  const c=document.getElementById('micchip'); c.textContent='🎤 Voice'; c.classList.remove('rec'); setSt('ready');
+  try{recog&&recog.stop();}catch(e){}isRec=false;
+  const c=document.getElementById('micchip');c.textContent='🎤 Voice';c.classList.remove('rec');setSt('ready');
   setTimeout(startWake,500);
 }
 function speak(txt){
-  if(!window.speechSynthesis) return;
+  if(!window.speechSynthesis)return;
   speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(txt.replace(/[✦✓⚠️🧠📷🌤⚡💡☀️⏰📍😊📈📰🕐🧬🎯]/g,'').trim());
-  u.rate=parseFloat(S.get('voicespeed','0.95')); u.pitch=1.05;
-  const vs=speechSynthesis.getVoices(); const v=vs.find(v=>v.lang==='en-GB')||vs.find(v=>v.lang.startsWith('en'));
-  if(v) u.voice=v; speechSynthesis.speak(u);
+  const clean=txt.replace(/[✦✓⚠️🧠📷🌤⚡💡☀️⏰📍😊📈📰🕐🧬🎯🌍🇳🇵]/g,'').trim();
+  const u=new SpeechSynthesisUtterance(clean);
+  u.rate=parseFloat(S.get('voicespeed','0.95'));u.pitch=1.05;
+  const vs=speechSynthesis.getVoices();
+  // Try Nepali voice first if language is Nepali
+  const lang=S.get('language','english');
+  let v=null;
+  if(lang==='nepali')v=vs.find(v=>v.lang==='ne-NP'||v.lang.startsWith('ne'));
+  if(!v)v=vs.find(v=>v.lang==='en-GB')||vs.find(v=>v.lang.startsWith('en'));
+  if(v)u.voice=v;
+  speechSynthesis.speak(u);
 }
 speechSynthesis&&speechSynthesis.getVoices();
 
 // ── CAMERA ────────────────────────────────────────────────
-function trigCam(){ document.getElementById('camfile').click(); }
+function trigCam(){document.getElementById('camfile').click();}
 function onImg(e){
-  const f=e.target.files[0]; if(!f) return;
+  const f=e.target.files[0];if(!f)return;
   const r=new FileReader();
-  r.onload=ev=>{ imgB64=ev.target.result.split(',')[1]; document.getElementById('ipreview').src=ev.target.result; document.getElementById('ipw').classList.add('on'); document.getElementById('tinput').placeholder='Ask about this image...'; document.getElementById('tinput').focus(); };
-  r.readAsDataURL(f); e.target.value='';
+  r.onload=ev=>{imgB64=ev.target.result.split(',')[1];document.getElementById('ipreview').src=ev.target.result;document.getElementById('ipw').classList.add('on');document.getElementById('tinput').placeholder='Ask about this image...';document.getElementById('tinput').focus();};
+  r.readAsDataURL(f);e.target.value='';
 }
-function clearImg(){ imgB64=null; document.getElementById('ipw').classList.remove('on'); document.getElementById('ipreview').src=''; document.getElementById('tinput').placeholder='Message ARIA...'; }
+function clearImg(){imgB64=null;document.getElementById('ipw').classList.remove('on');document.getElementById('ipreview').src='';document.getElementById('tinput').placeholder='Message ARIA... / ARIA लाई सन्देश...';}
 
 // ── PANELS ────────────────────────────────────────────────
-function openPanel(id){ document.getElementById(id).classList.add('open'); }
-function closePanel(id){ document.getElementById(id).classList.remove('open'); }
+function openPanel(id){document.getElementById(id).classList.add('open');}
+function closePanel(id){document.getElementById(id).classList.remove('open');}
 
-window.addEventListener('beforeunload',()=>{ window.saveCurrentSession&&window.saveCurrentSession(); });
-window.addEventListener('pagehide',()=>{ window.saveCurrentSession&&window.saveCurrentSession(); });
+window.addEventListener('beforeunload',()=>{window.saveCurrentSession&&window.saveCurrentSession();});
+window.addEventListener('pagehide',()=>{window.saveCurrentSession&&window.saveCurrentSession();});
 </script>
 </body>
 </html>
