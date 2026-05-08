@@ -11,7 +11,7 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{--bg:#080810;--s2:#161625;--s3:#1e1e30;--border:#252538;--border2:#2e2e48;--accent:#6ee7f7;--accent2:#a78bfa;--accent3:#fb923c;--text:#eeeef8;--muted:#6666a0;--muted2:#9999c0;--green:#4ade80;--red:#f87171;--yellow:#fbbf24;--r:14px;--rs:8px}
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'DM Mono',monospace}
-body{display:flex;flex-direction:column}
+body{display:flex;sflex-direction:column}
 #loginScreen{position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:32px}
 #loginScreen.gone{display:none}
 .login-logo{font-family:'Syne',sans-serif;font-size:64px;font-weight:800;letter-spacing:-4px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
@@ -303,14 +303,14 @@ body{display:flex;flex-direction:column}
 <div class="panel" id="settings">
   <div class="ph"><div class="ptitle">Settings</div><div class="pclose" onclick="closePanel('settings')">x</div></div>
   <div style="flex:1;overflow-y:auto">
-    <div class="srow"><div><div class="slbl">AI Model</div><div class="ssub">Haiku=cheap, Sonnet=smarter</div></div><select class="ssel" id="setModel" onchange="saveSetting('model',this.value)"><option value="claude-haiku-4-5-20251001">Haiku</option><option value="claude-sonnet-4-20250514">Sonnet</option></select></div>
-    <div class="srow"><div><div class="slbl">Language</div></div><select class="ssel" id="setLang" onchange="saveSetting('lang',this.value)"><option value="english">English</option><option value="nepali">Nepali</option><option value="both">Both</option></select></div>
-    <div class="srow"><div><div class="slbl">Personality</div><div class="ssub">Never changes with model</div></div><select class="ssel" id="setPersonality" onchange="saveSetting('personality',this.value)"><option value="friendly">Friendly</option><option value="professional">Professional</option><option value="motivating">Motivating</option><option value="blunt">Blunt</option><option value="mentor">Mentor</option></select></div>
-    <div class="srow"><div><div class="slbl">Voice speed</div></div><select class="ssel" id="setSpeed" onchange="saveSetting('speed',this.value)"><option value="0.85">Slow</option><option value="0.95">Normal</option><option value="1.1">Fast</option><option value="1.25">Very fast</option></select></div>
-    <div class="srow"><div><div class="slbl">Voice</div></div><select class="ssel" id="setVoice" onchange="saveSetting('voice',this.value)" style="width:140px"><option value="auto">Auto</option></select></div>
+    <div class="srow"><div><div class="slbl">AI Model</div><div class="ssub">Haiku=cheap, Sonnet=smarter</div></div><select class="ssel" id="setModel" onchange="if(typeof saveSetting!=='undefined')saveSetting('model',this.value)"><option value="claude-haiku-4-5-20251001">Haiku</option><option value="claude-sonnet-4-20250514">Sonnet</option></select></div>
+    <div class="srow"><div><div class="slbl">Language</div></div><select class="ssel" id="setLang" onchange="if(typeof saveSetting!=='undefined')saveSetting('lang',this.value)"><option value="english">English</option><option value="nepali">Nepali</option><option value="both">Both</option></select></div>
+    <div class="srow"><div><div class="slbl">Personality</div><div class="ssub">Never changes with model</div></div><select class="ssel" id="setPersonality" onchange="if(typeof saveSetting!=='undefined')saveSetting('personality',this.value)"><option value="friendly">Friendly</option><option value="professional">Professional</option><option value="motivating">Motivating</option><option value="blunt">Blunt</option><option value="mentor">Mentor</option></select></div>
+    <div class="srow"><div><div class="slbl">Voice speed</div></div><select class="ssel" id="setSpeed" onchange="if(typeof saveSetting!=='undefined')saveSetting('speed',this.value)"><option value="0.85">Slow</option><option value="0.95">Normal</option><option value="1.1">Fast</option><option value="1.25">Very fast</option></select></div>
+    <div class="srow"><div><div class="slbl">Voice</div></div><select class="ssel" id="setVoice" onchange="if(typeof saveSetting!=='undefined')saveSetting('voice',this.value)" style="width:140px"><option value="auto">Auto</option></select></div>
     <div class="srow"><div><div class="slbl">Test voice</div></div><button onclick="speak('Hello I am ARIA your personal assistant.')" style="background:var(--accent2);color:#080810;border:none;border-radius:var(--rs);padding:8px 12px;font-family:DM Mono,monospace;font-size:12px;cursor:pointer">Test</button></div>
-    <div class="srow"><div><div class="slbl">NewsAPI key</div></div><input class="ssel" id="setNewskey" placeholder="your key" type="password" style="width:130px" onchange="saveSetting('newskey',this.value)"></div>
-    <div class="srow"><div><div class="slbl">GitHub token</div><div class="ssub">For self-edit and web deploy</div></div><input class="ssel" id="setGhtoken" placeholder="paste token here" type="password" style="width:130px" onchange="saveSetting('ghtoken',this.value)"></div>
+    <div class="srow"><div><div class="slbl">NewsAPI key</div></div><input class="ssel" id="setNewskey" placeholder="your key" type="password" style="width:130px" onchange="if(typeof saveSetting!=='undefined')saveSetting('newskey',this.value)"></div>
+    <div class="srow"><div><div class="slbl">GitHub token</div><div class="ssub">For self-edit and web deploy</div></div><input class="ssel" id="setGhtoken" placeholder="paste token here" type="password" style="width:130px" onchange="if(typeof saveSetting!=='undefined')saveSetting('ghtoken',this.value)"></div>
     <div class="srow" style="border:none"><div><div class="slbl">Clear all history</div></div><button onclick="clearAllHistory()" style="background:var(--red);color:#fff;border:none;border-radius:var(--rs);padding:8px 12px;font-family:DM Mono,monospace;font-size:12px;cursor:pointer">Clear</button></div>
   </div>
 </div>
@@ -365,7 +365,7 @@ window.clearAllHistory=async()=>{
 };
 window.dbLoadRecent=async()=>{try{const q=query(collection(db,'chats'),orderBy('ts','desc'),limit(3));const snap=await getDocs(q);const recent=snap.docs.map(d=>d.data()).reverse();const last=recent[recent.length-1];window.recentHistory=last?.msgs?.slice(-4)||[];}catch(e){window.recentHistory=[];}};
 onAuthStateChanged(auth,user=>{
-  if(user&&user.email===ALLOWED){document.getElementById('loginScreen').classList.add('gone');window.userName=user.displayName?.split(' ')[0]||'Aaditya';if(!localStorage.getItem('ak')){document.getElementById('setupScreen').classList.remove('gone');}else{window.startApp();}}
+  if(user&&user.email===ALLOWED){document.getElementById('loginScreen').classList.add('gone');window.userName=user.displayName?.split(' ')[0]||'Aaditya';if(!localStorage.getItem('ak')){document.getElementById('setupScreen').classList.remove('gone');}else{if(typeof window.startApp==='function'){window.startApp();}else{window.addEventListener('aria-ready',function(){window.startApp();});}}}
   else if(!user){document.getElementById('loginScreen').classList.remove('gone');}
 });
 </script>
@@ -487,7 +487,7 @@ async function fetchWeather(){
 }
 function silentLocation(){if(!navigator.geolocation)return;navigator.geolocation.getCurrentPosition(pos=>{userLat=pos.coords.latitude;userLon=pos.coords.longitude;fetch('https://nominatim.openstreetmap.org/reverse?lat='+userLat+'&lon='+userLon+'&format=json').then(r=>r.json()).then(d=>{userCity=d.address?.city||d.address?.town||'your area';S.set('city',userCity);}).catch(()=>{});},()=>{},{timeout:8000,maximumAge:300000});}
 function weatherCtx(){return weatherData?'\n\nCurrent weather in '+weatherData.city+': '+weatherData.temp+'C, '+weatherData.desc+'.':'';}
-function locCtx(){if(userLat&&userLon)return '\n\nUser location: '+(userCity||'unknown')+' ('+userLat.toFixed(4)+', '+userLon.toFixed(4)+').';const c=S.get('city');return c?'\n\nUser location: '+c+'.';}
+function locCtx(){if(userLat&&userLon)return '\n\nUser location: '+(userCity||'unknown')+' ('+userLat.toFixed(4)+', '+userLon.toFixed(4)+').';const c=S.get('city','');return c?'\n\nUser location: '+c+'':'';}
 
 function getMems(){return S.json('mems',[]);}
 function memCtx(){const m=getMems();return m.length?'\n\nPinned facts:\n'+m.map(x=>'- '+x.t).join('\n'):'';}
@@ -674,6 +674,8 @@ function openPanel(id){document.getElementById(id).classList.add('open');}
 function closePanel(id){document.getElementById(id).classList.remove('open');}
 window.addEventListener('beforeunload',()=>{window.saveSession&&window.saveSession();});
 window.addEventListener('pagehide',()=>{window.saveSession&&window.saveSession();});
+// Signal that main script is ready
+window.dispatchEvent(new Event('aria-ready'));
 </script>
 </body>
 </html>
