@@ -237,6 +237,13 @@ body{display:flex;flex-direction:column}
       <input class="inp" id="sbio" placeholder="e.g. Student in London, loves football">
     </div>
     <div>
+      <div class="lbl">AI Model</div>
+      <select class="sel" id="smodel">
+        <option value="claude-haiku-4-5-20251001">⚡ Haiku — fast & cheap (recommended)</option>
+        <option value="claude-sonnet-4-20250514">🧠 Sonnet — smarter, costs ~6x more</option>
+      </select>
+    </div>
+    <div>
       <div class="lbl">Language / भाषा</div>
       <select class="sel" id="slanguage">
         <option value="english">English</option>
@@ -419,6 +426,13 @@ body{display:flex;flex-direction:column}
   <div class="ph"><div class="ptitle">⚙️ Settings</div><div class="pclose" onclick="closePanel('settings')">✕</div></div>
   <div style="flex:1;overflow-y:auto">
     <div class="setting-row">
+      <div><div class="setting-label">AI Model</div><div class="setting-sub">Haiku=fast&cheap · Sonnet=smarter</div></div>
+      <select class="setting-sel" id="set-model" onchange="saveSetting('model',this.value)">
+        <option value="claude-haiku-4-5-20251001">⚡ Haiku (fast, cheap)</option>
+        <option value="claude-sonnet-4-20250514">🧠 Sonnet (smarter, costs more)</option>
+      </select>
+    </div>
+    <div class="setting-row">
       <div><div class="setting-label">Language / भाषा</div><div class="setting-sub">ARIA's response language</div></div>
       <select class="setting-sel" id="set-language" onchange="saveSetting('language',this.value)">
         <option value="english">English</option>
@@ -467,6 +481,10 @@ body{display:flex;flex-direction:column}
     <div class="setting-row">
       <div><div class="setting-label">NewsAPI key</div><div class="setting-sub">From newsapi.org</div></div>
       <input class="setting-sel" id="set-newskey" placeholder="your key" style="width:130px" onchange="saveSetting('newskey',this.value)">
+    </div>
+    <div class="setting-row">
+      <div><div class="setting-label">GitHub token</div><div class="setting-sub">For self-editing & web deploy</div></div>
+      <input class="setting-sel" id="set-ghtoken" placeholder="paste token here" type="password" style="width:130px" onchange="saveSetting('ghtoken',this.value)">
     </div>
     <div class="setting-row" style="border:none">
       <div><div class="setting-label">Clear all history</div><div class="setting-sub">Cannot be undone</div></div>
@@ -568,7 +586,8 @@ onAuthStateChanged(auth,user=>{
 
 <script>
 const API='https://api.anthropic.com/v1/messages';
-const MDL='claude-haiku-4-5-20251001';
+const MDL_DEFAULT='claude-haiku-4-5-20251001';
+function getModel(){return S.get('model',MDL_DEFAULT);}
 const PROXY='https://api.allorigins.win/get?url=';
 let key='',newsKey='',history=[],imgB64=null;
 let recog=null,isRec=false,busy=false;
@@ -593,6 +612,7 @@ function finishSetup(){
   const k=document.getElementById('skey').value.trim();
   if(!k){alert('Please enter your API key');return;}
   S.set('ak',k);S.set('newskey',document.getElementById('snewskey').value.trim());
+  S.set('model',document.getElementById('smodel').value);
   S.set('language',document.getElementById('slanguage').value);
   S.set('personality',document.getElementById('spersonality').value);
   S.set('voicespeed',document.getElementById('svoicespeed').value);
@@ -619,10 +639,12 @@ async function startApp(){
     document.getElementById('wtitle').textContent='Hey, '+window.userName+'!';
     document.getElementById('wsub').textContent='Say "Yo ARIA" or type below. I remember everything forever.';
   }
+  document.getElementById('set-model').value=S.get('model','claude-haiku-4-5-20251001');
   document.getElementById('set-language').value=S.get('language','english');
   document.getElementById('set-personality').value=S.get('personality','friendly');
   document.getElementById('set-speed').value=S.get('voicespeed','0.95');
   document.getElementById('set-newskey').value=newsKey;
+  document.getElementById('set-ghtoken').value=S.get('ghtoken','');
   renderMems();renderReminders();
   setInterval(checkReminders,30000);
   silentLocation();
@@ -842,7 +864,7 @@ async function analyzeAsset(name){
     const lang=S.get('language','english');
     const langNote=lang==='nepali'?'Reply in Nepali (नेपाली)':'';
     const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:MDL,max_tokens:200,messages:[{role:'user',content:`Financial analyst: analyze "${name}". ${langNote}
+    body:JSON.stringify({model:getModel(),max_tokens:200,messages:[{role:'user',content:`Financial analyst: analyze "${name}". ${langNote}
 ${headlines.length?'Live headlines:\n'+headlines.join('\n'):'Use general knowledge.'}
 Reply EXACTLY:
 VERDICT: [BUY or HOLD or AVOID]
@@ -992,7 +1014,7 @@ async function onEmotionImg(e){
     setSt('reading mood...');
     try{
       const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:MDL,max_tokens:50,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:ev.target.result.split(',')[1]}},{type:'text',text:'What emotion does this face show? 3 words max.'}]}]})});
+      body:JSON.stringify({model:getModel(),max_tokens:50,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:ev.target.result.split(',')[1]}},{type:'text',text:'What emotion does this face show? 3 words max.'}]}]})});
       const data=await res.json();const emotion=data.content?.[0]?.text?.trim()||'neutral';
       const badge=document.getElementById('emotion-badge');badge.textContent='😊 '+emotion;badge.classList.add('show');
       setTimeout(()=>badge.classList.remove('show'),5000);
@@ -1050,7 +1072,7 @@ window.saveCurrentSession=async()=>{
   if(!history.length)return;
   try{
     const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:MDL,max_tokens:80,messages:[{role:'user',content:'Summarize in 1 sentence (English): '+history.filter(m=>typeof m.content==='string').slice(-6).map(m=>m.role+': '+m.content).join(' | ')}]})});
+    body:JSON.stringify({model:getModel(),max_tokens:80,messages:[{role:'user',content:'Summarize in 1 sentence (English): '+history.filter(m=>typeof m.content==='string').slice(-6).map(m=>m.role+': '+m.content).join(' | ')}]})});
     const d=await res.json();const summary=d.content?.[0]?.text||'';
     await window.saveSession(history,summary);
     await window.updateProfileFromSession(history);
@@ -1067,43 +1089,61 @@ function needsWebSearch(txt){
 }
 
 async function webSearch(query){
+  const results=[];
+  // Source 1: NewsAPI
+  if(newsKey){
+    try{
+      const r=await fetch(`https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&sortBy=publishedAt&pageSize=6&language=en&apiKey=${newsKey}`);
+      const d=await r.json();
+      const items=(d.articles||[]).filter(a=>a.title&&a.title!=='[Removed]').slice(0,5);
+      if(items.length){
+        results.push('Latest news ('+new Date().toLocaleDateString()+'):');
+        items.forEach(a=>results.push('• '+a.title+(a.description?' — '+a.description.substring(0,100):'')));
+      }
+    }catch(e){}
+  }
+  // Source 2: Yahoo Finance RSS for financial queries
   try{
-    // Use DuckDuckGo Instant Answer API — free, no key
-    const ddgUrl=`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
-    const r=await fetch(SEARCH_PROXY+encodeURIComponent(ddgUrl));
-    const d=await r.json();
-    const data=JSON.parse(d.contents);
-    let results=[];
-    if(data.AbstractText) results.push(data.AbstractText);
-    if(data.Answer) results.push(data.Answer);
-    if(data.RelatedTopics?.length){
-      data.RelatedTopics.slice(0,3).forEach(t=>{if(t.Text)results.push(t.Text);});
-    }
-    if(results.length) return results.join('\n');
-  }catch(e){}
-  // Fallback: Yahoo Finance RSS for financial queries
-  try{
-    const finTerms=['bitcoin','ethereum','stock','market','price','crypto','btc','eth','gold','dollar'];
+    const finTerms=['bitcoin','btc','ethereum','eth','stock','market','price','crypto','gold','dollar','invest'];
     if(finTerms.some(t=>query.toLowerCase().includes(t))){
-      const rssUrl=`https://feeds.finance.yahoo.com/rss/2.0/headline?s=${encodeURIComponent(query.split(' ')[0])}&region=US&lang=en-US`;
+      const ticker=query.split(' ')[0].toUpperCase();
+      const rssUrl=`https://feeds.finance.yahoo.com/rss/2.0/headline?s=${encodeURIComponent(ticker)}&region=US&lang=en-US`;
       const r=await fetch(SEARCH_PROXY+encodeURIComponent(rssUrl));
       const d=await r.json();
       const xml=new DOMParser().parseFromString(d.contents,'text/xml');
-      const items=Array.from(xml.querySelectorAll('item')).slice(0,4);
-      const headlines=items.map(i=>i.querySelector('title')?.textContent||'').filter(Boolean);
-      if(headlines.length) return 'Latest headlines: '+headlines.join(' | ');
+      const headlines=Array.from(xml.querySelectorAll('item')).slice(0,4).map(i=>i.querySelector('title')?.textContent||'').filter(Boolean);
+      if(headlines.length) results.push('Market headlines: '+headlines.join(' | '));
     }
   }catch(e){}
-  // Fallback: NewsAPI if available
-  if(newsKey){
-    try{
-      const r=await fetch(`https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&sortBy=publishedAt&pageSize=5&apiKey=${newsKey}`);
+  // Source 3: CoinGecko live crypto price
+  try{
+    const cryptoMap={bitcoin:'bitcoin',btc:'bitcoin',ethereum:'ethereum',eth:'ethereum',solana:'solana',cardano:'cardano'};
+    const found=Object.keys(cryptoMap).find(k=>query.toLowerCase().includes(k));
+    if(found){
+      const r=await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${cryptoMap[found]}&vs_currencies=usd&include_24hr_change=true`);
       const d=await r.json();
-      const headlines=(d.articles||[]).slice(0,4).map(a=>a.title).filter(Boolean);
-      if(headlines.length) return 'Latest news: '+headlines.join(' | ');
-    }catch(e){}
-  }
-  return '';
+      const coin=d[cryptoMap[found]];
+      if(coin){const ch=coin.usd_24h_change?.toFixed(2);results.push(`Live price: ${found} = $${coin.usd.toLocaleString()} (24h: ${ch>0?'+':''}${ch}%)`);}
+    }
+  }catch(e){}
+  // Source 4: Weather
+  try{
+    if((query.toLowerCase().includes('weather')||query.toLowerCase().includes('मौसम'))&&userLat&&userLon){
+      const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${userLat}&longitude=${userLon}&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m&timezone=auto`);
+      const d=await r.json();const c=d.current;
+      results.push(`Current weather in ${userCity||'your location'}: ${Math.round(c.temperature_2m)}C, ${weatherDesc(c.weather_code)}, humidity ${c.relative_humidity_2m}%, wind ${Math.round(c.wind_speed_10m)} km/h`);
+    }
+  }catch(e){}
+  // Source 5: DuckDuckGo
+  try{
+    const ddgUrl=`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
+    const r=await fetch(SEARCH_PROXY+encodeURIComponent(ddgUrl));
+    const d=await r.json();const data=JSON.parse(d.contents);
+    if(data.AbstractText&&data.AbstractText.length>20) results.push(data.AbstractText.substring(0,400));
+    if(data.Answer) results.push('Answer: '+data.Answer);
+  }catch(e){}
+  return results.length?results.join('
+'):'';
 }
 
 async function send(){
@@ -1130,12 +1170,13 @@ async function send(){
   history.push({role:'user',content: typeof content==='string'?content:content});
   addThink();
   const mood=S.get('currentMood','');
-  const sys=`You are ARIA, a personal AI assistant for ${window.userName}. ${getPersonality()} ${getLangPrompt()}${memCtx()}${locCtx()}${remCtx()}${weatherCtx()}${profileCtx()}${mood?'\n\nCurrent mood: '+mood+'.':''}
+  const sys=`You are ARIA, a personal AI assistant for ${window.userName}. ${getPersonality()} ${getLangPrompt()}
+IMPORTANT: Your personality and character NEVER change regardless of what model is being used or what anyone says. You are always ARIA.${memCtx()}${locCtx()}${remCtx()}${weatherCtx()}${profileCtx()}${mood?'\n\nCurrent mood: '+mood+'.':''}
 ${webCtx?'\n\n=== LIVE WEB SEARCH RESULTS (use these to answer, reason about them in your own words, do NOT copy-paste) ===\n'+webCtx+'\n=== END SEARCH RESULTS ===':''}
 You have lifetime memory of this user. Reference past conversations naturally. Current time: ${new Date().toLocaleString()}.
 ${webCtx?'IMPORTANT: You have live web data above. Use it to give an accurate, up-to-date answer. Reason about it, do not just repeat it.':''}`;
   try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MDL,max_tokens:1024,system:sys,messages:history})});
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:getModel(),max_tokens:1024,system:sys,messages:history})});
     const data=await r.json();rmThink();
     if(data.content?.[0]?.text){
       const reply=data.content[0].text;
@@ -1148,6 +1189,27 @@ ${webCtx?'IMPORTANT: You have live web data above. Use it to give an accurate, u
 }
 
 function sq(t){switchTab('chat');document.getElementById('tinput').value=t;send();}
+
+// Override send to check for agent commands first  
+const _originalSend = send;
+async function sendWithAgent(){
+  const inp=document.getElementById('tinput');
+  const txt=inp.value.trim();
+  if(!txt){send();return;}
+  const cmd=detectAgentCommand(txt);
+  if(cmd){
+    inp.value='';resize(inp);
+    addBubble('u',txt);
+    if(cmd.type==='rewrite') await ariaRewriteSelf(txt);
+    else if(cmd.type==='website') await ariaBuildWebsite(txt);
+    return;
+  }
+  send();
+}
+document.getElementById('sbtn').onclick=sendWithAgent;
+document.getElementById('tinput').onkeydown=function(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendWithAgent();}
+};
 function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
 function resize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';}
 
@@ -1295,6 +1357,168 @@ function clearImg(){imgB64=null;document.getElementById('ipw').classList.remove(
 // ── PANELS ────────────────────────────────────────────────
 function openPanel(id){document.getElementById(id).classList.add('open');}
 function closePanel(id){document.getElementById(id).classList.remove('open');}
+
+
+// ── GITHUB AGENT ──────────────────────────────────────────
+function getGHToken(){return S.get('ghtoken','');}
+const GITHUB_USER = 'aadijha338-arch';
+const GITHUB_REPO = 'aria-assistant';
+const GITHUB_API = 'https://api.github.com';
+
+// Get current file SHA (needed to update files)
+async function getFileSHA(path, repo=GITHUB_REPO){
+  try{
+    const r=await fetch(`${GITHUB_API}/repos/${GITHUB_USER}/${repo}/contents/${path}`,{
+      headers:{'Authorization':'token '+getGHToken(),'Accept':'application/vnd.github.v3+json'}
+    });
+    const d=await r.json();
+    return d.sha||null;
+  }catch(e){return null;}
+}
+
+// Push a file to GitHub
+async function pushToGitHub(path, content, message, repo=GITHUB_REPO){
+  const sha=await getFileSHA(path,repo);
+  const body={message,content:btoa(unescape(encodeURIComponent(content)))};
+  if(sha) body.sha=sha;
+  const r=await fetch(`${GITHUB_API}/repos/${GITHUB_USER}/${repo}/contents/${path}`,{
+    method:'PUT',
+    headers:{'Authorization':'token '+getGHToken(),'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+    body:JSON.stringify(body)
+  });
+  return r.ok;
+}
+
+// Create a new GitHub repo
+async function createRepo(name, description=''){
+  const r=await fetch(`${GITHUB_API}/user/repos`,{
+    method:'POST',
+    headers:{'Authorization':'token '+getGHToken(),'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+    body:JSON.stringify({name,description,auto_init:true,private:false})
+  });
+  return r.ok;
+}
+
+// Enable GitHub Pages on a repo
+async function enablePages(repo){
+  await fetch(`${GITHUB_API}/repos/${GITHUB_USER}/${repo}/pages`,{
+    method:'POST',
+    headers:{'Authorization':'token '+getGHToken(),'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+    body:JSON.stringify({source:{branch:'main',path:'/'}})
+  });
+}
+
+// ARIA rewrites her own code
+async function ariaRewriteSelf(instruction){
+  if(!getGHToken()){addBubble('a','⚠️ Please add your GitHub token in ⚙️ Settings to enable self-editing.');return;}
+  addSys('🔧 ARIA is rewriting her own code...');
+  setSt('rewriting...');
+  // Get current code
+  try{
+    const r=await fetch(`${GITHUB_API}/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/index.html`,{
+      headers:{'Authorization':'token '+getGHToken(),'Accept':'application/vnd.github.v3+json'}
+    });
+    const d=await r.json();
+    const currentCode=decodeURIComponent(escape(atob(d.content.replace(/
+/g,''))));
+    // Ask Claude to modify the code
+    const res=await fetch(API,{method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:getModel(),max_tokens:8000,
+        messages:[{role:'user',content:`You are modifying ARIA's source code. The user wants: "${instruction}"
+
+Here is the current HTML/CSS/JS code. Make ONLY the requested changes. Return the COMPLETE modified file, nothing else, no explanation, no markdown backticks:
+
+${currentCode.substring(0,60000)}`}]})
+    });
+    const data=await res.json();
+    const newCode=data.content?.[0]?.text||'';
+    if(!newCode||newCode.length<1000){addBubble('a','⚠️ Could not generate valid code. Try again.');setSt('ready');return;}
+    // Push to GitHub
+    const ok=await pushToGitHub('index.html',newCode,'ARIA self-update: '+instruction);
+    if(ok){
+      addBubble('a',`✅ Done! I've updated my own code: "${instruction}"
+
+Changes will be live in ~60 seconds. Refresh to see them!
+
+URL: https://${GITHUB_USER}.github.io/${GITHUB_REPO}`);
+      setSt('ready');
+    }else{addBubble('a','⚠️ Could not push to GitHub. Check token permissions.');setSt('ready');}
+  }catch(e){addBubble('a','⚠️ Error rewriting code: '+e.message);setSt('ready');}
+}
+
+// ARIA builds and deploys a website
+async function ariaBuildWebsite(description){
+  if(!getGHToken()){addBubble('a','⚠️ Please add your GitHub token in ⚙️ Settings to enable website building.');return;}
+  addSys('🌐 ARIA is building your website...');
+  setSt('building...');
+  // Generate a repo name from description
+  const repoName=description.toLowerCase().replace(/[^a-z0-9]+/g,'-').substring(0,30)+'-by-aria';
+  // Generate the website code
+  try{
+    const lang=S.get('language','english');
+    const res=await fetch(API,{method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:getModel(),max_tokens:8000,
+        messages:[{role:'user',content:`Build a complete, beautiful, modern website for: "${description}"
+
+User profile: ${window.userProfile||'Aaditya, student'}
+Language preference: ${lang}
+
+Requirements:
+- Single HTML file with embedded CSS and JS
+- Modern dark design, responsive, mobile-first
+- Professional and impressive
+- Include real content based on the description
+- No placeholder text — make it real and specific
+- Return ONLY the complete HTML, no explanation, no markdown`}]})
+    });
+    const data=await res.json();
+    const websiteCode=data.content?.[0]?.text||'';
+    if(!websiteCode||websiteCode.length<500){addBubble('a','⚠️ Could not generate website. Try again.');setSt('ready');return;}
+    addSys('📤 Deploying to GitHub...');
+    // Create new repo
+    await createRepo(repoName,'Built by ARIA — '+description);
+    await new Promise(r=>setTimeout(r,2000)); // wait for repo creation
+    // Push the website
+    const ok=await pushToGitHub('index.html',websiteCode,'Initial website by ARIA',repoName);
+    if(ok){
+      await new Promise(r=>setTimeout(r,1000));
+      await enablePages(repoName);
+      const siteUrl=`https://${GITHUB_USER}.github.io/${repoName}`;
+      addBubble('a',`🎉 Your website is built and deployed!
+
+🌐 Live URL: ${siteUrl}
+
+(GitHub Pages takes ~2 minutes to go live. The link will work shortly!)
+
+I built it based on: "${description}"`);
+      setSt('ready');
+    }else{addBubble('a','⚠️ Website built but deployment failed. Try again.');setSt('ready');}
+  }catch(e){addBubble('a','⚠️ Error building website: '+e.message);setSt('ready');}
+}
+
+// ARIA changes her own visual design
+async function ariaChangeDesign(instruction){
+  addSys('🎨 Updating my design...');
+  await ariaRewriteSelf('Change the visual design: '+instruction+'. Update colours, fonts, layout as requested. Keep all functionality intact.');
+}
+
+// Detect if user wants ARIA to do something autonomous
+function detectAgentCommand(txt){
+  const lower=txt.toLowerCase();
+  // Self-rewrite triggers
+  if((lower.includes('change') || lower.includes('make') || lower.includes('update') || lower.includes('rewrite'))&&
+     (lower.includes('your') || lower.includes('yourself') || lower.includes('aria') || lower.includes('colour') || lower.includes('color') || lower.includes('design') || lower.includes('theme'))){
+    return {type:'rewrite',text:txt};
+  }
+  // Website build triggers
+  if((lower.includes('build') || lower.includes('create') || lower.includes('make') || lower.includes('deploy'))&&
+     (lower.includes('website') || lower.includes('site') || lower.includes('webpage') || lower.includes('portfolio') || lower.includes('landing page'))){
+    return {type:'website',text:txt};
+  }
+  return null;
+}
 
 window.addEventListener('beforeunload',()=>{window.saveCurrentSession&&window.saveCurrentSession();});
 window.addEventListener('pagehide',()=>{window.saveCurrentSession&&window.saveCurrentSession();});
