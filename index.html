@@ -437,6 +437,12 @@ body{display:flex;flex-direction:column}
       </select>
     </div>
     <div class="setting-row">
+      <div><div class="setting-label">Voice</div><div class="setting-sub">Pick ARIA's voice</div></div>
+      <select class="setting-sel" id="set-voice" onchange="saveSetting('voicename',this.value)" style="width:150px">
+        <option value="auto">Auto</option>
+      </select>
+    </div>
+    <div class="setting-row">
       <div><div class="setting-label">Voice speed</div></div>
       <select class="setting-sel" id="set-speed" onchange="saveSetting('voicespeed',this.value)">
         <option value="0.85">Slow</option>
@@ -444,6 +450,19 @@ body{display:flex;flex-direction:column}
         <option value="1.1">Fast</option>
         <option value="1.25">Very fast</option>
       </select>
+    </div>
+    <div class="setting-row">
+      <div><div class="setting-label">Voice pitch</div></div>
+      <select class="setting-sel" id="set-pitch" onchange="saveSetting('voicepitch',this.value)">
+        <option value="0.8">Low / गहिरो</option>
+        <option value="1.0">Normal</option>
+        <option value="1.05" selected>Slightly warm</option>
+        <option value="1.2">High / उच्च</option>
+      </select>
+    </div>
+    <div class="setting-row">
+      <div><div class="setting-label">Test voice</div><div class="setting-sub">Hear ARIA speak</div></div>
+      <button onclick="speak('नमस्ते! Hello! I am ARIA, your personal assistant.')" style="background:var(--accent2);color:#080810;border:none;border-radius:var(--rs);padding:8px 12px;font-family:DM Mono,monospace;font-size:12px;cursor:pointer">▶ Test</button>
     </div>
     <div class="setting-row">
       <div><div class="setting-label">NewsAPI key</div><div class="setting-sub">From newsapi.org</div></div>
@@ -1038,6 +1057,55 @@ window.saveCurrentSession=async()=>{
   }catch(e){await window.saveSession(history,'');}
 };
 
+// ── WEB SEARCH ────────────────────────────────────────────
+const SEARCH_PROXY='https://api.allorigins.win/get?url=';
+const SEARCH_KEYWORDS=['today','now','latest','current','news','price','weather','happened','who is','what is','2024','2025','2026','live','score','result','आज','अहिले','समाचार','मौसम'];
+
+function needsWebSearch(txt){
+  const lower=txt.toLowerCase();
+  return SEARCH_KEYWORDS.some(k=>lower.includes(k));
+}
+
+async function webSearch(query){
+  try{
+    // Use DuckDuckGo Instant Answer API — free, no key
+    const ddgUrl=`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
+    const r=await fetch(SEARCH_PROXY+encodeURIComponent(ddgUrl));
+    const d=await r.json();
+    const data=JSON.parse(d.contents);
+    let results=[];
+    if(data.AbstractText) results.push(data.AbstractText);
+    if(data.Answer) results.push(data.Answer);
+    if(data.RelatedTopics?.length){
+      data.RelatedTopics.slice(0,3).forEach(t=>{if(t.Text)results.push(t.Text);});
+    }
+    if(results.length) return results.join('\n');
+  }catch(e){}
+  // Fallback: Yahoo Finance RSS for financial queries
+  try{
+    const finTerms=['bitcoin','ethereum','stock','market','price','crypto','btc','eth','gold','dollar'];
+    if(finTerms.some(t=>query.toLowerCase().includes(t))){
+      const rssUrl=`https://feeds.finance.yahoo.com/rss/2.0/headline?s=${encodeURIComponent(query.split(' ')[0])}&region=US&lang=en-US`;
+      const r=await fetch(SEARCH_PROXY+encodeURIComponent(rssUrl));
+      const d=await r.json();
+      const xml=new DOMParser().parseFromString(d.contents,'text/xml');
+      const items=Array.from(xml.querySelectorAll('item')).slice(0,4);
+      const headlines=items.map(i=>i.querySelector('title')?.textContent||'').filter(Boolean);
+      if(headlines.length) return 'Latest headlines: '+headlines.join(' | ');
+    }
+  }catch(e){}
+  // Fallback: NewsAPI if available
+  if(newsKey){
+    try{
+      const r=await fetch(`https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&sortBy=publishedAt&pageSize=5&apiKey=${newsKey}`);
+      const d=await r.json();
+      const headlines=(d.articles||[]).slice(0,4).map(a=>a.title).filter(Boolean);
+      if(headlines.length) return 'Latest news: '+headlines.join(' | ');
+    }catch(e){}
+  }
+  return '';
+}
+
 async function send(){
   if(busy)return;
   const inp=document.getElementById('tinput');const txt=inp.value.trim();
@@ -1049,10 +1117,23 @@ async function send(){
     content=[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:imgB64}},{type:'text',text:txt||'What do you see?'}];
     addBubble('u',display,document.getElementById('ipreview').src);clearImg();
   }else{content=txt;addBubble('u',txt);}
-  history.push({role:'user',content});
+
+  // Web search if query needs live info
+  let webCtx='';
+  if(txt && needsWebSearch(txt)){
+    setSt('searching web...');
+    addSys('🔍 Searching the web...');
+    webCtx=await webSearch(txt);
+    if(webCtx) addSys('✓ Got live results');
+  }
+
+  history.push({role:'user',content: typeof content==='string'?content:content});
   addThink();
   const mood=S.get('currentMood','');
-  const sys=`You are ARIA, a personal AI assistant for ${window.userName}. ${getPersonality()} ${getLangPrompt()}${memCtx()}${locCtx()}${remCtx()}${weatherCtx()}${profileCtx()}${mood?'\n\nCurrent mood: '+mood+'.':''}\n\nYou have lifetime memory of this user. Reference past conversations naturally when relevant. Current time: ${new Date().toLocaleString()}.`;
+  const sys=`You are ARIA, a personal AI assistant for ${window.userName}. ${getPersonality()} ${getLangPrompt()}${memCtx()}${locCtx()}${remCtx()}${weatherCtx()}${profileCtx()}${mood?'\n\nCurrent mood: '+mood+'.':''}
+${webCtx?'\n\n=== LIVE WEB SEARCH RESULTS (use these to answer, reason about them in your own words, do NOT copy-paste) ===\n'+webCtx+'\n=== END SEARCH RESULTS ===':''}
+You have lifetime memory of this user. Reference past conversations naturally. Current time: ${new Date().toLocaleString()}.
+${webCtx?'IMPORTANT: You have live web data above. Use it to give an accurate, up-to-date answer. Reason about it, do not just repeat it.':''}`;
   try{
     const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MDL,max_tokens:1024,system:sys,messages:history})});
     const data=await r.json();rmThink();
@@ -1060,7 +1141,6 @@ async function send(){
       const reply=data.content[0].text;
       history.push({role:'assistant',content:reply});
       addBubble('a',reply);setSt('ready');speak(reply);
-      // Save after every message
       window.saveCurrentSession();
     }else{addBubble('a','⚠️ '+(data.error?.message||'Error'));setSt('error');}
   }catch(e){rmThink();addBubble('a','⚠️ Network error. / नेटवर्क त्रुटि।');setSt('offline');}
@@ -1131,22 +1211,76 @@ function stopRec(){
   const c=document.getElementById('micchip');c.textContent='🎤 Voice';c.classList.remove('rec');setSt('ready');
   setTimeout(startWake,500);
 }
+// ── ENHANCED VOICE SYSTEM ────────────────────────────────
+let voicesLoaded=false;
+let availableVoices=[];
+function loadVoices(){
+  availableVoices=speechSynthesis.getVoices();
+  if(availableVoices.length){voicesLoaded=true;populateVoiceSelector();}
+}
+if(window.speechSynthesis){loadVoices();speechSynthesis.onvoiceschanged=loadVoices;}
+
+function populateVoiceSelector(){
+  const sel=document.getElementById('set-voice');
+  if(!sel)return;
+  sel.innerHTML='<option value="auto">Auto (best available)</option>';
+  const lang=S.get('language','english');
+  const filtered=availableVoices.filter(v=>lang==='nepali'?(v.lang.startsWith('ne')||v.lang.startsWith('en')):v.lang.startsWith('en')||v.lang.startsWith('ne'));
+  filtered.sort((a,b)=>{
+    const score=n=>n.includes('Premium')||n.includes('Enhanced')||n.includes('Natural')||n.includes('Neural')?0:1;
+    return score(a.name)-score(b.name);
+  });
+  filtered.forEach(v=>{
+    const opt=document.createElement('option');
+    opt.value=v.name;
+    const q=v.name.includes('Premium')||v.name.includes('Enhanced')||v.name.includes('Neural')?'⭐ ':'';
+    opt.textContent=q+v.name+' ('+v.lang+')';
+    if(v.name===S.get('voicename',''))opt.selected=true;
+    sel.appendChild(opt);
+  });
+}
+
+function getBestVoice(){
+  const saved=S.get('voicename','');
+  if(saved&&saved!=='auto'){const v=availableVoices.find(v=>v.name===saved);if(v)return v;}
+  const lang=S.get('language','english');
+  const priorities=lang==='nepali'?['ne-NP','ne','en-GB','en-US']:['en-GB','en-AU','en-US','en'];
+  for(const p of priorities){
+    const premium=availableVoices.find(v=>v.lang.startsWith(p.split('-')[0])&&(v.name.includes('Premium')||v.name.includes('Enhanced')||v.name.includes('Neural')||v.name.includes('Natural')));
+    if(premium)return premium;
+    const standard=availableVoices.find(v=>v.lang===p||v.lang.startsWith(p));
+    if(standard)return standard;
+  }
+  return availableVoices[0]||null;
+}
+
+function splitIntoChunks(text,maxLen){
+  if(text.length<=maxLen)return[text];
+  const chunks=[];const sentences=text.split(/(?<=[.!?।])\s+/);
+  let cur='';
+  for(const s of sentences){if((cur+s).length>maxLen&&cur){chunks.push(cur.trim());cur=s;}else cur+=(cur?' ':'')+s;}
+  if(cur)chunks.push(cur.trim());
+  return chunks.length?chunks:[text];
+}
+
 function speak(txt){
   if(!window.speechSynthesis)return;
   speechSynthesis.cancel();
-  const clean=txt.replace(/[✦✓⚠️🧠📷🌤⚡💡☀️⏰📍😊📈📰🕐🧬🎯🌍🇳🇵]/g,'').trim();
-  const u=new SpeechSynthesisUtterance(clean);
-  u.rate=parseFloat(S.get('voicespeed','0.95'));u.pitch=1.05;
-  const vs=speechSynthesis.getVoices();
-  // Try Nepali voice first if language is Nepali
-  const lang=S.get('language','english');
-  let v=null;
-  if(lang==='nepali')v=vs.find(v=>v.lang==='ne-NP'||v.lang.startsWith('ne'));
-  if(!v)v=vs.find(v=>v.lang==='en-GB')||vs.find(v=>v.lang.startsWith('en'));
-  if(v)u.voice=v;
-  speechSynthesis.speak(u);
+  const clean=txt.replace(/[✦✓⚠️🧠📷🌤⚡💡☀️⏰📍😊📈📰🕐🧬🎯🌍🇳🇵🔍]/g,'').trim();
+  if(!clean)return;
+  const chunks=splitIntoChunks(clean,200);
+  let i=0;
+  function next(){
+    if(i>=chunks.length)return;
+    const u=new SpeechSynthesisUtterance(chunks[i++]);
+    u.rate=parseFloat(S.get('voicespeed','0.95'));
+    u.pitch=parseFloat(S.get('voicepitch','1.05'));
+    u.volume=1;
+    const v=getBestVoice();if(v)u.voice=v;
+    u.onend=next;speechSynthesis.speak(u);
+  }
+  next();
 }
-speechSynthesis&&speechSynthesis.getVoices();
 
 // ── CAMERA ────────────────────────────────────────────────
 function trigCam(){document.getElementById('camfile').click();}
