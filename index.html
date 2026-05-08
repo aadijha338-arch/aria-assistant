@@ -523,7 +523,24 @@ async function fetchMarketNews(name){
 function getWatchlist(){return S.json('watchlist',[]);}
 function addAsset(){const inp=document.getElementById('assetInput');const name=inp.value.trim();if(!name)return;const w=getWatchlist();if(w.find(a=>a.name.toLowerCase()===name.toLowerCase())){inp.value='';return;}w.push({name,verdict:'analyzing',reason:'Fetching...',headlines:[],price:''});S.set('watchlist',w);inp.value='';renderWatchlist();analyzeAsset(name);}
 function removeAsset(name){S.set('watchlist',getWatchlist().filter(a=>a.name!==name));renderWatchlist();}
-function renderWatchlist(){const el=document.getElementById('watchlist');const w=getWatchlist();el.innerHTML=w.length?w.map(a=>'<div class="acrd"><div class="atop"><div><div class="aname">'+esc(a.name)+'</div>'+(a.price?'<div class="aprice">'+esc(a.price)+'</div>':'')+'</div><div style="display:flex;gap:8px;align-items:center"><span class="averd '+a.verdict+'">'+a.verdict.toUpperCase()+'</span><span style="color:var(--muted);cursor:pointer;font-size:16px" onclick="removeAsset(this.dataset.n)" data-n="'+a.name+'">x</span></div></div><div class="areason">'+esc(a.reason)+'</div>'+(a.headlines?.length?'<div class="anews">'+a.headlines.slice(0,2).map(h=>esc(h)).join('<br>')+'</div>':'')+'</div>').join(''):'<p style="font-size:13px;color:var(--muted);padding:8px 0">Add assets above.</p>';}
+function renderWatchlist(){
+  const el=document.getElementById('watchlist');
+  const w=getWatchlist();
+  if(!w.length){el.innerHTML='<p style="font-size:13px;color:var(--muted);padding:8px 0">Add assets above.</p>';return;}
+  el.innerHTML=w.map(function(a){
+    return '<div class="acrd">'
+      +'<div class="atop">'
+        +'<div><div class="aname">'+esc(a.name)+'</div>'+(a.price?'<div class="aprice">'+esc(a.price)+'</div>':'')+'</div>'
+        +'<div style="display:flex;gap:8px;align-items:center">'
+          +'<span class="averd '+a.verdict+'">'+a.verdict.toUpperCase()+'</span>'
+          +'<span style="color:var(--muted);cursor:pointer;font-size:16px" onclick="removeAsset(''+esc(a.name)+'')">x</span>'
+        +'</div>'
+      +'</div>'
+      +'<div class="areason">'+esc(a.reason)+'</div>'
+      +(a.headlines&&a.headlines.length?'<div class="anews">'+a.headlines.slice(0,2).map(function(h){return esc(h);}).join('<br>')+'</div>':'')
+    +'</div>';
+  }).join('');
+}
 async function analyzeAsset(name){
   try{const slug=name.toLowerCase().replace(/ /g,'-');const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids='+slug+'&vs_currencies=usd&include_24hr_change=true');const d=await r.json();if(d[slug]?.usd){const w=getWatchlist();const i=w.findIndex(a=>a.name===name);if(i>=0){w[i].price='$'+d[slug].usd.toLocaleString()+(d[slug].usd_24h_change?' ('+(d[slug].usd_24h_change>0?'+':'')+d[slug].usd_24h_change.toFixed(2)+'%)':'');S.set('watchlist',w);}}}catch(e){}
   const headlines=await fetchMarketNews(name);const w=getWatchlist();const idx=w.findIndex(a=>a.name===name);if(idx<0)return;
