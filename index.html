@@ -639,12 +639,12 @@ async function startApp(){
     document.getElementById('wtitle').textContent='Hey, '+window.userName+'!';
     document.getElementById('wsub').textContent='Say "Yo ARIA" or type below. I remember everything forever.';
   }
-  document.getElementById('set-model').value=S.get('model','claude-haiku-4-5-20251001');
-  document.getElementById('set-language').value=S.get('language','english');
-  document.getElementById('set-personality').value=S.get('personality','friendly');
-  document.getElementById('set-speed').value=S.get('voicespeed','0.95');
-  document.getElementById('set-newskey').value=newsKey;
-  document.getElementById('set-ghtoken').value=S.get('ghtoken','');
+  const _sm=document.getElementById('set-model');if(_sm)_sm.value=S.get('model','claude-haiku-4-5-20251001');
+  const _sl=document.getElementById('set-language');if(_sl)_sl.value=S.get('language','english');
+  const _sp=document.getElementById('set-personality');if(_sp)_sp.value=S.get('personality','friendly');
+  const _ss=document.getElementById('set-speed');if(_ss)_ss.value=S.get('voicespeed','0.95');
+  const _sn=document.getElementById('set-newskey');if(_sn)_sn.value=newsKey;
+  const _sg=document.getElementById('set-ghtoken');if(_sg)_sg.value=S.get('ghtoken','');
   renderMems();renderReminders();
   setInterval(checkReminders,30000);
   silentLocation();
@@ -658,9 +658,8 @@ async function startApp(){
   setSt('ready');
   setTimeout(startWake,1000);
   // Override send button with agent-aware version
-  document.getElementById('sbtn').onclick=sendWithAgent;
-  const origKeydown=document.getElementById('tinput').onkeydown;
-  document.getElementById('tinput').onkeydown=function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendWithAgent();}};
+  const _sb=document.getElementById('sbtn');if(_sb)_sb.onclick=sendWithAgent;
+  const _ti=document.getElementById('tinput');if(_ti)_ti.onkeydown=function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendWithAgent();}};
   loadHistory();
   loadNews('general',document.querySelector('.ntab'));
   renderWatchlist();
