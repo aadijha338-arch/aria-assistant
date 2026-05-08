@@ -990,8 +990,7 @@ function rmThink(){const e=document.getElementById('thk'); if(e) e.remove();}
 function setSt(t){document.getElementById('stxt').textContent=t;}
 
 window.saveCurrentSession = async () => {
-  if(!history.length||sessionSaved) return;
-  sessionSaved=true;
+  if(!history.length) return;
   try{
     const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MDL,max_tokens:80,messages:[{role:'user',content:'Summarize in 1 sentence: '+history.filter(m=>typeof m.content==='string').slice(-6).map(m=>m.role+': '+m.content).join(' | ')}]})});
     const d=await res.json(); const summary=d.content?.[0]?.text||'';
@@ -1024,7 +1023,8 @@ async function send(){
       history.push({role:'assistant',content:reply});
       addBubble('a',reply); setSt('ready'); speak(reply);
       sessionSaved=false;
-      if(history.length%8===0) window.saveCurrentSession();
+      // Save after every single message so memory is never lost
+      window.saveCurrentSession();
     }else{ addBubble('a','⚠️ '+(data.error?.message||'Error')); setSt('error'); }
   }catch(e){ rmThink(); addBubble('a','⚠️ Network error.'); setSt('offline'); }
   busy=false; document.getElementById('sbtn').disabled=false;
