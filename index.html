@@ -558,18 +558,69 @@ async function loadNews(cat,el){
   const nk=S.get('newskey','');if(!nk){list.innerHTML='<p style="font-size:13px;color:var(--muted);line-height:1.6;padding:16px 0">Add NewsAPI key in Settings.</p>';return;}
   try{const r=await fetch('https://newsapi.org/v2/top-headlines?category='+cat+'&language=en&pageSize=15&apiKey='+nk);const d=await r.json();
     if(!d.articles?.length){list.innerHTML='<p style="font-size:13px;color:var(--muted)">No articles found.</p>';return;}
-    list.innerHTML=d.articles.filter(a=>a.title&&a.title!=='[Removed]').map(a=>'<div class="ncrd" onclick="this.classList.toggle('expanded')"><div class="nsrc">'+esc(a.source?.name||'News')+'</div><div class="nttl">'+esc(a.title)+'</div><div class="ntime">'+new Date(a.publishedAt).toLocaleString()+'</div><div class="ndesc">'+esc(a.description||'')+'</div></div>').join('');
+    var frag2=document.createDocumentFragment();d.articles.filter(function(a){return a.title&&a.title!=='[Removed]';}).forEach(function(a){var c=document.createElement('div');c.className='ncrd';c.onclick=function(){this.classList.toggle('expanded');};var src=document.createElement('div');src.className='nsrc';src.textContent=(a.source&&a.source.name)||'News';var ttl=document.createElement('div');ttl.className='nttl';ttl.textContent=a.title;var tm=document.createElement('div');tm.className='ntime';tm.textContent=new Date(a.publishedAt).toLocaleString();var desc=document.createElement('div');desc.className='ndesc';desc.textContent=a.description||'';c.appendChild(src);c.appendChild(ttl);c.appendChild(tm);c.appendChild(desc);frag2.appendChild(c);});list.innerHTML='';list.appendChild(frag2);
   }catch(e){list.innerHTML='<p style="font-size:13px;color:var(--muted)">Could not load. Check NewsAPI key.</p>';}
 }
 async function loadNepalNews(el){
-  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));if(el)el.classList.add('active');
-  const list=document.getElementById('newsList');list.innerHTML='<p style="font-size:13px;color:var(--muted);padding:16px 0">Loading Nepal news...</p>';
-  try{const r=await fetch(PROXY+encodeURIComponent('https://kathmandupost.com/rss'));const d=await r.json();const xml=new DOMParser().parseFromString(d.contents,'text/xml');const items=Array.from(xml.querySelectorAll('item')).slice(0,15);if(!items.length)throw new Error('no items');list.innerHTML=items.map(item=>{const title=item.querySelector('title')?.textContent||'';const desc=item.querySelector('description')?.textContent?.replace(/<[^>]*>/g,'')||'';const pub=item.querySelector('pubDate')?.textContent||'';return '<div class="ncrd" onclick="this.classList.toggle('expanded')"><div class="nsrc">Nepal - Kathmandu Post</div><div class="nttl">'+esc(title)+'</div><div class="ntime">'+(pub?new Date(pub).toLocaleString():'')+'</div><div class="ndesc">'+esc(desc.substring(0,200))+'</div></div>';}).join('');}
-  catch(e){const nk=S.get('newskey','');if(nk){try{const r2=await fetch('https://newsapi.org/v2/everything?q=Nepal&language=en&sortBy=publishedAt&pageSize=15&apiKey='+nk);const d2=await r2.json();if(d2.articles?.length){list.innerHTML=d2.articles.filter(a=>a.title&&a.title!=='[Removed]').map(a=>'<div class="ncrd" onclick="this.classList.toggle('expanded')"><div class="nsrc">Nepal - '+esc(a.source?.name||'News')+'</div><div class="nttl">'+esc(a.title)+'</div><div class="ntime">'+new Date(a.publishedAt).toLocaleString()+'</div><div class="ndesc">'+esc(a.description||'')+'</div></div>').join('');}else{list.innerHTML='<p style="font-size:13px;color:var(--muted)">No Nepal news found.</p>';}}catch(e2){list.innerHTML='<p style="font-size:13px;color:var(--muted)">Could not load Nepal news.</p>';}}else{list.innerHTML='<p style="font-size:13px;color:var(--muted);line-height:1.6">Add NewsAPI key for Nepal news.</p>';}}
+  document.querySelectorAll('.ntab').forEach(function(t){t.classList.remove('active');});if(el)el.classList.add('active');
+  var list=document.getElementById('newsList');
+  list.innerHTML='<p style="font-size:13px;color:var(--muted);padding:16px 0">Loading Nepal news...</p>';
+  function makeCard(title,desc,pub,src){
+    var c=document.createElement('div');c.className='ncrd';
+    c.onclick=function(){this.classList.toggle('expanded');};
+    var s=document.createElement('div');s.className='nsrc';s.textContent=src||'Nepal';
+    var t=document.createElement('div');t.className='nttl';t.textContent=title;
+    var tm=document.createElement('div');tm.className='ntime';tm.textContent=pub?new Date(pub).toLocaleString():'';
+    var d=document.createElement('div');d.className='ndesc';d.textContent=desc?desc.substring(0,200):'';
+    c.appendChild(s);c.appendChild(t);c.appendChild(tm);c.appendChild(d);
+    return c;
+  }
+  try{
+    var r=await fetch(PROXY+encodeURIComponent('https://kathmandupost.com/rss'));
+    var d=await r.json();
+    var xml=new DOMParser().parseFromString(d.contents,'text/xml');
+    var items=Array.from(xml.querySelectorAll('item')).slice(0,15);
+    if(!items.length)throw new Error('no items');
+    list.innerHTML='';
+    items.forEach(function(item){
+      var title=item.querySelector('title')?item.querySelector('title').textContent:'';
+      var desc=item.querySelector('description')?item.querySelector('description').textContent.replace(/<[^>]*>/g,''):'';
+      var pub=item.querySelector('pubDate')?item.querySelector('pubDate').textContent:'';
+      list.appendChild(makeCard(title,desc,pub,'Nepal - Kathmandu Post'));
+    });
+  }catch(e){
+    var nk=S.get('newskey','');
+    if(nk){
+      try{
+        var r2=await fetch('https://newsapi.org/v2/everything?q=Nepal&language=en&sortBy=publishedAt&pageSize=15&apiKey='+nk);
+        var d2=await r2.json();
+        if(d2.articles&&d2.articles.length){
+          list.innerHTML='';
+          d2.articles.filter(function(a){return a.title&&a.title!=='[Removed]';}).forEach(function(a){
+            list.appendChild(makeCard(a.title,a.description,a.publishedAt,'Nepal - '+(a.source&&a.source.name?a.source.name:'News')));
+          });
+        }else{list.innerHTML='<p style="font-size:13px;color:var(--muted)">No Nepal news found.</p>';}
+      }catch(e2){list.innerHTML='<p style="font-size:13px;color:var(--muted)">Could not load Nepal news.</p>';}
+    }else{list.innerHTML='<p style="font-size:13px;color:var(--muted)">Add NewsAPI key in Settings for Nepal news.</p>';}
+  }
 }
-
-function renderHistory(sessions){const el=document.getElementById('historyList');if(!el)return;if(!sessions.length){el.innerHTML='<p style="font-size:13px;color:var(--muted);padding:8px 0">No history yet.</p>';return;}el.innerHTML=sessions.map(s=>'<div class="scrd"><div style="display:flex;justify-content:space-between"><div style="flex:1"><div class="sdate">'+new Date(s.ts).toLocaleString()+'</div><div class="sprev">'+esc(s.summary||(s.msgs?.[0]?.content||'').substring(0,80)||'Chat session')+'</div><div class="scnt">'+(s.msgs?.length||0)+' messages</div></div><span style="color:var(--muted);cursor:pointer;font-size:16px;padding:4px;flex-shrink:0" onclick="window.dbDeleteSession('" +s.id+ "')">x</span></div></div>').join('');}
-
+function renderHistory(sessions){
+  var el=document.getElementById('historyList');if(!el)return;
+  el.innerHTML='';
+  if(!sessions.length){el.innerHTML='<p style="font-size:13px;color:var(--muted);padding:8px 0">No history yet.</p>';return;}
+  sessions.forEach(function(s){
+    var card=document.createElement('div');card.className='scrd';
+    var row=document.createElement('div');row.style.cssText='display:flex;justify-content:space-between';
+    var info=document.createElement('div');info.style.flex='1';
+    var date=document.createElement('div');date.className='sdate';date.textContent=new Date(s.ts).toLocaleString();
+    var prev=document.createElement('div');prev.className='sprev';prev.textContent=s.summary||(s.msgs&&s.msgs[0]&&s.msgs[0].content?s.msgs[0].content.substring(0,80):'Chat session');
+    var cnt=document.createElement('div');cnt.className='scnt';cnt.textContent=(s.msgs?s.msgs.length:0)+' messages';
+    info.appendChild(date);info.appendChild(prev);info.appendChild(cnt);
+    var del=document.createElement('span');del.style.cssText='color:var(--muted);cursor:pointer;font-size:16px;padding:4px;flex-shrink:0';del.textContent='x';
+    del.onclick=(function(id){return function(){window.dbDeleteSession(id);};})(s.id);
+    row.appendChild(info);row.appendChild(del);card.appendChild(row);el.appendChild(card);
+  });
+}
 function detectEmotion(){document.getElementById('emotionfile').click();}
 async function onEmotionImg(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=async ev=>{setSt('reading mood...');try{const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':window.getKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:50,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:ev.target.result.split(',')[1]}},{type:'text',text:'What emotion does this face show? 3 words max.'}]}]})});const data=await res.json();const emotion=data.content?.[0]?.text?.trim()||'neutral';const badge=document.getElementById('emoBadge');badge.textContent='Mood: '+emotion;badge.classList.add('show');setTimeout(()=>badge.classList.remove('show'),5000);addSys('Mood: '+emotion);S.set('mood',emotion);setSt('ready');}catch(e){setSt('ready');}};r.readAsDataURL(f);e.target.value='';}
 
