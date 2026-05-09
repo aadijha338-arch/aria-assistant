@@ -648,7 +648,17 @@ async function ghPush(path,content,message,repo){const sha=await ghGetSHA(path,r
 async function ghCreateRepo(name,desc){const r=await fetch(GH_API+'/user/repos',{method:'POST',headers:{'Authorization':'token '+getGHToken(),'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify({name,description:desc||'',auto_init:true,private:false})});return r.ok;}
 async function ghEnablePages(repo){try{await fetch(GH_API+'/repos/'+GH_USER+'/'+repo+'/pages',{method:'POST',headers:{'Authorization':'token '+getGHToken(),'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify({source:{branch:'main',path:'/'}})});}catch(e){}}
 
-function detectAgent(txt){const l=txt.toLowerCase();if((l.includes('build')||l.includes('create')||l.includes('make')||l.includes('deploy'))&&(l.includes('website')||l.includes('site')||l.includes('webpage')||l.includes('portfolio')||l.includes('landing page')))return 'website';if((l.includes('change')||l.includes('update')||l.includes('rewrite')||l.includes('make'))&&(l.includes('your')||l.includes('yourself')||l.includes('colour')||l.includes('color')||l.includes('theme')||l.includes('design')))return 'rewrite';return null;}
+function detectAgent(txt){
+  const l=txt.toLowerCase().trim();
+  // Only trigger website build if starts with clear build command
+  const buildStarters=['build me','create me','make me','deploy a','build a','create a','make a'];
+  const websiteWords=['website','webpage','landing page','portfolio site'];
+  if(buildStarters.some(s=>l.startsWith(s))&&websiteWords.some(w=>l.includes(w)))return 'website';
+  // Only trigger self-rewrite if explicitly about ARIA's own appearance
+  const rewriteStarters=['change your','update your','rewrite your','make yourself','change aria'];
+  if(rewriteStarters.some(s=>l.startsWith(s)))return 'rewrite';
+  return null;
+}
 async function ariaBuildWebsite(desc){
   if(!getGHToken()){addBubble('a','Please add your GitHub token in Settings.');return;}
   addSys('Building your website...');setSt('building...');
