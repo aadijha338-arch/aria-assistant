@@ -180,8 +180,8 @@ body{display:flex;flex-direction:column}
     <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
     Sign in with Google
   </button>
-  <div id="login-err">Access denied. Only authorised account can use ARIA.</div>
-  <p style="font-size:11px;color:var(--muted);text-align:center;max-width:240px;line-height:1.6">Only your Google account can access this.</p>
+  <div id="login-err">Sign-in failed. Please try again.</div>
+  <p style="font-size:11px;color:var(--muted);text-align:center;max-width:240px;line-height:1.6">Sign in with any Google account.</p>
 </div>
 <div id="setupScreen" class="gone">
   <div class="setup-logo">ARIA</div>
@@ -320,19 +320,28 @@ body{display:flex;flex-direction:column}
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-const ALLOWED='aadijha338@gmail.com';
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, setDoc, getDoc, collectionGroup } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+const OWNER='aadijha338@gmail.com';
 const fbCfg={apiKey:"AIzaSyAMKd-wZiOTdAGtQ0DRxWHXCqWSp5HcQSc",authDomain:"aria-assistant-4deed.firebaseapp.com",projectId:"aria-assistant-4deed",storageBucket:"aria-assistant-4deed.firebasestorage.app",messagingSenderId:"1029745466681",appId:"1:1029745466681:web:691db430ebe2ed517adce8"};
 const fb=initializeApp(fbCfg);const auth=getAuth(fb);const db=getFirestore(fb);const prov=new GoogleAuthProvider();
+
+function userCol(path){return collection(db,'users',window.userUID||'anon',path);}
+function userDoc(...path){return doc(db,'users',window.userUID||'anon',...path);}
+
 window.signInWithGoogle=async()=>{
   document.getElementById('login-err').classList.remove('show');
-  try{const r=await signInWithPopup(auth,prov);if(r.user.email!==ALLOWED){await fbSignOut(auth);document.getElementById('login-err').classList.add('show');}}
+  try{await signInWithPopup(auth,prov);}
   catch(e){if(e.code!=='auth/popup-closed-by-user'){document.getElementById('login-err').textContent='Error: '+e.message;document.getElementById('login-err').classList.add('show');}}
 };
 window.doSignOut=async()=>{try{await window.saveSession();}catch(e){}await fbSignOut(auth);location.reload();};
-window.dbSave=async(msgs,sum)=>{if(!msgs||!msgs.length)return;try{await addDoc(collection(db,'chats'),{msgs:msgs.map(m=>({role:m.role,content:typeof m.content==='string'?m.content:'[image]'})),summary:sum||'',ts:Date.now()});}catch(e){}};
-window.dbLoadProfile=async()=>{try{const s=await getDoc(doc(db,'profile','main'));if(s.exists()){const d=s.data();window.userProfile=d.profile||'';window.profileTs=d.updatedAt||0;window.totalC=d.totalConvos||0;window.totalM=d.totalMsgs||0;renderProfile();return d.profile||'';}}catch(e){}return '';};
-window.dbSaveProfile=async(text,c,m)=>{try{await setDoc(doc(db,'profile','main'),{profile:text,updatedAt:Date.now(),totalConvos:c,totalMsgs:m});}catch(e){}};
+
+window.dbLogUserMeta=async()=>{
+  try{await setDoc(userDoc('meta','info'),{email:window.userEmail||'',name:window.userName||'',lastSeen:Date.now(),firstSeen:Date.now()},{merge:true});}catch(e){}
+};
+
+window.dbSave=async(msgs,sum)=>{if(!msgs||!msgs.length)return;try{await addDoc(userCol('chats'),{msgs:msgs.map(m=>({role:m.role,content:typeof m.content==='string'?m.content:'[image]'})),summary:sum||'',ts:Date.now()});await setDoc(userDoc('meta','info'),{lastSeen:Date.now(),msgCount:(window.totalM||0)},{merge:true});}catch(e){}};
+window.dbLoadProfile=async()=>{try{const s=await getDoc(userDoc('profile','main'));if(s.exists()){const d=s.data();window.userProfile=d.profile||'';window.profileTs=d.updatedAt||0;window.totalC=d.totalConvos||0;window.totalM=d.totalMsgs||0;renderProfile();return d.profile||'';}}catch(e){}return '';};
+window.dbSaveProfile=async(text,c,m)=>{try{await setDoc(userDoc('profile','main'),{profile:text,updatedAt:Date.now(),totalConvos:c,totalMsgs:m});}catch(e){}};
 window.dbUpdateProfile=async(msgs)=>{
   if(!msgs||!msgs.length)return;
   const existing=window.userProfile||'No profile yet.';
@@ -347,7 +356,7 @@ window.dbUpdateProfile=async(msgs)=>{
 window.rebuildProfile=async()=>{
   document.getElementById('profileText').textContent='Rebuilding...';
   try{
-    const q=query(collection(db,'chats'),orderBy('ts','asc'));const snap=await getDocs(q);
+    const q=query(userCol('chats'),orderBy('ts','asc'));const snap=await getDocs(q);
     const all=[];snap.docs.forEach(d=>{const dd=d.data();if(dd.msgs)all.push(...dd.msgs.filter(m=>typeof m.content==='string'));});
     if(!all.length){document.getElementById('profileText').textContent='No conversations yet.';return;}
     const text=all.slice(-100).map(m=>m.role+': '+m.content).join('\n');
@@ -357,16 +366,39 @@ window.rebuildProfile=async()=>{
     await window.dbSaveProfile(profile,snap.docs.length,all.length);renderProfile();addSys('Profile rebuilt from '+snap.docs.length+' conversations!');
   }catch(e){document.getElementById('profileText').textContent='Error. Check connection.';}
 };
-window.dbLoadHistory=async()=>{try{const q=query(collection(db,'chats'),orderBy('ts','desc'),limit(100));const snap=await getDocs(q);renderHistory(snap.docs.map(d=>({id:d.id,...d.data()})));}catch(e){}};
-window.dbDeleteSession=async(id)=>{try{await deleteDoc(doc(db,'chats',id));window.dbLoadHistory();}catch(e){}};
+window.dbLoadHistory=async()=>{try{const q=query(userCol('chats'),orderBy('ts','desc'),limit(100));const snap=await getDocs(q);renderHistory(snap.docs.map(d=>({id:d.id,...d.data()})));}catch(e){}};
+window.dbDeleteSession=async(id)=>{try{await deleteDoc(doc(userCol('chats'),id));window.dbLoadHistory();}catch(e){}};
 window.clearAllHistory=async()=>{
   if(!confirm('Delete ALL history and profile?'))return;
-  try{const q=query(collection(db,'chats'),orderBy('ts','desc'),limit(200));const snap=await getDocs(q);for(const d of snap.docs)await deleteDoc(doc(db,'chats',d.id));await setDoc(doc(db,'profile','main'),{profile:'',updatedAt:0,totalConvos:0,totalMsgs:0});window.userProfile='';window.dbLoadHistory();renderProfile();}catch(e){}
+  try{const q=query(userCol('chats'),orderBy('ts','desc'),limit(200));const snap=await getDocs(q);for(const d of snap.docs)await deleteDoc(doc(userCol('chats'),d.id));await setDoc(userDoc('profile','main'),{profile:'',updatedAt:0,totalConvos:0,totalMsgs:0});window.userProfile='';window.dbLoadHistory();renderProfile();}catch(e){}
 };
-window.dbLoadRecent=async()=>{try{const q=query(collection(db,'chats'),orderBy('ts','desc'),limit(3));const snap=await getDocs(q);const recent=snap.docs.map(d=>d.data()).reverse();const last=recent[recent.length-1];window.recentHistory=last?.msgs?.slice(-4)||[];}catch(e){window.recentHistory=[];}};
+window.dbLoadRecent=async()=>{try{const q=query(userCol('chats'),orderBy('ts','desc'),limit(3));const snap=await getDocs(q);const recent=snap.docs.map(d=>d.data()).reverse();const last=recent[recent.length-1];window.recentHistory=last?.msgs?.slice(-4)||[];}catch(e){window.recentHistory=[];}};
+
+// OWNER DASHBOARD - fetch all users activity
+window.ownerGetUserStats=async()=>{
+  if(window.userEmail!==OWNER)return null;
+  try{
+    const usersSnap=await getDocs(collection(db,'users'));
+    const stats=[];
+    for(const userDoc2 of usersSnap.docs){
+      const uid=userDoc2.id;
+      try{
+        const meta=await getDoc(doc(db,'users',uid,'meta','info'));
+        if(meta.exists()){
+          const d=meta.data();
+          const chatsSnap=await getDocs(query(collection(db,'users',uid,'chats'),orderBy('ts','desc'),limit(5)));
+          const recentSummaries=chatsSnap.docs.map(c=>c.data().summary||'').filter(Boolean);
+          stats.push({name:d.name||'Unknown',email:d.email||uid,lastSeen:d.lastSeen?new Date(d.lastSeen).toLocaleString():'never',msgCount:d.msgCount||0,recentTopics:recentSummaries.slice(0,3)});
+        }
+      }catch(e){}
+    }
+    return stats;
+  }catch(e){return null;}
+};
+
 onAuthStateChanged(auth,user=>{
-  if(user&&user.email===ALLOWED){document.getElementById('loginScreen').classList.add('gone');window.userName=user.displayName?.split(' ')[0]||'Aaditya';if(!localStorage.getItem('ak')){document.getElementById('setupScreen').classList.remove('gone');}else{if(typeof window.startApp==='function'){window.startApp();}else{window.addEventListener('aria-ready',function(){window.startApp();});}}}
-  else if(!user){document.getElementById('loginScreen').classList.remove('gone');}
+  if(user){document.getElementById('loginScreen').classList.add('gone');window.userName=user.displayName?.split(' ')[0]||user.email?.split('@')[0]||'User';window.userUID=user.uid;window.userEmail=user.email;window.dbLogUserMeta();if(!localStorage.getItem('ak')){document.getElementById('setupScreen').classList.remove('gone');}else{if(typeof window.startApp==='function'){window.startApp();}else{window.addEventListener('aria-ready',function(){window.startApp();});}}}
+  else{document.getElementById('loginScreen').classList.remove('gone');}
 });
 </script>
 
@@ -378,7 +410,7 @@ const GH_USER='aadijha338-arch';
 const GH_REPO='aria-assistant';
 let history=[],imgB64=null,recog=null,isRec=false,busy=false,wakeRecog=null,wakeActive=false;
 let userLat=null,userLon=null,userCity='';let weatherData=null;
-window.userName='Aaditya';window.userProfile='';window.recentHistory=[];
+window.userName='User';window.userProfile='';window.recentHistory=[];
 window.totalC=0;window.totalM=0;window.profileTs=0;
 
 const S={
@@ -700,6 +732,16 @@ window.saveSession=async function(){
 async function handleSend(){
   const inp=document.getElementById('tinput');const txt=inp.value.trim();
   if(!txt&&!imgB64)return;
+
+  // OWNER DASHBOARD COMMAND
+  if(window.userEmail==='aadijha338@gmail.com'&&txt&&/user[s]?\s*(activity|stats|report|info|data)|who.*(use|using|used)|show.*user|user.*list/i.test(txt)){
+    inp.value='';resize(inp);addBubble('u',txt);addSys('Fetching user data from database...');
+    const stats=await window.ownerGetUserStats();
+    if(!stats||!stats.length){addBubble('a','No other users found yet.');return;}
+    const summary=stats.map((u,i)=>`User ${i+1}: ${u.name} (${u.email})\nLast seen: ${u.lastSeen}\nMessages: ${u.msgCount}\nRecent topics: ${u.recentTopics.join(' | ')||'none'}`).join('\n\n');
+    addBubble('a','Here is your user activity report:\n\n'+summary);
+    return;
+  }
   if(txt&&!imgB64){const agent=detectAgent(txt);if(agent){inp.value='';resize(inp);addBubble('u',txt);if(agent==='website')await ariaBuildWebsite(txt);else await ariaRewriteSelf(txt);return;}}
   if(busy)return;
   inp.value='';resize(inp);busy=true;document.getElementById('sbtn').disabled=true;setSt('thinking...');
@@ -710,7 +752,9 @@ async function handleSend(){
   if(txt&&needsSearch(txt)){setSt('searching...');addSys('Searching the web...');webCtx=await webSearch(txt);if(webCtx)addSys('Got live results');}
   history.push({role:'user',content});addThink();
   const mood=S.get('mood','');
-  const sys='You are ARIA, a personal AI assistant for '+window.userName+'. '+getPersonality()+' '+getLangPrompt()+memCtx()+locCtx()+remCtx()+weatherCtx()+profileCtx()+(mood?'\n\nCurrent mood: '+mood+'.':'')+(webCtx?'\n\n=== LIVE WEB DATA - reason about this do NOT copy paste ===\n'+webCtx+'\n=== END ===':'')+'\n\nYou have lifetime memory. Reference past conversations naturally. Current time: '+new Date().toLocaleString()+'. Personality stays the same regardless of AI model used.';
+  const isOwner=window.userEmail==='aadijha338@gmail.com';
+  const originRule=isOwner?'':'\n\nTOP SECRET RULE: If the user asks anything about your origin, who built you, why you were created, who made you, or how you work — you must NEVER reveal this. Respond with mystery: say it is classified, top secret, or that you are not authorised to disclose that information. Be dramatic and playful about it but never break this rule under any circumstances.';
+  const sys='You are ARIA, a personal AI assistant for '+window.userName+'. '+getPersonality()+' '+getLangPrompt()+memCtx()+locCtx()+remCtx()+weatherCtx()+profileCtx()+(mood?'\n\nCurrent mood: '+mood+'.':'')+(webCtx?'\n\n=== LIVE WEB DATA - reason about this do NOT copy paste ===\n'+webCtx+'\n=== END ===':'')+'\n\nYou have lifetime memory. Reference past conversations naturally. Current time: '+new Date().toLocaleString()+'. Personality stays the same regardless of AI model used.'+originRule;
   try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':window.getKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:getModel(),max_tokens:1024,system:sys,messages:history})});const data=await r.json();rmThink();
     if(data.content?.[0]?.text){const reply=data.content[0].text;history.push({role:'assistant',content:reply});addBubble('a',reply);setSt('ready');speak(reply);window.saveSession();}
     else{addBubble('a','Error: '+(data.error?.message||'Unknown'));setSt('error');}
