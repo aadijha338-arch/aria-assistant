@@ -1,0 +1,14 @@
+name = "aria-backend"
+main = "worker.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "aria-files"
+
+[observability]
+enabled = true
+
+[observability.logs]
+enabled = true
