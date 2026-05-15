@@ -408,7 +408,7 @@ window.dbDeleteSession=async(id)=>{try{await deleteDoc(doc(db,'users',window.use
   updateGmailStatus();}catch(e){}};
 window.clearAllHistory=async()=>{
   if(!confirm('Delete ALL history and profile?'))return;
-  try{const q=query(collection(db,'users',window.userUID||'anon','chats'),orderBy('ts','desc'),limit(200));const snap=await getDocs(q);for(const d of snap.docs)await deleteDoc(doc(db,'chats',d.id));await setDoc(doc(db,'users',window.userUID||'anon','profile','main'),{profile:'',updatedAt:0,totalConvos:0,totalMsgs:0});window.userProfile='';window.dbLoadHistory();
+  try{const q=query(collection(db,'users',window.userUID||'anon','chats'),orderBy('ts','desc'),limit(200));const snap=await getDocs(q);for(const d of snap.docs)await deleteDoc(doc(db,'users',window.userUID||'anon','chats',d.id));await setDoc(doc(db,'users',window.userUID||'anon','profile','main'),{profile:'',updatedAt:0,totalConvos:0,totalMsgs:0});window.userProfile='';window.dbLoadHistory();
   updateGmailStatus();renderProfile();}catch(e){}
 };
 window.dbLoadRecent=async()=>{
@@ -1180,7 +1180,7 @@ window.confirmSendEmail = async function(btn, to, subject, body){
     const r = await fetch('https://aria-backend.aadijha338.workers.dev/gmail/send', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ userId: window.userUID||'anon', to: decodeURIComponent(to), subject: decodeURIComponent(subject), body: decodeURIComponent(body) })
+      body: JSON.stringify({ userId: window.userUID||'anon', to, subject, body })
     });
     const d = await r.json();
     if(d.success){ btn.closest('.email-draft').innerHTML = '<div style="color:var(--green);font-size:13px">✓ Email sent successfully!</div>'; }
@@ -1288,6 +1288,17 @@ window.ariaResearch = async function(topic){
   }catch(e){ addBubble('a', 'Research failed: ' + e.message); setSt('error'); }
 };
 
+// Export all functions referenced by inline HTML event handlers (required in <script type="module">)
+Object.assign(window, {
+  saveSetting, toggleEye, finishSetup, switchTab,
+  fetchWeather, openPanel, closePanel, sq,
+  addAsset, refreshMarkets, loadNews, loadNepalNews,
+  clearImg, toggleWake, toggleMic, trigCam,
+  detectEmotion, showBriefing, resize,
+  addMem, delMem, addReminder, delReminder,
+  speak, connectGmail, onImg, onEmotionImg,
+  handleSend
+});
 window.dispatchEvent(new Event('aria-ready'));
 </script>
 </body>
