@@ -807,10 +807,12 @@ async function handleSend(){
       await window.ariaGenerateImage(prompt);return;
     }
     // File / document generation
-    if(/\b(?:create|generate|make|write|save|export)\s+(?:me\s+)?(?:an?\s+)?(?:file|document|doc|txt|text\s+file|csv|markdown|pdf|report|letter|essay|script|json|html|spreadsheet|readme)\b/i.test(txt)){
-      inp.value='';resize(inp);addBubble('u',txt);setSt('generating file...');
+    if(/\b(?:create|generate|make|write|save|export)\s+(?:me\s+)?(?:an?\s+)?(?:file|document|doc|txt|text\s+file|csv|markdown|pdf|report|letter|essay|script|json|html|spreadsheet|readme|cv|resume|cover\s+letter|bio|biography|proposal|memo|plan|contract|portfolio|pitch|brief|outline|draft|summary)\b/i.test(txt)){
+      inp.value='';resize(inp);addBubble('u',txt);setSt('generating...');
       try{
-        const res=await fetch(API+'/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:getModel(),max_tokens:4000,messages:[{role:'user',content:txt+'\n\nRespond ONLY in this exact format (no extra text, no markdown fences):\nFILENAME: [descriptive_filename.ext]\nCONTENT:\n[full file content here]'}]})});
+        // Use full user context so the document is personalized, not a generic template
+        const docSys='You are ARIA, a personal AI assistant for '+window.userName+'. '+getPersonality()+' '+getLangPrompt()+profileCtx()+memCtx()+locCtx()+'\n\nWhen creating any document, use the real user information from the profile above — never write placeholder text like [Your Name], [Company], or [Add detail here]. Use actual data. Respond ONLY in this exact format:\nFILENAME: [descriptive_name.ext]\nCONTENT:\n[full personalized document content — no markdown fences around this block]';
+        const res=await fetch(API+'/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:getModel(),max_tokens:4000,system:docSys,messages:[...history.slice(-8),{role:'user',content:txt}]})});
         const data=await res.json();
         const reply=data.content?.[0]?.text||'';
         const nameMatch=reply.match(/FILENAME:\s*([^\n]+)/i);
@@ -818,10 +820,19 @@ async function handleSend(){
         if(nameMatch&&contentMatch){
           const fileName=nameMatch[1].trim();
           const content=contentMatch[1].trim();
+          // Show content in chat so user sees exactly what goes into the file
+          history.push({role:'user',content:txt});
+          history.push({role:'assistant',content:content});
+          addBubble('a',content);
           const ext=fileName.split('.').pop().toLowerCase();
           const typeMap={txt:'text/plain',md:'text/markdown',csv:'text/csv',html:'text/html',json:'application/json',js:'text/javascript',ts:'text/typescript',py:'text/x-python',css:'text/css',xml:'text/xml',yaml:'text/yaml',yml:'text/yaml',sh:'text/x-sh',sql:'text/plain'};
           await window.ariaGenerateFile(fileName,content,typeMap[ext]||'text/plain');
-        }else{addBubble('a',reply||'Could not generate file.');}
+          speak('Done!');
+        }else{
+          history.push({role:'user',content:txt});
+          history.push({role:'assistant',content:reply});
+          addBubble('a',reply||'Could not generate file.');
+        }
       }catch(e){addBubble('a','File generation error: '+e.message);}
       setSt('ready');return;
     }
