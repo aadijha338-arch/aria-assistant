@@ -1288,17 +1288,6 @@ window.ariaResearch = async function(topic){
   }catch(e){ addBubble('a', 'Research failed: ' + e.message); setSt('error'); }
 };
 
-// Export all functions referenced by inline HTML event handlers (required in <script type="module">)
-Object.assign(window, {
-  saveSetting, toggleEye, finishSetup, switchTab,
-  fetchWeather, openPanel, closePanel, sq,
-  addAsset, refreshMarkets, loadNews, loadNepalNews,
-  clearImg, toggleWake, toggleMic, trigCam,
-  detectEmotion, showBriefing, resize,
-  addMem, delMem, addReminder, delReminder,
-  speak, connectGmail, onImg, onEmotionImg,
-  handleSend
-});
 window.dispatchEvent(new Event('aria-ready'));
 </script>
 </body>
