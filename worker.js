@@ -186,9 +186,97 @@ export default {
       }
     }
 
-    // Gmail read/send — placeholder (full implementation needs OAuth token storage)
-    if (path.startsWith('/gmail/')) {
-      return cors(JSON.stringify({ error: 'Gmail route not configured' }), 404);
+    // GET /gmail/auth — redirect to Google OAuth consent screen
+    if (path === '/gmail/auth') {
+      const clientId = env.GMAIL_CLIENT_ID;
+      if (!clientId) return cors(JSON.stringify({ error: 'GMAIL_CLIENT_ID not configured' }), 500);
+      const redirectUri = new URL('/gmail/callback', url.origin).toString();
+      const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+      authUrl.searchParams.set('client_id', clientId);
+      authUrl.searchParams.set('redirect_uri', redirectUri);
+      authUrl.searchParams.set('response_type', 'code');
+      authUrl.searchParams.set('scope', 'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send');
+      authUrl.searchParams.set('access_type', 'online');
+      authUrl.searchParams.set('prompt', 'consent');
+      return Response.redirect(authUrl.toString(), 302);
+    }
+
+    // GET /gmail/callback — exchange code, postMessage token back to opener
+    if (path === '/gmail/callback') {
+      const code = url.searchParams.get('code');
+      const oauthError = url.searchParams.get('error');
+      const html = (msg) => new Response(
+        `<!DOCTYPE html><html><body><script>window.opener&&window.opener.postMessage(${JSON.stringify(msg)},'*');window.close();<\/script></body></html>`,
+        { headers: { 'Content-Type': 'text/html', ...CORS } }
+      );
+      if (oauthError || !code) return html({ type: 'gmail_auth_error', error: oauthError || 'no_code' });
+      try {
+        const redirectUri = new URL('/gmail/callback', url.origin).toString();
+        const params = new URLSearchParams({
+          code, client_id: env.GMAIL_CLIENT_ID, client_secret: env.GMAIL_CLIENT_SECRET,
+          redirect_uri: redirectUri, grant_type: 'authorization_code',
+        });
+        const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+          method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: params.toString(),
+        });
+        const tokenData = await tokenRes.json();
+        if (!tokenData.access_token) return html({ type: 'gmail_auth_error', error: tokenData.error || 'no_token' });
+        return html({ type: 'gmail_auth_success', token: tokenData.access_token });
+      } catch (e) {
+        return html({ type: 'gmail_auth_error', error: e.message });
+      }
+    }
+
+    // GET /gmail/messages — fetch inbox metadata
+    if (path === '/gmail/messages') {
+      const auth = request.headers.get('Authorization');
+      if (!auth) return cors(JSON.stringify({ error: 'Missing Authorization' }), 401);
+      try {
+        const listRes = await fetch(
+          'https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=10&labelIds=INBOX',
+          { headers: { Authorization: auth } }
+        );
+        const listData = await listRes.json();
+        if (listData.error) return cors(JSON.stringify({ error: listData.error.message }), listRes.status);
+        if (!listData.messages?.length) return cors(JSON.stringify({ messages: [] }));
+        const messages = await Promise.all(
+          listData.messages.map(async (m) => {
+            const r = await fetch(
+              `https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`,
+              { headers: { Authorization: auth } }
+            );
+            const msg = await r.json();
+            const hdrs = msg.payload?.headers || [];
+            const get = (n) => hdrs.find(h => h.name === n)?.value || '';
+            return { id: m.id, subject: get('Subject'), from: get('From'), date: get('Date') };
+          })
+        );
+        return cors(JSON.stringify({ messages }));
+      } catch (e) {
+        return cors(JSON.stringify({ error: e.message }), 500);
+      }
+    }
+
+    // POST /gmail/send — send email via Gmail API
+    if (path === '/gmail/send' && request.method === 'POST') {
+      const auth = request.headers.get('Authorization');
+      if (!auth) return cors(JSON.stringify({ error: 'Missing Authorization' }), 401);
+      try {
+        const { to, subject, body } = await request.json();
+        const raw = ['To: ' + to, 'Subject: ' + subject, 'Content-Type: text/plain; charset=utf-8', '', body].join('\r\n');
+        const encoded = btoa(unescape(encodeURIComponent(raw))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        const sendRes = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+          method: 'POST',
+          headers: { Authorization: auth, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ raw: encoded }),
+        });
+        const sendData = await sendRes.json();
+        if (sendData.id) return cors(JSON.stringify({ success: true, id: sendData.id }));
+        return cors(JSON.stringify({ success: false, error: sendData.error?.message || 'Send failed' }), 400);
+      } catch (e) {
+        return cors(JSON.stringify({ error: e.message }), 500);
+      }
     }
 
     // Default

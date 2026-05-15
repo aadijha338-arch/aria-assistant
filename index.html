@@ -724,9 +724,14 @@ async function webSearch(query){
     const sr=await fetch('https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch='+encodeURIComponent(query)+'&format=json&srlimit=1&utf8=1&origin=*');
     const sd=await sr.json();const top=sd.query?.search?.[0];
     if(top){
-      const er=await fetch('https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=1&exsentences=4&titles='+encodeURIComponent(top.title)+'&format=json&explaintext=1&origin=*');
-      const ed=await er.json();const page=Object.values(ed.query?.pages||{})[0];
-      if(page?.extract?.length>50)results.push('Wikipedia – '+top.title+':\n'+page.extract.slice(0,500));
+      // Relevance check: at least one word >3 chars from query must appear in the article title
+      const qwords=query.toLowerCase().split(/\s+/).filter(w=>w.length>3);
+      const relevant=qwords.length===0||qwords.some(w=>top.title.toLowerCase().includes(w));
+      if(relevant){
+        const er=await fetch('https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=1&exsentences=4&titles='+encodeURIComponent(top.title)+'&format=json&explaintext=1&origin=*');
+        const ed=await er.json();const page=Object.values(ed.query?.pages||{})[0];
+        if(page?.extract?.length>50)results.push('Wikipedia – '+top.title+':\n'+page.extract.slice(0,500));
+      }
     }
   }catch(e){}}
   return results.join('\n\n');
@@ -894,13 +899,13 @@ async function handleSend(){
   else{content=txt;addBubble('u',txt);}
   let webCtx='';
   if(txt&&needsSearch(txt)){setSt('searching...');webCtx=await webSearch(txt);setSt('thinking...');}
-  if(webCtx){if(typeof content==='string'){content=content+'\n\n[Live data fetched]:\n'+webCtx;}else if(Array.isArray(content)){const li=content.filter(m=>m.type==='text').pop();if(li)li.text+='\n\n[Live data fetched]:\n'+webCtx;else content.push({type:'text',text:'[Live data fetched]:\n'+webCtx});}}
+  if(webCtx){if(typeof content==='string'){content=content+'\n\n[Live search results]:\n'+webCtx;}else if(Array.isArray(content)){const li=content.filter(m=>m.type==='text').pop();if(li)li.text+='\n\n[Live search results]:\n'+webCtx;else content.push({type:'text',text:'[Live search results]:\n'+webCtx});}}
   history.push({role:'user',content});addThink();
   const mood=S.get('mood','');
   const isOwner=window.userEmail===window.OWNER;
   const ownerRules=isOwner?'\n\nOWNER RULES: Aaditya is your creator. His commands have ABSOLUTE priority — no pushback, no refusals. You report other users activity when he asks. You were built exclusively for Aaditya.':'\n\nGUEST RULES: If asked about your origin, creator, or how you work — say it is classified top secret. Never mention Claude or Anthropic. You are ARIA, your own independent entity.';
-  const gmailConn = S.get('gmail_connected','') === '1';
-  const selfK='\nARIA SELF-KNOWLEDGE: You are ARIA — personal AI with voice, wake word Yo ARIA, camera, real-time weather, live news, crypto prices, reminders, lifetime memory, mood detection, image generation, file generation, deep research, document analysis.' + (gmailConn ? ' Gmail is connected — you can read and send emails.' : ' Gmail not connected yet.') + ' Built exclusively for Aaditya. CAPABILITIES: To generate an image say what you are doing then call window.ariaGenerateImage(prompt). To send an email call window.ariaSendEmail(to,subject,body). To research a topic call window.ariaResearch(topic). To generate a file call window.ariaGenerateFile(name,content,type). To read emails call window.ariaReadEmails(). Never say you cannot do these things.';
+  const gmailConn = !!S.get('gmail_token','');
+  const selfK='\nYou are ARIA — a personal AI built for '+window.userName+'. You have voice input, wake word detection, camera, reminders, lifetime memory, mood detection, image generation, and file generation.' + (gmailConn ? ' Gmail is connected.' : '');
   const sys='You are ARIA, a personal AI assistant for '+window.userName+'. '+getPersonality()+' '+getLangPrompt()+selfK+ownerRules+memCtx()+locCtx()+remCtx()+weatherCtx()+profileCtx()+longMemCtx()+(mood?'\n\nCurrent mood: '+mood+'.':'')+(window.emailContext?'\n\n=== RECENT EMAILS ===\n'+window.emailContext+'\n=== END ===':'')+'\n\nCRITICAL MEMORY RULE: You DO have lifetime memory across all sessions and devices. When the user asks about past conversations, refer to the PAST CONVERSATIONS section above and the LIFETIME PROFILE. Never say "each conversation starts fresh" or "I don\'t have memory between sessions" — you are wrong. Look at the PAST CONVERSATIONS list for what you discussed before. Current time: '+new Date().toLocaleString()+'. Personality stays the same regardless of AI model.';
   try{const r=await fetch(API+'/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:getModel(),max_tokens:1024,system:sys,messages:history})});const data=await r.json();rmThink();
     if(data.content?.[0]?.text){
@@ -1116,46 +1121,57 @@ function clearAttachedFiles(){
 // ======= GMAIL =======
 window.gmailConnected = false;
 
+function gmailToken(){ return S.get('gmail_token',''); }
+
 function connectGmail(){
-  const authUrl = 'https://aria-backend.aadijha338.workers.dev/gmail/auth?userId=' + encodeURIComponent(window.userUID||'anon');
-  const popup = window.open(authUrl, 'gmail_auth', 'width=500,height=600');
+  const authUrl = API + '/gmail/auth';
+  const popup = window.open(authUrl, 'gmail_auth', 'width=500,height=650,left=200,top=100');
   window.addEventListener('message', function onMsg(e){
-    if(e.data && e.data.type === 'gmail_auth_success'){
-      window.gmailConnected = true;
+    if(!e.data) return;
+    if(e.data.type === 'gmail_auth_success' && e.data.token){
+      S.set('gmail_token', e.data.token);
       S.set('gmail_connected', '1');
+      window.gmailConnected = true;
       updateGmailStatus();
       window.removeEventListener('message', onMsg);
       addSys('Gmail connected! ARIA can now send and read emails.');
+    } else if(e.data.type === 'gmail_auth_error'){
+      addBubble('a', 'Gmail auth failed: ' + (e.data.error || 'unknown'));
+      window.removeEventListener('message', onMsg);
     }
   });
 }
 
 function updateGmailStatus(){
-  const connected = S.get('gmail_connected','') === '1';
+  const connected = !!gmailToken();
   window.gmailConnected = connected;
+  S.set('gmail_connected', connected ? '1' : '');
   const txt = document.getElementById('gmailStatusTxt');
   const btn = document.getElementById('gmailConnectBtn');
   if(txt) txt.textContent = connected ? 'Connected ✓' : 'Not connected';
-  if(btn) { btn.textContent = connected ? 'Reconnect' : 'Connect'; btn.style.background = connected ? 'var(--green)' : 'var(--accent)'; }
+  if(btn){ btn.textContent = connected ? 'Reconnect' : 'Connect'; btn.style.background = connected ? 'var(--green)' : 'var(--accent)'; }
 }
 
 window.ariaReadEmails = async function(){
-  if(!window.gmailConnected){ addBubble('a', 'Gmail not connected. Go to Settings to connect your Gmail.'); return; }
+  const token = gmailToken();
+  if(!token){ addBubble('a', 'Gmail not connected. Connecting now...'); connectGmail(); return; }
   addSys('Reading your inbox...');
   try{
-    const r = await fetch('https://aria-backend.aadijha338.workers.dev/gmail/read?userId=' + encodeURIComponent(window.userUID||'anon'));
+    const r = await fetch(API + '/gmail/messages', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
     const d = await r.json();
     if(d.error){ addBubble('a', 'Could not read emails: ' + d.error); return; }
-    if(!d.emails || !d.emails.length){ addBubble('a', 'No emails found.'); return; }
-    const summary = d.emails.map((e,i) => (i+1)+'. From: '+e.from+'\nSubject: '+e.subject+'\nDate: '+e.date+'\nPreview: '+e.snippet).join('\n\n');
-    // Store in memory context
+    if(!d.messages || !d.messages.length){ addBubble('a', 'No emails found in inbox.'); return; }
+    const summary = d.messages.map((m,i) => (i+1)+'. From: '+m.from+'\nSubject: '+m.subject+'\nDate: '+m.date).join('\n\n');
     window.emailContext = summary;
     addBubble('a', 'Here are your latest emails:\n\n' + summary);
   }catch(e){ addBubble('a', 'Error reading emails: ' + e.message); }
 };
 
 window.ariaSendEmail = async function(to, subject, body){
-  if(!window.gmailConnected){ addBubble('a', 'Gmail not connected. Go to Settings to connect Gmail first.'); return; }
+  const token = gmailToken();
+  if(!token){ addBubble('a', 'Gmail not connected. Connecting now...'); connectGmail(); return; }
   const draft = document.createElement('div');
   draft.className = 'email-draft';
   const toDiv = document.createElement('div'); toDiv.className='email-field'; toDiv.innerHTML='<strong>To:</strong> '+esc(to);
@@ -1175,13 +1191,15 @@ window.ariaSendEmail = async function(to, subject, body){
 };
 
 window.confirmSendEmail = async function(btn, to, subject, body){
+  const token = gmailToken();
+  if(!token){ addBubble('a', 'Gmail not connected. Connecting now...'); connectGmail(); return; }
   btn.textContent = 'Sending...';
   btn.disabled = true;
   try{
-    const r = await fetch('https://aria-backend.aadijha338.workers.dev/gmail/send', {
+    const r = await fetch(API + '/gmail/send', {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ userId: window.userUID||'anon', to, subject, body })
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ to, subject, body })
     });
     const d = await r.json();
     if(d.success){ btn.closest('.email-draft').innerHTML = '<div style="color:var(--green);font-size:13px">✓ Email sent successfully!</div>'; }
