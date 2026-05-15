@@ -345,6 +345,7 @@ body{display:flex;flex-direction:column}
     <div class="srow"><div><div class="slbl">Voice</div></div><select class="ssel" id="setVoice" onchange="if(typeof saveSetting!=='undefined')saveSetting('voice',this.value)" style="width:140px"><option value="auto">Auto</option></select></div>
     <div class="srow"><div><div class="slbl">Test voice</div></div><button onclick="speak('Hello I am ARIA your personal assistant.')" style="background:var(--accent2);color:#080810;border:none;border-radius:var(--rs);padding:8px 12px;font-family:DM Mono,monospace;font-size:12px;cursor:pointer">Test</button></div>
     <div class="srow"><div><div class="slbl">NewsAPI key</div></div><input class="ssel" id="setNewskey" placeholder="your key" type="password" style="width:130px" onchange="if(typeof saveSetting!=='undefined')saveSetting('newskey',this.value)"></div>
+    <div class="srow"><div><div class="slbl">Brave Search key</div><div class="ssub">Free at brave.com/search/api</div></div><input class="ssel" id="setBravekey" placeholder="BSA..." type="password" style="width:130px" onchange="if(typeof saveSetting!=='undefined')saveSetting('bravekey',this.value)"></div>
     <div class="srow"><div><div class="slbl">GitHub token</div><div class="ssub">For self-edit and web deploy</div></div><input class="ssel" id="setGhtoken" placeholder="paste token here" type="password" style="width:130px" onchange="if(typeof saveSetting!=='undefined')saveSetting('ghtoken',this.value)"></div>
     <div class="srow"><div><div class="slbl">Gmail</div><div class="ssub" id="gmailStatusTxt">Not connected</div></div><button id="gmailConnectBtn" onclick="connectGmail()" style="background:var(--accent);color:#080810;border:none;border-radius:var(--rs);padding:8px 12px;font-family:Syne,sans-serif;font-weight:700;font-size:12px;cursor:pointer">Connect</button></div>
     <div class="srow" style="border:none"><div><div class="slbl">Clear all history</div></div><button onclick="clearAllHistory()" style="background:var(--red);color:#fff;border:none;border-radius:var(--rs);padding:8px 12px;font-family:DM Mono,monospace;font-size:12px;cursor:pointer">Clear</button></div>
@@ -479,6 +480,7 @@ window.startApp=async function(){
   const sp=document.getElementById('setPersonality');if(sp)sp.value=S.get('personality','friendly');
   const ss=document.getElementById('setSpeed');if(ss)ss.value=S.get('speed','0.95');
   const sn=document.getElementById('setNewskey');if(sn)sn.value=S.get('newskey','');
+  const sbk=document.getElementById('setBravekey');if(sbk)sbk.value=S.get('bravekey','');
   const sg=document.getElementById('setGhtoken');if(sg)sg.value=S.get('ghtoken','');
   renderMems();renderReminders();
   setInterval(checkReminders,30000);
@@ -703,15 +705,31 @@ async function showBriefing(){
   try{const r=await fetch(API+'/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:getModel(),max_tokens:400,messages:[{role:'user',content:prompt}]})});const d=await r.json();const txt=d.content?.[0]?.text||'Good morning!';addBubble('a',txt);speak(txt);}catch(e){addBubble('a','Good morning, '+window.userName+'!');}
 }
 
-const SEARCH_WORDS=['today','now','latest','current','news','price','weather','happened','2025','2026','live','score','result'];
+const SEARCH_WORDS=['today','now','latest','current','news','price','weather','happened','2025','2026','live','score','result','who is','what is','how much','when did','where is','stock','rate','recently','update'];
 function needsSearch(txt){const l=txt.toLowerCase();return SEARCH_WORDS.some(k=>l.includes(k));}
 async function webSearch(query){
   const results=[];
+  // Brave Search (if key set) — general web results
+  const bk=S.get('bravekey','');
+  if(bk){try{const r=await fetch('https://api.search.brave.com/res/v1/web/search?q='+encodeURIComponent(query)+'&count=5',{headers:{'Accept':'application/json','Accept-Encoding':'gzip','X-Subscription-Token':bk}});const d=await r.json();const items=(d.web?.results||[]).slice(0,4);if(items.length)results.push('Web search results:\n'+items.map(i=>'- '+i.title+': '+(i.description||'').slice(0,120)).join('\n'));}catch(e){}}
+  // NewsAPI (if key set) — news articles
   const nk=S.get('newskey','');
-  if(nk){try{const r=await fetch(API+'/api/news?q='+encodeURIComponent(query)+'&sortBy=publishedAt&pageSize=5&language=en&apiKey='+nk);const d=await r.json();const items=(d.articles||[]).filter(a=>a.title&&a.title!=='[Removed]').slice(0,4);if(items.length)results.push('Latest news:\n'+items.map(a=>'- '+a.title+(a.description?' - '+a.description.substring(0,100):'')).join('\n'));}catch(e){}}
+  if(nk){try{const r=await fetch(API+'/api/news?q='+encodeURIComponent(query)+'&sortBy=publishedAt&pageSize=5&language=en&apiKey='+nk);const d=await r.json();const items=(d.articles||[]).filter(a=>a.title&&a.title!=='[Removed]').slice(0,4);if(items.length)results.push('Latest news:\n'+items.map(a=>'- '+a.title+(a.description?' - '+a.description.slice(0,100):'')).join('\n'));}catch(e){}}
+  // Crypto prices (free)
   try{const cryptos={bitcoin:'bitcoin',btc:'bitcoin',ethereum:'ethereum',eth:'ethereum',solana:'solana',cardano:'cardano'};const found=Object.keys(cryptos).find(k=>query.toLowerCase().includes(k));if(found){const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids='+cryptos[found]+'&vs_currencies=usd&include_24hr_change=true');const d=await r.json();const coin=d[cryptos[found]];if(coin){const ch=coin.usd_24h_change?.toFixed(2);results.push('Live price: '+found+' = $'+coin.usd.toLocaleString()+' (24h: '+(ch>0?'+':'')+ch+'%)');}} }catch(e){}
-  try{if((query.toLowerCase().includes('weather'))&&userLat&&userLon){const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+userLat+'&longitude='+userLon+'&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m&timezone=auto');const d=await r.json();const c=d.current;results.push('Current weather in '+(userCity||'your location')+': '+Math.round(c.temperature_2m)+'C, humidity '+c.relative_humidity_2m+'%, wind '+Math.round(c.wind_speed_10m)+' km/h');}}catch(e){}
-  return results.join('\n');
+  // Weather (free)
+  try{if(query.toLowerCase().includes('weather')&&userLat&&userLon){const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+userLat+'&longitude='+userLon+'&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m&timezone=auto');const d=await r.json();const c=d.current;results.push('Current weather in '+(userCity||'your location')+': '+Math.round(c.temperature_2m)+'°C, humidity '+c.relative_humidity_2m+'%, wind '+Math.round(c.wind_speed_10m)+' km/h');}}catch(e){}
+  // Wikipedia (always available, free) — factual fallback
+  if(!bk||results.length===0){try{
+    const sr=await fetch('https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch='+encodeURIComponent(query)+'&format=json&srlimit=1&utf8=1&origin=*');
+    const sd=await sr.json();const top=sd.query?.search?.[0];
+    if(top){
+      const er=await fetch('https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=1&exsentences=4&titles='+encodeURIComponent(top.title)+'&format=json&explaintext=1&origin=*');
+      const ed=await er.json();const page=Object.values(ed.query?.pages||{})[0];
+      if(page?.extract?.length>50)results.push('Wikipedia – '+top.title+':\n'+page.extract.slice(0,500));
+    }
+  }catch(e){}}
+  return results.join('\n\n');
 }
 
 async function ghGetSHA(path,repo){try{const r=await fetch(GH_API+'/repos/'+GH_USER+'/'+(repo||GH_REPO)+'/contents/'+path,{headers:{'Authorization':'token '+getGHToken(),'Accept':'application/vnd.github.v3+json'}});const d=await r.json();return d.sha||null;}catch(e){return null;}}
