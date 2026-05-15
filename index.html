@@ -903,12 +903,12 @@ window.addEventListener('pagehide',()=>{window.saveSession&&window.saveSession()
 // ============ FILE MANAGEMENT ============
 window.attachedFiles = []; // files attached to next message
 
-async function openFilesPanel(){
+window.openFilesPanel = async function openFilesPanel(){
   openPanel('filesPanel');
   await loadFilesList();
 }
 
-async function loadFilesList(){
+window.loadFilesList = async function loadFilesList(){
   const list = document.getElementById('filesList');
   list.innerHTML = '<p style="color:var(--muted);font-size:12px;padding:12px 0">Loading...</p>';
   try{
@@ -932,7 +932,7 @@ async function loadFilesList(){
   }
 }
 
-async function onFileUpload(e){
+window.onFileUpload = async function onFileUpload(e){
   const f = e.target.files[0];
   if(!f) return;
   e.target.value = '';
@@ -965,7 +965,7 @@ async function onFileUpload(e){
   }
 }
 
-async function deleteFile(key){
+window.deleteFile = async function deleteFile(key){
   if(!confirm('Delete this file?')) return;
   try{
     await fetch(API + '/files/delete?key=' + encodeURIComponent(key), { method: 'DELETE' });
@@ -975,7 +975,7 @@ async function deleteFile(key){
   }
 }
 
-async function attachExistingFile(key, fileName, contentType){
+window.attachExistingFile = async function attachExistingFile(key, fileName, contentType){
   closePanel('filesPanel');
   // Fetch the file content as base64
   addSys('Loading '+fileName+'...');
@@ -1019,7 +1019,7 @@ function renderAttachedFiles(){
   });
 }
 
-function removeAttachedFile(i){
+window.removeAttachedFile = function removeAttachedFile(i){
   window.attachedFiles.splice(i, 1);
   renderAttachedFiles();
 }
