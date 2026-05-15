@@ -46,7 +46,8 @@ export default {
       try {
         const params = url.searchParams.toString();
         const upstream = await fetch(
-          'https://api.coingecko.com/api/v3/simple/price' + (params ? '?' + params : '')
+          'https://api.coingecko.com/api/v3/simple/price' + (params ? '?' + params : ''),
+          { headers: { 'User-Agent': 'ARIA-Assistant/1.0' } }
         );
         const data = await upstream.text();
         return cors(data, upstream.status);
