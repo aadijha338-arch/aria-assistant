@@ -783,10 +783,29 @@ async function handleSend(){
   if(txt&&!imgB64){
     const tl = txt.toLowerCase();
     // Image generation
-    if(/generate.*(image|picture|photo|illustration|drawing|art)|create.*(image|picture|photo)|draw me|make.*image/i.test(txt)){
+    if(/\b(?:generate|create|make|draw|paint|sketch|design)\s+(?:me\s+)?(?:an?\s+)?(?:image|picture|photo|illustration|drawing|painting|sketch|artwork|portrait|wallpaper)\b|\bdraw\s+me\b/i.test(txt)){
       inp.value='';resize(inp);addBubble('u',txt);
-      const prompt = txt.replace(/^(generate|create|draw me|make)[^a-z]*(an?|a)?\s*(image|picture|photo|illustration|drawing|art)\s*(of|showing|depicting)?\s*/i,'').trim()||txt;
+      const prompt = txt.replace(/^(?:(?:please|can you|could you)\s+)?(?:generate|create|make|draw|paint|sketch|design)\s+(?:me\s+)?(?:an?\s+)?(?:image|picture|photo|illustration|drawing|painting|sketch|artwork|portrait|wallpaper)\s+(?:of|showing|depicting|for)?\s*/i,'').trim()||txt;
       await window.ariaGenerateImage(prompt);return;
+    }
+    // File / document generation
+    if(/\b(?:create|generate|make|write|save|export)\s+(?:me\s+)?(?:an?\s+)?(?:file|document|doc|txt|text\s+file|csv|markdown|pdf|report|letter|essay|script|json|html|spreadsheet|readme)\b/i.test(txt)){
+      inp.value='';resize(inp);addBubble('u',txt);setSt('generating file...');
+      try{
+        const res=await fetch(API+'/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:getModel(),max_tokens:4000,messages:[{role:'user',content:txt+'\n\nRespond ONLY in this exact format (no extra text, no markdown fences):\nFILENAME: [descriptive_filename.ext]\nCONTENT:\n[full file content here]'}]})});
+        const data=await res.json();
+        const reply=data.content?.[0]?.text||'';
+        const nameMatch=reply.match(/FILENAME:\s*([^\n]+)/i);
+        const contentMatch=reply.match(/CONTENT:\n([\s\S]+)/i);
+        if(nameMatch&&contentMatch){
+          const fileName=nameMatch[1].trim();
+          const content=contentMatch[1].trim();
+          const ext=fileName.split('.').pop().toLowerCase();
+          const typeMap={txt:'text/plain',md:'text/markdown',csv:'text/csv',html:'text/html',json:'application/json',js:'text/javascript',ts:'text/typescript',py:'text/x-python',css:'text/css',xml:'text/xml',yaml:'text/yaml',yml:'text/yaml',sh:'text/x-sh',sql:'text/plain'};
+          await window.ariaGenerateFile(fileName,content,typeMap[ext]||'text/plain');
+        }else{addBubble('a',reply||'Could not generate file.');}
+      }catch(e){addBubble('a','File generation error: '+e.message);}
+      setSt('ready');return;
     }
     // Research
     if(/^(research|investigate|analyze|study|report on|deep dive|tell me everything about)\s+/i.test(txt)){
@@ -854,7 +873,23 @@ async function handleSend(){
   const selfK='\nARIA SELF-KNOWLEDGE: You are ARIA — personal AI with voice, wake word Yo ARIA, camera, real-time weather, live news, crypto prices, reminders, lifetime memory, mood detection, image generation, file generation, deep research, document analysis.' + (gmailConn ? ' Gmail is connected — you can read and send emails.' : ' Gmail not connected yet.') + ' Built exclusively for Aaditya. CAPABILITIES: To generate an image say what you are doing then call window.ariaGenerateImage(prompt). To send an email call window.ariaSendEmail(to,subject,body). To research a topic call window.ariaResearch(topic). To generate a file call window.ariaGenerateFile(name,content,type). To read emails call window.ariaReadEmails(). Never say you cannot do these things.';
   const sys='You are ARIA, a personal AI assistant for '+window.userName+'. '+getPersonality()+' '+getLangPrompt()+selfK+ownerRules+memCtx()+locCtx()+remCtx()+weatherCtx()+profileCtx()+longMemCtx()+(mood?'\n\nCurrent mood: '+mood+'.':'')+(window.emailContext?'\n\n=== RECENT EMAILS ===\n'+window.emailContext+'\n=== END ===':'')+(webCtx?'\n\n=== LIVE WEB DATA ===\n'+webCtx+'\n=== END ===':'')+'\n\nCRITICAL MEMORY RULE: You DO have lifetime memory across all sessions and devices. When the user asks about past conversations, refer to the PAST CONVERSATIONS section above and the LIFETIME PROFILE. Never say "each conversation starts fresh" or "I don\'t have memory between sessions" — you are wrong. Look at the PAST CONVERSATIONS list for what you discussed before. Current time: '+new Date().toLocaleString()+'. Personality stays the same regardless of AI model.';
   try{const r=await fetch(API+'/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:getModel(),max_tokens:1024,system:sys,messages:history})});const data=await r.json();rmThink();
-    if(data.content?.[0]?.text){const reply=data.content[0].text;history.push({role:'assistant',content:reply});addBubble('a',reply);setSt('ready');speak(reply);window.saveSession();}
+    if(data.content?.[0]?.text){const reply=data.content[0].text;history.push({role:'assistant',content:reply});addBubble('a',reply);
+      // Offer "Save as file" when the reply contains a substantial code block
+      const codeMatch=reply.match(/```(\w*)\n([\s\S]+?)```/);
+      if(codeMatch&&codeMatch[2].length>100){
+        const lang=codeMatch[1]||'txt';const code=codeMatch[2].trim();
+        const extMap={javascript:'js',typescript:'ts',python:'py',html:'html',css:'css',json:'json',markdown:'md',bash:'sh',shell:'sh',sql:'sql',yaml:'yaml',yml:'yaml',xml:'xml',text:'txt'};
+        const typeMap={js:'text/javascript',ts:'text/typescript',py:'text/x-python',html:'text/html',css:'text/css',json:'application/json',md:'text/markdown',sh:'text/x-sh',sql:'text/plain',txt:'text/plain'};
+        const ext=extMap[lang]||(lang.length<=6&&lang?lang:'txt');
+        const btn=document.createElement('button');
+        btn.style.cssText='background:var(--accent);color:#080810;border:none;border-radius:var(--rs);padding:7px 14px;font-family:Syne,sans-serif;font-weight:700;font-size:12px;cursor:pointer;margin-top:4px';
+        btn.textContent='⬇ Save as .'+ext+' file';
+        btn.addEventListener('click',()=>window.ariaGenerateFile('generated.'+ext,code,typeMap[ext]||'text/plain'));
+        const wrap=document.createElement('div');wrap.className='msg sys';
+        const bub=document.createElement('div');bub.className='bub';bub.appendChild(btn);wrap.appendChild(bub);
+        document.getElementById('chatView').appendChild(wrap);document.getElementById('chatView').scrollTop=99999;
+      }
+      setSt('ready');speak(reply);window.saveSession();}
     else{addBubble('a','Error: '+(data.error?.message||'Unknown'));setSt('error');}
   }catch(e){rmThink();addBubble('a','Network error. Check connection.');setSt('offline');}
   busy=false;document.getElementById('sbtn').disabled=false;
@@ -1110,23 +1145,28 @@ window.confirmSendEmail = async function(btn, to, subject, body){
 window.ariaGenerateImage = async function(prompt){
   addSys('Generating image: ' + prompt + '...');
   setSt('generating...');
-  try{
-    const r = await fetch('https://aria-backend.aadijha338.workers.dev/image/generate', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ prompt, userId: window.userUID||'anon' })
-    });
-    const d = await r.json();
-    if(d.error){ addBubble('a', 'Image generation failed: ' + d.error); setSt('error'); return; }
-    const wlc = document.getElementById('wlc'); if(wlc) wlc.remove();
-    const container = document.createElement('div');
-    container.className = 'msg a';
-    container.innerHTML = '<div class="bub"><img class="img-result" src="' + d.downloadUrl + '" alt="' + esc(prompt) + '"><br><a class="img-download" href="' + d.downloadUrl + '" target="_blank" download>⬇ Download Image</a></div><div class="ts">' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + '</div>';
-    document.getElementById('chatView').appendChild(container);
-    document.getElementById('chatView').scrollTop = 99999;
-    setSt('ready');
-    speak('Image generated!');
-  }catch(e){ addBubble('a', 'Error: ' + e.message); setSt('error'); }
+  // Use Pollinations.ai — free, no API key required
+  const url = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(prompt) + '?width=1024&height=1024&nologo=true&seed=' + Date.now();
+  const wlc = document.getElementById('wlc'); if(wlc) wlc.remove();
+  const container = document.createElement('div');
+  container.className = 'msg a';
+  const img = document.createElement('img');
+  img.className = 'img-result';
+  img.alt = prompt;
+  img.style.cssText = 'max-width:100%;border-radius:8px;display:block;margin-bottom:8px';
+  img.onerror = () => { img.replaceWith(Object.assign(document.createElement('span'),{textContent:'Image failed to load. Try a different prompt.'})); setSt('error'); };
+  img.onload = () => { document.getElementById('chatView').scrollTop = 99999; setSt('ready'); speak('Image generated!'); };
+  img.src = url;
+  const link = document.createElement('a');
+  link.className = 'img-download'; link.href = url; link.target = '_blank';
+  link.textContent = '⬇ Download Image';
+  const bub = document.createElement('div'); bub.className = 'bub';
+  bub.appendChild(img); bub.appendChild(link);
+  const ts = document.createElement('div'); ts.className = 'ts';
+  ts.textContent = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  container.appendChild(bub); container.appendChild(ts);
+  document.getElementById('chatView').appendChild(container);
+  document.getElementById('chatView').scrollTop = 99999;
 };
 
 // ======= FILE GENERATION =======
