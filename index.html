@@ -853,10 +853,27 @@ async function handleSend(){
   const gmailConn = !!S.get('gmail_token','');
   const selfK='\nYou are ARIA — a personal AI built for '+window.userName+'. You have voice input, wake word detection, camera, reminders, lifetime memory, mood detection, image generation, and file generation.' + (gmailConn ? ' Gmail is connected.' : '');
   const sys='You are ARIA, a personal AI assistant for '+window.userName+'. '+getPersonality()+' '+getLangPrompt()+selfK+ownerRules+memCtx()+locCtx()+remCtx()+weatherCtx()+profileCtx()+longMemCtx()+(mood?'\n\nCurrent mood: '+mood+'.':'')+(window.emailContext?'\n\n=== RECENT EMAILS ===\n'+window.emailContext+'\n=== END ===':'')+'\n\nCRITICAL MEMORY RULE: You DO have lifetime memory across all sessions and devices. When the user asks about past conversations, refer to the PAST CONVERSATIONS section above and the LIFETIME PROFILE. Never say "each conversation starts fresh" or "I don\'t have memory between sessions" — you are wrong. Look at the PAST CONVERSATIONS list for what you discussed before. Current time: '+new Date().toLocaleString()+'. Personality stays the same regardless of AI model.';
-  try{const r=await fetch(API+'/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:getModel(),max_tokens:2048,tools:[{"type":"web_search_20250305","name":"web_search"}],system:sys,messages:history})});const data=await r.json();rmThink();
-    const reply=data.content?.find(b=>b.type==='text')?.text;
+  try{
+    const tools=[{"type":"web_search_20250305","name":"web_search"}];
+    let msgs=[...history];
+    let reply='';
+    for(let i=0;i<5;i++){
+      const r=await fetch(API+'/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:getModel(),max_tokens:4000,tools,system:sys,messages:msgs})});
+      const data=await r.json();
+      if(data.error)throw new Error(data.error.message||'API error');
+      const blocks=data.content||[];
+      if(data.stop_reason==='tool_use'){
+        setSt('searching...');
+        msgs.push({role:'assistant',content:blocks});
+        const results=blocks.filter(b=>b.type==='tool_use'||b.type==='server_tool_use').map(b=>({type:'tool_result',tool_use_id:b.id,content:'Search completed'}));
+        if(results.length)msgs.push({role:'user',content:results});
+      }else{
+        reply=blocks.filter(b=>b.type==='text').map(b=>b.text).join('\n\n').trim();
+        break;
+      }
+    }
+    rmThink();
     if(reply){history.push({role:'assistant',content:reply});
-      // Strip code blocks that are aria function calls — execute them instead of displaying
       const ariaCalls=[];
       const displayReply=reply.replace(/```(?:\w*\n?)([\s\S]+?)```/g,(match,code)=>{
         const t=code.trim();
@@ -864,7 +881,6 @@ async function handleSend(){
         return match;
       }).trim();
       addBubble('a',displayReply||(ariaCalls.length?'On it!':reply));
-      // Save-as-file button for regular (non-aria) code blocks
       if(!ariaCalls.length){
         const codeMatch=displayReply.match(/```(\w*)\n([\s\S]+?)```/);
         if(codeMatch&&codeMatch[2].length>100){
@@ -881,15 +897,14 @@ async function handleSend(){
           document.getElementById('chatView').appendChild(wrap);document.getElementById('chatView').scrollTop=99999;
         }
       }
-      // Execute captured aria calls via sandbox proxy (window param shadows global)
       for(const code of ariaCalls){
         try{
           const proxy={ariaGenerateFile:(n,c,t)=>window.ariaGenerateFile(n,c,t),ariaGenerateImage:(p)=>window.ariaGenerateImage(p)};
           new Function('window',code)(proxy);
         }catch(e){}
       }
-      setSt('ready');speak(displayReply||reply);window.saveSession();}
-    else{addBubble('a','Error: '+(data.error?.message||'Unknown'));setSt('error');}
+      setSt('ready');speak(displayReply||reply);window.saveSession();
+    }else{addBubble('a','Error: No response.');setSt('error');}
   }catch(e){rmThink();addBubble('a','Network error. Check connection.');setSt('offline');}
   busy=false;document.getElementById('sbtn').disabled=false;
 }

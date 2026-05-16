@@ -25,15 +25,24 @@ export default {
     if (path === '/claude' && request.method === 'POST') {
       try {
         const body = await request.text();
-        const upstream = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': env.CLAUDE_API_KEY,
-            'anthropic-version': '2023-06-01',
-          },
-          body,
-        });
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 60000);
+        let upstream;
+        try {
+          upstream = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-api-key': env.CLAUDE_API_KEY,
+              'anthropic-version': '2023-06-01',
+              'anthropic-beta': 'web-search-2025-03-05',
+            },
+            body,
+            signal: controller.signal,
+          });
+        } finally {
+          clearTimeout(timer);
+        }
         const data = await upstream.text();
         return cors(data, upstream.status);
       } catch (e) {
@@ -54,27 +63,6 @@ export default {
       } catch (e) {
         return cors(JSON.stringify({ error: e.message }), 500);
       }
-    }
-
-    // GET /api/news — NewsAPI proxy
-    if (path === '/api/news') {
-      try {
-        const params = new URLSearchParams(url.searchParams);
-        const hasCategory = params.has('category');
-        const endpoint = hasCategory
-          ? 'https://newsapi.org/v2/top-headlines'
-          : 'https://newsapi.org/v2/everything';
-        const upstream = await fetch(endpoint + '?' + params.toString());
-        const data = await upstream.text();
-        return cors(data, upstream.status);
-      } catch (e) {
-        return cors(JSON.stringify({ error: e.message }), 500);
-      }
-    }
-
-    // GET /api/metals — static response
-    if (path === '/api/metals') {
-      return cors(JSON.stringify([{ gold: 3300 }]));
     }
 
     // POST /gmail/token — OAuth code exchange
