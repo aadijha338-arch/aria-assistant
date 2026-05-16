@@ -253,7 +253,7 @@ export default {
     if (path === '/files/list') {
       try {
         const uid = url.searchParams.get('uid') || url.searchParams.get('userId') || 'anon';
-        const list = await env.FILES.list({ prefix: uid + '/' });
+        const list = await env.FILES.list({ prefix: uid + '/', include: ['customMetadata', 'httpMetadata'] });
         const files = list.objects.map(o => ({
           key: o.key,
           fileName: o.customMetadata?.fileName || o.key.split('/').pop(),
