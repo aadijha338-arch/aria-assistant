@@ -50,26 +50,59 @@ export default {
       }
     }
 
+    // GET /groq/test — raw debug call to Groq
+    if (path === '/groq/test' && request.method === 'GET') {
+      try {
+        const testBody = {
+          model: 'groq/compound',
+          messages: [{ role: 'user', content: 'say hi' }],
+          max_completion_tokens: 100,
+        };
+        const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + env.GROQ_API_KEY,
+          },
+          body: JSON.stringify(testBody),
+        });
+        const raw = await r.text();
+        return cors(JSON.stringify({ status: r.status, groq_key_set: !!env.GROQ_API_KEY, body: raw }));
+      } catch (e) {
+        return cors(JSON.stringify({ error: e.message }), 500);
+      }
+    }
+
     // POST /groq — proxy to Groq (OpenAI-compatible), convert Anthropic↔OpenAI format
     if (path === '/groq' && request.method === 'POST') {
       try {
         const body = await request.json();
-        // Extract system message if present in messages array
-        let systemMsg = body.system || '';
+        console.log('[groq] messages count:', body.messages?.length, 'has system:', !!body.system);
+
+        // Extract system message; flatten any complex (array) content to plain text
+        let systemMsg = (body.system || '').slice(0, 4000); // cap system prompt for Groq
         const messages = (body.messages || []).filter(m => {
-          if (m.role === 'system') { systemMsg = m.content; return false; }
+          if (m.role === 'system') { systemMsg = String(m.content).slice(0, 4000); return false; }
           return true;
-        });
+        }).map(m => ({
+          role: m.role,
+          // Groq only accepts string content — flatten Anthropic content blocks
+          content: Array.isArray(m.content)
+            ? m.content.filter(b => b.type === 'text').map(b => b.text).join('\n') || '[media]'
+            : String(m.content || ''),
+        }));
+
         const groqBody = {
           model: 'groq/compound',
-          max_completion_tokens: 4000,
-          stream: false,
+          max_completion_tokens: 2000,
           messages: [
             ...(systemMsg ? [{ role: 'system', content: systemMsg }] : []),
             ...messages,
           ],
         };
-        const groqKey = env.GROQ_API_KEY;
+
+        console.log('[groq] sending to Groq, total messages:', groqBody.messages.length, 'body size:', JSON.stringify(groqBody).length);
+
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), 60000);
         let upstream;
@@ -78,7 +111,7 @@ export default {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + groqKey,
+              'Authorization': 'Bearer ' + env.GROQ_API_KEY,
             },
             body: JSON.stringify(groqBody),
             signal: controller.signal,
@@ -86,19 +119,25 @@ export default {
         } finally {
           clearTimeout(timer);
         }
-        const groqData = await upstream.json();
-        // Convert OpenAI response → Anthropic format
+
+        const rawText = await upstream.text();
+        console.log('[groq] status:', upstream.status, 'response:', rawText.slice(0, 500));
+
+        const groqData = JSON.parse(rawText);
         const text = groqData.choices?.[0]?.message?.content || '';
+        console.log('[groq] extracted text length:', text.length);
+
         const anthropicResp = {
           id: groqData.id || 'groq-resp',
           type: 'message',
           role: 'assistant',
           model: 'groq/compound',
           stop_reason: 'end_turn',
-          content: [{ type: 'text', text }],
+          content: [{ type: 'text', text: text || (groqData.error?.message ? '[Groq error: ' + groqData.error.message + ']' : 'No response') }],
         };
         return cors(JSON.stringify(anthropicResp), upstream.status);
       } catch (e) {
+        console.log('[groq] exception:', e.message);
         return cors(JSON.stringify({ error: e.message }), 500);
       }
     }
