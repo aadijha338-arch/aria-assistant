@@ -222,7 +222,6 @@ body{display:flex;flex-direction:column}
   <p style="font-size:13px;color:var(--muted);text-align:center;line-height:1.7;max-width:280px">Let us personalise your experience.</p>
   <div class="form">
     <div><div class="lbl">Anthropic API key</div><div class="inp-wrap"><input class="inp" id="skey" placeholder="sk-ant-api03-..." type="password" style="padding-right:44px"><span class="eye" onclick="toggleEye()">👁</span></div></div>
-    <div><div class="lbl">NewsAPI key (newsapi.org)</div><input class="inp" id="snewskey" placeholder="your key"></div>
     <div><div class="lbl">About you</div><input class="inp" id="sbio" placeholder="e.g. Student in London, loves football"></div>
     <div><div class="lbl">AI Model</div><select class="sel" id="smodel"><option value="claude-haiku-4-5-20251001">Haiku - fast and cheap</option><option value="claude-sonnet-4-20250514">Sonnet - smarter, costs more</option></select></div>
     <div><div class="lbl">Language</div><select class="sel" id="slang"><option value="english">English</option><option value="nepali">Nepali</option><option value="both">Both</option></select></div>
@@ -344,8 +343,6 @@ body{display:flex;flex-direction:column}
     <div class="srow"><div><div class="slbl">Voice speed</div></div><select class="ssel" id="setSpeed" onchange="if(typeof saveSetting!=='undefined')saveSetting('speed',this.value)"><option value="0.85">Slow</option><option value="0.95">Normal</option><option value="1.1">Fast</option><option value="1.25">Very fast</option></select></div>
     <div class="srow"><div><div class="slbl">Voice</div></div><select class="ssel" id="setVoice" onchange="if(typeof saveSetting!=='undefined')saveSetting('voice',this.value)" style="width:140px"><option value="auto">Auto</option></select></div>
     <div class="srow"><div><div class="slbl">Test voice</div></div><button onclick="speak('Hello I am ARIA your personal assistant.')" style="background:var(--accent2);color:#080810;border:none;border-radius:var(--rs);padding:8px 12px;font-family:DM Mono,monospace;font-size:12px;cursor:pointer">Test</button></div>
-    <div class="srow"><div><div class="slbl">NewsAPI key</div></div><input class="ssel" id="setNewskey" placeholder="your key" type="password" style="width:130px" onchange="if(typeof saveSetting!=='undefined')saveSetting('newskey',this.value)"></div>
-    <div class="srow"><div><div class="slbl">Brave Search key</div><div class="ssub">Free at brave.com/search/api</div></div><input class="ssel" id="setBravekey" placeholder="BSA..." type="password" style="width:130px" onchange="if(typeof saveSetting!=='undefined')saveSetting('bravekey',this.value)"></div>
     <div class="srow"><div><div class="slbl">GitHub token</div><div class="ssub">For self-edit and web deploy</div></div><input class="ssel" id="setGhtoken" placeholder="paste token here" type="password" style="width:130px" onchange="if(typeof saveSetting!=='undefined')saveSetting('ghtoken',this.value)"></div>
     <div class="srow"><div><div class="slbl">Gmail</div><div class="ssub" id="gmailStatusTxt">Not connected</div></div><button id="gmailConnectBtn" onclick="connectGmail()" style="background:var(--accent);color:#080810;border:none;border-radius:var(--rs);padding:8px 12px;font-family:Syne,sans-serif;font-weight:700;font-size:12px;cursor:pointer">Connect</button></div>
     <div class="srow" style="border:none"><div><div class="slbl">Clear all history</div></div><button onclick="clearAllHistory()" style="background:var(--red);color:#fff;border:none;border-radius:var(--rs);padding:8px 12px;font-family:DM Mono,monospace;font-size:12px;cursor:pointer">Clear</button></div>
@@ -434,7 +431,6 @@ onAuthStateChanged(auth,user=>{
 
 <script>
 const API='https://aria-backend.aadijha338.workers.dev';
-const PROXY='https://api.allorigins.win/get?url=';
 const GH_API='https://api.github.com';
 const GH_USER='aadijha338-arch';
 const GH_REPO='aria-assistant';
@@ -457,7 +453,7 @@ function toggleEye(){const i=document.getElementById('skey');i.type=i.type==='pa
 
 function finishSetup(){
   const k=document.getElementById('skey').value.trim();
-  S.set('ak',k||'backend');S.set('newskey',document.getElementById('snewskey').value.trim());
+  S.set('ak',k||'backend');
   S.set('model',document.getElementById('smodel').value);
   S.set('lang',document.getElementById('slang').value);
   S.set('personality',document.getElementById('spersonality').value);
@@ -479,8 +475,6 @@ window.startApp=async function(){
   const sl=document.getElementById('setLang');if(sl)sl.value=lang;
   const sp=document.getElementById('setPersonality');if(sp)sp.value=S.get('personality','friendly');
   const ss=document.getElementById('setSpeed');if(ss)ss.value=S.get('speed','0.95');
-  const sn=document.getElementById('setNewskey');if(sn)sn.value=S.get('newskey','');
-  const sbk=document.getElementById('setBravekey');if(sbk)sbk.value=S.get('bravekey','');
   const sg=document.getElementById('setGhtoken');if(sg)sg.value=S.get('ghtoken','');
   renderMems();renderReminders();
   setInterval(checkReminders,30000);
@@ -585,13 +579,6 @@ async function loadLivePrices(){
     if(d.bitcoin){document.getElementById('pBtc').textContent='$'+d.bitcoin.usd.toLocaleString();const ch=d.bitcoin.usd_24h_change?.toFixed(2);const el=document.getElementById('cBtc');el.textContent=(ch>0?'+':'')+ch+'%';el.className='mo-c '+(ch>0?'pos':'neg');}
     if(d.ethereum){document.getElementById('pEth').textContent='$'+d.ethereum.usd.toLocaleString();const ch=d.ethereum.usd_24h_change?.toFixed(2);const el=document.getElementById('cEth');el.textContent=(ch>0?'+':'')+ch+'%';el.className='mo-c '+(ch>0?'pos':'neg');}
   }catch(e){}
-  try{const r=await fetch(API+'/api/metals?metal=gold');const d=await r.json();if(d&&d[0]?.gold)document.getElementById('pGold').textContent='$'+Math.round(d[0].gold)+'/oz';}catch(e){document.getElementById('pGold').textContent='N/A';}
-}
-
-async function fetchMarketNews(name){
-  const rss='https://feeds.finance.yahoo.com/rss/2.0/headline?s='+encodeURIComponent(name)+'&region=US&lang=en-US';
-  try{const r=await fetch(PROXY+encodeURIComponent(rss));const d=await r.json();const xml=new DOMParser().parseFromString(d.contents,'text/xml');return Array.from(xml.querySelectorAll('item')).slice(0,5).map(i=>i.querySelector('title')?.textContent||'').filter(Boolean);}
-  catch(e){const nk=S.get('newskey','');if(nk){try{const r2=await fetch(API+'/api/news?q='+encodeURIComponent(name)+'&sortBy=publishedAt&pageSize=5&apiKey='+nk);const d2=await r2.json();return(d2.articles||[]).map(a=>a.title).filter(Boolean);}catch(e2){}}return[];}
 }
 function getWatchlist(){return S.json('watchlist',[]);}
 function addAsset(){const inp=document.getElementById('assetInput');const name=inp.value.trim();if(!name)return;const w=getWatchlist();if(w.find(a=>a.name.toLowerCase()===name.toLowerCase())){inp.value='';return;}w.push({name,verdict:'analyzing',reason:'Fetching...',headlines:[],price:''});S.set('watchlist',w);inp.value='';renderWatchlist();analyzeAsset(name);}
@@ -619,63 +606,56 @@ function renderWatchlist(){
 }
 async function analyzeAsset(name){
   try{const slug=name.toLowerCase().replace(/ /g,'-');const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids='+slug+'&vs_currencies=usd&include_24hr_change=true');const d=await r.json();if(d[slug]?.usd){const w=getWatchlist();const i=w.findIndex(a=>a.name===name);if(i>=0){w[i].price='$'+d[slug].usd.toLocaleString()+(d[slug].usd_24h_change?' ('+(d[slug].usd_24h_change>0?'+':'')+d[slug].usd_24h_change.toFixed(2)+'%)':'');S.set('watchlist',w);}}}catch(e){}
-  const headlines=await fetchMarketNews(name);const w=getWatchlist();const idx=w.findIndex(a=>a.name===name);if(idx<0)return;
-  try{const res=await fetch(API+'/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:200,messages:[{role:'user',content:'Financial analyst: analyze '+JSON.stringify(name)+'. '+(headlines.length?'Headlines: '+headlines.join('. '):'Use general knowledge.')+' Reply: VERDICT: BUY or HOLD or AVOID then REASONING: 2 sentences.'}]})});const data=await res.json();const txt=data.content?.[0]?.text||'';const vm=txt.match(/VERDICT[^:]*:\s*(BUY|HOLD|AVOID)/i);const rm=txt.match(/REASONING[^:]*:\s*(.+)/is);w[idx].verdict=(vm?.[1]||'hold').toLowerCase();w[idx].reason=rm?.[1]?.trim()||'Analysis unavailable.';w[idx].headlines=headlines.slice(0,2);}catch(e){w[idx].verdict='hold';w[idx].reason='Analysis failed.';}
+  const w=getWatchlist();const idx=w.findIndex(a=>a.name===name);if(idx<0)return;
+  try{const res=await fetch(API+'/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:200,tools:[{"type":"web_search_20250305","name":"web_search"}],messages:[{role:'user',content:'Search for the latest news and price action for '+JSON.stringify(name)+'. Reply: VERDICT: BUY or HOLD or AVOID then REASONING: 2 sentences.'}]})});const data=await res.json();const txt=data.content?.find(b=>b.type==='text')?.text||'';const vm=txt.match(/VERDICT[^:]*:\s*(BUY|HOLD|AVOID)/i);const rm=txt.match(/REASONING[^:]*:\s*(.+)/is);w[idx].verdict=(vm?.[1]||'hold').toLowerCase();w[idx].reason=rm?.[1]?.trim()||'Analysis unavailable.';}catch(e){w[idx].verdict='hold';w[idx].reason='Analysis failed.';}
   S.set('watchlist',w);renderWatchlist();
 }
 function refreshMarkets(){const w=getWatchlist();w.forEach(a=>{a.verdict='analyzing';a.reason='Refreshing...';a.headlines=[];a.price='';});S.set('watchlist',w);renderWatchlist();w.forEach(a=>analyzeAsset(a.name));loadLivePrices();}
 
+function renderNewsCards(text,list,srcLabel){
+  const lines=text.split('\n').filter(l=>/^\d+[\.\)]/.test(l.trim()));
+  const frag=document.createDocumentFragment();
+  const items=lines.length?lines:text.split('\n\n').filter(l=>l.trim().length>20);
+  items.forEach(function(line){
+    const clean=line.replace(/^\d+[\.\)]\s*/,'');
+    const dash=clean.indexOf(' — ');
+    const colon=clean.indexOf(': ');
+    let headline,desc;
+    if(dash>=0){headline=clean.slice(0,dash);desc=clean.slice(dash+3);}
+    else if(colon>0&&colon<80){headline=clean.slice(0,colon);desc=clean.slice(colon+2);}
+    else{headline=clean.split('.')[0];desc=clean.slice(headline.length+1).trim();}
+    const c=document.createElement('div');c.className='ncrd';c.onclick=function(){this.classList.toggle('expanded');};
+    const s=document.createElement('div');s.className='nsrc';s.textContent=srcLabel||new Date().toLocaleDateString('en',{month:'short',day:'numeric'});
+    const t=document.createElement('div');t.className='nttl';t.textContent=headline.trim();
+    const d=document.createElement('div');d.className='ndesc';d.textContent=desc.trim();
+    c.appendChild(s);c.appendChild(t);if(desc.trim())c.appendChild(d);
+    frag.appendChild(c);
+  });
+  list.innerHTML='';list.appendChild(frag);
+}
 async function loadNews(cat,el){
   document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));if(el)el.classList.add('active');
   const list=document.getElementById('newsList');list.innerHTML='<p style="font-size:13px;color:var(--muted);padding:16px 0">Loading...</p>';
-  const nk=S.get('newskey','');if(!nk){list.innerHTML='<p style="font-size:13px;color:var(--muted);line-height:1.6;padding:16px 0">Add NewsAPI key in Settings.</p>';return;}
-  try{const r=await fetch(API+'/api/news?category='+cat+'&language=en&pageSize=15&apiKey='+nk);const d=await r.json();
-    if(!d.articles?.length){list.innerHTML='<p style="font-size:13px;color:var(--muted)">No articles found.</p>';return;}
-    var frag2=document.createDocumentFragment();d.articles.filter(function(a){return a.title&&a.title!=='[Removed]';}).forEach(function(a){var c=document.createElement('div');c.className='ncrd';c.onclick=function(){this.classList.toggle('expanded');};var src=document.createElement('div');src.className='nsrc';src.textContent=(a.source&&a.source.name)||'News';var ttl=document.createElement('div');ttl.className='nttl';ttl.textContent=a.title;var tm=document.createElement('div');tm.className='ntime';tm.textContent=new Date(a.publishedAt).toLocaleString();var desc=document.createElement('div');desc.className='ndesc';desc.textContent=a.description||'';c.appendChild(src);c.appendChild(ttl);c.appendChild(tm);c.appendChild(desc);frag2.appendChild(c);});list.innerHTML='';list.appendChild(frag2);
-  }catch(e){list.innerHTML='<p style="font-size:13px;color:var(--muted)">Could not load. Check NewsAPI key.</p>';}
+  const labels={general:'world',business:'business',technology:'technology',sports:'sports'};
+  const label=labels[cat]||cat;
+  try{
+    const r=await fetch(API+'/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1500,tools:[{"type":"web_search_20250305","name":"web_search"}],messages:[{role:'user',content:'Search the web for the latest '+label+' news today. Give me 8 headlines each followed by a one-sentence summary. Format: each on its own line as "1. Headline — summary", "2. Headline — summary", etc.'}]})});
+    const d=await r.json();
+    const text=d.content?.find(b=>b.type==='text')?.text||'';
+    if(!text){list.innerHTML='<p style="font-size:13px;color:var(--muted)">Could not load news.</p>';return;}
+    renderNewsCards(text,list,new Date().toLocaleDateString('en',{month:'short',day:'numeric'}));
+  }catch(e){list.innerHTML='<p style="font-size:13px;color:var(--muted)">Could not load news.</p>';}
 }
 async function loadNepalNews(el){
-  document.querySelectorAll('.ntab').forEach(function(t){t.classList.remove('active');});if(el)el.classList.add('active');
-  var list=document.getElementById('newsList');
-  list.innerHTML='<p style="font-size:13px;color:var(--muted);padding:16px 0">Loading Nepal news...</p>';
-  function makeCard(title,desc,pub,src){
-    var c=document.createElement('div');c.className='ncrd';
-    c.onclick=function(){this.classList.toggle('expanded');};
-    var s=document.createElement('div');s.className='nsrc';s.textContent=src||'Nepal';
-    var t=document.createElement('div');t.className='nttl';t.textContent=title;
-    var tm=document.createElement('div');tm.className='ntime';tm.textContent=pub?new Date(pub).toLocaleString():'';
-    var d=document.createElement('div');d.className='ndesc';d.textContent=desc?desc.substring(0,200):'';
-    c.appendChild(s);c.appendChild(t);c.appendChild(tm);c.appendChild(d);
-    return c;
-  }
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));if(el)el.classList.add('active');
+  const list=document.getElementById('newsList');list.innerHTML='<p style="font-size:13px;color:var(--muted);padding:16px 0">Loading Nepal news...</p>';
   try{
-    var r=await fetch(PROXY+encodeURIComponent('https://kathmandupost.com/rss'));
-    var d=await r.json();
-    var xml=new DOMParser().parseFromString(d.contents,'text/xml');
-    var items=Array.from(xml.querySelectorAll('item')).slice(0,15);
-    if(!items.length)throw new Error('no items');
-    list.innerHTML='';
-    items.forEach(function(item){
-      var title=item.querySelector('title')?item.querySelector('title').textContent:'';
-      var desc=item.querySelector('description')?item.querySelector('description').textContent.replace(/<[^>]*>/g,''):'';
-      var pub=item.querySelector('pubDate')?item.querySelector('pubDate').textContent:'';
-      list.appendChild(makeCard(title,desc,pub,'Nepal - Kathmandu Post'));
-    });
-  }catch(e){
-    var nk=S.get('newskey','');
-    if(nk){
-      try{
-        var r2=await fetch(API+'/api/news?q=Nepal&language=en&sortBy=publishedAt&pageSize=15&apiKey='+nk);
-        var d2=await r2.json();
-        if(d2.articles&&d2.articles.length){
-          list.innerHTML='';
-          d2.articles.filter(function(a){return a.title&&a.title!=='[Removed]';}).forEach(function(a){
-            list.appendChild(makeCard(a.title,a.description,a.publishedAt,'Nepal - '+(a.source&&a.source.name?a.source.name:'News')));
-          });
-        }else{list.innerHTML='<p style="font-size:13px;color:var(--muted)">No Nepal news found.</p>';}
-      }catch(e2){list.innerHTML='<p style="font-size:13px;color:var(--muted)">Could not load Nepal news.</p>';}
-    }else{list.innerHTML='<p style="font-size:13px;color:var(--muted)">Add NewsAPI key in Settings for Nepal news.</p>';}
-  }
+    const r=await fetch(API+'/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1500,tools:[{"type":"web_search_20250305","name":"web_search"}],messages:[{role:'user',content:'Search the web for the latest news from Nepal today. Give me 8 headlines each followed by a one-sentence summary. Format: each on its own line as "1. Headline — summary", "2. Headline — summary", etc.'}]})});
+    const d=await r.json();
+    const text=d.content?.find(b=>b.type==='text')?.text||'';
+    if(!text){list.innerHTML='<p style="font-size:13px;color:var(--muted)">Could not load Nepal news.</p>';return;}
+    renderNewsCards(text,list,'Nepal');
+  }catch(e){list.innerHTML='<p style="font-size:13px;color:var(--muted)">Could not load Nepal news.</p>';}
 }
 function renderHistory(sessions){
   var el=document.getElementById('historyList');if(!el)return;
@@ -705,37 +685,6 @@ async function showBriefing(){
   try{const r=await fetch(API+'/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:getModel(),max_tokens:400,messages:[{role:'user',content:prompt}]})});const d=await r.json();const txt=d.content?.[0]?.text||'Good morning!';addBubble('a',txt);speak(txt);}catch(e){addBubble('a','Good morning, '+window.userName+'!');}
 }
 
-const SEARCH_WORDS=['today','now','latest','current','news','price','weather','happened','2025','2026','live','score','result','who is','what is','how much','when did','where is','stock','rate','recently','update'];
-function needsSearch(txt){const l=txt.toLowerCase();return SEARCH_WORDS.some(k=>l.includes(k));}
-async function webSearch(query){
-  const results=[];
-  // Brave Search (if key set) — general web results
-  const bk=S.get('bravekey','');
-  if(bk){try{const r=await fetch('https://api.search.brave.com/res/v1/web/search?q='+encodeURIComponent(query)+'&count=5',{headers:{'Accept':'application/json','Accept-Encoding':'gzip','X-Subscription-Token':bk}});const d=await r.json();const items=(d.web?.results||[]).slice(0,4);if(items.length)results.push('Web search results:\n'+items.map(i=>'- '+i.title+': '+(i.description||'').slice(0,120)).join('\n'));}catch(e){}}
-  // NewsAPI (if key set) — news articles
-  const nk=S.get('newskey','');
-  if(nk){try{const r=await fetch(API+'/api/news?q='+encodeURIComponent(query)+'&sortBy=publishedAt&pageSize=5&language=en&apiKey='+nk);const d=await r.json();const items=(d.articles||[]).filter(a=>a.title&&a.title!=='[Removed]').slice(0,4);if(items.length)results.push('Latest news:\n'+items.map(a=>'- '+a.title+(a.description?' - '+a.description.slice(0,100):'')).join('\n'));}catch(e){}}
-  // Crypto prices (free)
-  try{const cryptos={bitcoin:'bitcoin',btc:'bitcoin',ethereum:'ethereum',eth:'ethereum',solana:'solana',cardano:'cardano'};const found=Object.keys(cryptos).find(k=>query.toLowerCase().includes(k));if(found){const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids='+cryptos[found]+'&vs_currencies=usd&include_24hr_change=true');const d=await r.json();const coin=d[cryptos[found]];if(coin){const ch=coin.usd_24h_change?.toFixed(2);results.push('Live price: '+found+' = $'+coin.usd.toLocaleString()+' (24h: '+(ch>0?'+':'')+ch+'%)');}} }catch(e){}
-  // Weather (free)
-  try{if(query.toLowerCase().includes('weather')&&userLat&&userLon){const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+userLat+'&longitude='+userLon+'&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m&timezone=auto');const d=await r.json();const c=d.current;results.push('Current weather in '+(userCity||'your location')+': '+Math.round(c.temperature_2m)+'°C, humidity '+c.relative_humidity_2m+'%, wind '+Math.round(c.wind_speed_10m)+' km/h');}}catch(e){}
-  // Wikipedia (always available, free) — factual fallback
-  if(!bk||results.length===0){try{
-    const sr=await fetch('https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch='+encodeURIComponent(query)+'&format=json&srlimit=1&utf8=1&origin=*');
-    const sd=await sr.json();const top=sd.query?.search?.[0];
-    if(top){
-      // Relevance check: at least one word >3 chars from query must appear in the article title
-      const qwords=query.toLowerCase().split(/\s+/).filter(w=>w.length>3);
-      const relevant=qwords.length===0||qwords.some(w=>top.title.toLowerCase().includes(w));
-      if(relevant){
-        const er=await fetch('https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=1&exsentences=4&titles='+encodeURIComponent(top.title)+'&format=json&explaintext=1&origin=*');
-        const ed=await er.json();const page=Object.values(ed.query?.pages||{})[0];
-        if(page?.extract?.length>50)results.push('Wikipedia – '+top.title+':\n'+page.extract.slice(0,500));
-      }
-    }
-  }catch(e){}}
-  return results.join('\n\n');
-}
 
 async function ghGetSHA(path,repo){try{const r=await fetch(GH_API+'/repos/'+GH_USER+'/'+(repo||GH_REPO)+'/contents/'+path,{headers:{'Authorization':'token '+getGHToken(),'Accept':'application/vnd.github.v3+json'}});const d=await r.json();return d.sha||null;}catch(e){return null;}}
 async function ghPush(path,content,message,repo){const sha=await ghGetSHA(path,repo);const body={message,content:btoa(unescape(encodeURIComponent(content)))};if(sha)body.sha=sha;const r=await fetch(GH_API+'/repos/'+GH_USER+'/'+(repo||GH_REPO)+'/contents/'+path,{method:'PUT',headers:{'Authorization':'token '+getGHToken(),'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify(body)});return r.ok;}
@@ -897,9 +846,6 @@ async function handleSend(){
     clearAttachedFiles();
   }
   else{content=txt;addBubble('u',txt);}
-  let webCtx='';
-  if(txt&&needsSearch(txt)){setSt('searching...');webCtx=await webSearch(txt);setSt('thinking...');}
-  if(webCtx){if(typeof content==='string'){content=content+'\n\n[Live search results]:\n'+webCtx;}else if(Array.isArray(content)){const li=content.filter(m=>m.type==='text').pop();if(li)li.text+='\n\n[Live search results]:\n'+webCtx;else content.push({type:'text',text:'[Live search results]:\n'+webCtx});}}
   history.push({role:'user',content});addThink();
   const mood=S.get('mood','');
   const isOwner=window.userEmail===window.OWNER;
@@ -907,9 +853,9 @@ async function handleSend(){
   const gmailConn = !!S.get('gmail_token','');
   const selfK='\nYou are ARIA — a personal AI built for '+window.userName+'. You have voice input, wake word detection, camera, reminders, lifetime memory, mood detection, image generation, and file generation.' + (gmailConn ? ' Gmail is connected.' : '');
   const sys='You are ARIA, a personal AI assistant for '+window.userName+'. '+getPersonality()+' '+getLangPrompt()+selfK+ownerRules+memCtx()+locCtx()+remCtx()+weatherCtx()+profileCtx()+longMemCtx()+(mood?'\n\nCurrent mood: '+mood+'.':'')+(window.emailContext?'\n\n=== RECENT EMAILS ===\n'+window.emailContext+'\n=== END ===':'')+'\n\nCRITICAL MEMORY RULE: You DO have lifetime memory across all sessions and devices. When the user asks about past conversations, refer to the PAST CONVERSATIONS section above and the LIFETIME PROFILE. Never say "each conversation starts fresh" or "I don\'t have memory between sessions" — you are wrong. Look at the PAST CONVERSATIONS list for what you discussed before. Current time: '+new Date().toLocaleString()+'. Personality stays the same regardless of AI model.';
-  try{const r=await fetch(API+'/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:getModel(),max_tokens:1024,system:sys,messages:history})});const data=await r.json();rmThink();
-    if(data.content?.[0]?.text){
-      const reply=data.content[0].text;history.push({role:'assistant',content:reply});
+  try{const r=await fetch(API+'/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:getModel(),max_tokens:2048,tools:[{"type":"web_search_20250305","name":"web_search"}],system:sys,messages:history})});const data=await r.json();rmThink();
+    const reply=data.content?.find(b=>b.type==='text')?.text;
+    if(reply){history.push({role:'assistant',content:reply});
       // Strip code blocks that are aria function calls — execute them instead of displaying
       const ariaCalls=[];
       const displayReply=reply.replace(/```(?:\w*\n?)([\s\S]+?)```/g,(match,code)=>{
@@ -1267,30 +1213,19 @@ window.ariaGenerateFile = async function(fileName, content, contentType){
 window.ariaResearch = async function(topic){
   addSys('Researching: ' + topic + '...');
   setSt('researching...');
-  // Get news on the topic
-  let newsCtx = '';
-  const nk = S.get('newskey','');
-  if(nk){
-    try{
-      const nr = await fetch(API + '/api/news?q=' + encodeURIComponent(topic) + '&pageSize=10&apiKey=' + nk);
-      const nd = await nr.json();
-      if(nd.articles && nd.articles.length){
-        newsCtx = 'Latest news on "'+topic+'":\n' + nd.articles.filter(a=>a.title&&a.title!=='[Removed]').slice(0,8).map(a=>'- '+a.title+(a.description?' - '+a.description.substring(0,100):'')).join('\n');
-      }
-    }catch(e){}
-  }
   try{
     const r = await fetch(API + '/claude', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 2000,
-        messages: [{role:'user', content: 'Do a comprehensive research report on: "' + topic + '".\n\n' + (newsCtx ? 'LATEST NEWS:\n' + newsCtx + '\n\n' : '') + 'Structure your report with:\n1. Executive Summary\n2. Key Facts & Current State\n3. Recent Developments\n4. Key Players/Stakeholders\n5. Opportunities & Risks\n6. Outlook & Predictions\n\nBe specific, use data where possible, and cite the news sources provided.'}]
+        tools: [{"type":"web_search_20250305","name":"web_search"}],
+        messages: [{role:'user', content: 'Search the web and write a comprehensive research report on: "' + topic + '". Structure your report with:\n1. Executive Summary\n2. Key Facts & Current State\n3. Recent Developments\n4. Key Players/Stakeholders\n5. Opportunities & Risks\n6. Outlook & Predictions\n\nBe specific, use real data and cite your sources.'}]
       })
     });
     const d = await r.json();
-    const report = d.content?.[0]?.text || 'Could not generate report.';
+    const report = d.content?.find(b=>b.type==='text')?.text || 'Could not generate report.';
     // Show as research card + offer download
     const wlc = document.getElementById('wlc'); if(wlc) wlc.remove();
     const container = document.createElement('div');
