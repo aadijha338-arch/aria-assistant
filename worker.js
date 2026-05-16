@@ -61,7 +61,7 @@ export default {
           return true;
         });
         const groqBody = {
-          model: 'compound-beta',
+          model: 'groq/compound',
           max_completion_tokens: 4000,
           stream: false,
           messages: [
@@ -93,7 +93,7 @@ export default {
           id: groqData.id || 'groq-resp',
           type: 'message',
           role: 'assistant',
-          model: 'compound-beta',
+          model: 'groq/compound',
           stop_reason: 'end_turn',
           content: [{ type: 'text', text }],
         };
@@ -152,7 +152,7 @@ export default {
           returnMetadata: 'all',
         });
         const hits = (results.matches || [])
-          .filter(m => m.score > 0.55)
+          .filter(m => m.score > 0.5)
           .map(m => ({ summary: m.metadata?.summary || '', ts: m.metadata?.ts || 0, score: m.score }));
         return cors(JSON.stringify(hits));
       } catch (e) {
