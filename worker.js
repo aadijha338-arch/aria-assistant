@@ -80,9 +80,9 @@ export default {
         console.log('[groq] messages count:', body.messages?.length, 'has system:', !!body.system);
 
         // Extract system message; flatten any complex (array) content to plain text
-        let systemMsg = (body.system || '').slice(0, 4000); // cap system prompt for Groq
+        let systemMsg = body.system || '';
         const messages = (body.messages || []).filter(m => {
-          if (m.role === 'system') { systemMsg = String(m.content).slice(0, 4000); return false; }
+          if (m.role === 'system') { systemMsg = String(m.content); return false; }
           return true;
         }).map(m => ({
           role: m.role,
@@ -94,7 +94,7 @@ export default {
 
         const groqBody = {
           model: 'groq/compound',
-          max_completion_tokens: 2000,
+          max_completion_tokens: 3000,
           messages: [
             ...(systemMsg ? [{ role: 'system', content: systemMsg }] : []),
             ...messages,
@@ -112,6 +112,7 @@ export default {
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer ' + env.GROQ_API_KEY,
+              'Groq-Model-Version': 'latest',
             },
             body: JSON.stringify(groqBody),
             signal: controller.signal,
