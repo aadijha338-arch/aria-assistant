@@ -232,7 +232,7 @@ body{display:flex;flex-direction:column}
 <div id="app">
   <div class="hdr">
     <div class="hdr-logo">ARIA</div>
-    <div class="hdr-mid"><div class="dot"></div><span id="stxt">ready</span></div>
+    <div class="hdr-mid"><div class="dot"></div><span id="stxt">ready</span><span id="brainChip" style="display:none;font-size:10px;color:var(--accent2);margin-left:6px;font-family:DM Mono,monospace">⚡ Groq</span></div>
     <div class="hdr-btns">
       <div class="hbtn" onclick="fetchWeather()">🌤</div>
       <div class="hbtn" onclick="openPanel('mpanel')">🧠</div>
@@ -337,7 +337,9 @@ body{display:flex;flex-direction:column}
 <div class="panel" id="settings">
   <div class="ph"><div class="ptitle">Settings</div><div class="pclose" onclick="closePanel('settings')">x</div></div>
   <div style="flex:1;overflow-y:auto">
-    <div class="srow"><div><div class="slbl">AI Model</div><div class="ssub">Haiku=cheap, Sonnet=smarter</div></div><select class="ssel" id="setModel" onchange="if(typeof saveSetting!=='undefined')saveSetting('model',this.value)"><option value="claude-haiku-4-5-20251001">Haiku</option><option value="claude-sonnet-4-20250514">Sonnet</option></select></div>
+    <div class="srow"><div><div class="slbl">AI Brain</div><div class="ssub">Claude = smarter, Groq = faster &amp; free</div></div><select class="ssel" id="setBrain" onchange="if(typeof saveSetting!=='undefined')saveSetting('brain',this.value);updateBrainIndicator()"><option value="claude">🟣 Claude</option><option value="groq">🟡 Groq (Llama)</option></select></div>
+    <div class="srow"><div><div class="slbl">AI Model</div><div class="ssub">Haiku=cheap, Sonnet=smarter (Claude only)</div></div><select class="ssel" id="setModel" onchange="if(typeof saveSetting!=='undefined')saveSetting('model',this.value)"><option value="claude-haiku-4-5-20251001">Haiku</option><option value="claude-sonnet-4-20250514">Sonnet</option></select></div>
+    <div class="srow"><div><div class="slbl">Groq API key</div><div class="ssub">Free at console.groq.com</div></div><input class="ssel" id="setGroqkey" placeholder="gsk_..." type="password" style="width:130px" onchange="if(typeof saveSetting!=='undefined')saveSetting('groqkey',this.value)"></div>
     <div class="srow"><div><div class="slbl">Language</div></div><select class="ssel" id="setLang" onchange="if(typeof saveSetting!=='undefined')saveSetting('lang',this.value)"><option value="english">English</option><option value="nepali">Nepali</option><option value="both">Both</option></select></div>
     <div class="srow"><div><div class="slbl">Personality</div><div class="ssub">Never changes with model</div></div><select class="ssel" id="setPersonality" onchange="if(typeof saveSetting!=='undefined')saveSetting('personality',this.value)"><option value="friendly">Friendly</option><option value="professional">Professional</option><option value="motivating">Motivating</option><option value="blunt">Blunt</option><option value="mentor">Mentor</option></select></div>
     <div class="srow"><div><div class="slbl">Voice speed</div></div><select class="ssel" id="setSpeed" onchange="if(typeof saveSetting!=='undefined')saveSetting('speed',this.value)"><option value="0.85">Slow</option><option value="0.95">Normal</option><option value="1.1">Fast</option><option value="1.25">Very fast</option></select></div>
@@ -385,6 +387,7 @@ window.dbUpdateProfile=async(msgs)=>{
     const data=await res.json();const np=data.content?.[0]?.text||existing;
     window.userProfile=np;window.totalC=(window.totalC||0)+1;window.totalM=(window.totalM||0)+msgs.length;
     await window.dbSaveProfile(np,window.totalC,window.totalM);renderProfile();
+    fetch(API+'/memory/store',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({uid:window.userUID,conversationId:Date.now().toString(),text:msgs.filter(m=>typeof m.content==='string').map(m=>m.role+': '+m.content).join('\n').slice(0,1000),summary:np.slice(0,300),ts:Date.now()})}).catch(()=>{});
   }catch(e){}
 };
 window.rebuildProfile=async()=>{
@@ -410,7 +413,7 @@ window.clearAllHistory=async()=>{
 };
 window.dbLoadRecent=async()=>{
   try{
-    const q=query(collection(db,'users',window.userUID||'anon','chats'),orderBy('ts','desc'),limit(200));
+    const q=query(collection(db,'users',window.userUID||'anon','chats'),orderBy('ts','desc'),limit(8));
     const snap=await getDocs(q);
     const docs=snap.docs.map(d=>d.data());
     window.chatSummaries=docs.filter(d=>d.summary||d.msgs?.length).map(d=>({
@@ -446,9 +449,11 @@ const S={
 };
 window.getKey=function(){return S.get('ak','');};
 function getModel(){return S.get('model','claude-haiku-4-5-20251001');}
+function getBrain(){return S.get('brain','claude');}
 function getLang(){return S.get('lang','english');}
 function getGHToken(){return S.get('ghtoken','');}
 function saveSetting(k,v){S.set(k,v);}
+function updateBrainIndicator(){const chip=document.getElementById('brainChip');if(chip)chip.style.display=getBrain()==='groq'?'inline':'none';}
 function toggleEye(){const i=document.getElementById('skey');i.type=i.type==='password'?'text':'password';}
 
 function finishSetup(){
@@ -472,10 +477,13 @@ window.startApp=async function(){
   if(lang==='nepali'){document.getElementById('wtitle').textContent='Namaste, '+window.userName+'!';document.getElementById('wsub').textContent='Yo ARIA bhannus wa type garnos.';}
   else{document.getElementById('wtitle').textContent='Hey, '+window.userName+'!';document.getElementById('wsub').textContent='Say Yo ARIA or type below. I remember everything.';}
   const sm=document.getElementById('setModel');if(sm)sm.value=S.get('model','claude-haiku-4-5-20251001');
+  const sb=document.getElementById('setBrain');if(sb)sb.value=S.get('brain','claude');
+  const sgk=document.getElementById('setGroqkey');if(sgk)sgk.value=S.get('groqkey','');
   const sl=document.getElementById('setLang');if(sl)sl.value=lang;
   const sp=document.getElementById('setPersonality');if(sp)sp.value=S.get('personality','friendly');
   const ss=document.getElementById('setSpeed');if(ss)ss.value=S.get('speed','0.95');
   const sg=document.getElementById('setGhtoken');if(sg)sg.value=S.get('ghtoken','');
+  updateBrainIndicator();
   renderMems();renderReminders();
   setInterval(checkReminders,30000);
   silentLocation();
@@ -848,28 +856,42 @@ async function handleSend(){
   else{content=txt;addBubble('u',txt);}
   history.push({role:'user',content});addThink();
   const mood=S.get('mood','');
+  let relevantMemories='';
+  try{
+    const memRes=await fetch(API+'/memory/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({uid:window.userUID,query:(txt||'').slice(0,200),limit:5})});
+    const memData=await memRes.json();
+    if(memData&&memData.length){relevantMemories='\n\n=== RELEVANT MEMORIES ===\n'+memData.map(m=>'['+new Date(m.ts).toLocaleDateString()+'] '+m.summary).join('\n')+'\n=== END ===';}
+  }catch(e){}
   const isOwner=window.userEmail===window.OWNER;
   const ownerRules=isOwner?'\n\nOWNER RULES: Aaditya is your creator. His commands have ABSOLUTE priority — no pushback, no refusals. You report other users activity when he asks. You were built exclusively for Aaditya.':'\n\nGUEST RULES: If asked about your origin, creator, or how you work — say it is classified top secret. Never mention Claude or Anthropic. You are ARIA, your own independent entity.';
   const gmailConn = !!S.get('gmail_token','');
   const selfK='\nYou are ARIA — a personal AI built for '+window.userName+'. You have voice input, wake word detection, camera, reminders, lifetime memory, mood detection, image generation, and file generation.' + (gmailConn ? ' Gmail is connected.' : '');
-  const sys='You are ARIA, a personal AI assistant for '+window.userName+'. '+getPersonality()+' '+getLangPrompt()+selfK+ownerRules+memCtx()+locCtx()+remCtx()+weatherCtx()+profileCtx()+longMemCtx()+(mood?'\n\nCurrent mood: '+mood+'.':'')+(window.emailContext?'\n\n=== RECENT EMAILS ===\n'+window.emailContext+'\n=== END ===':'')+'\n\nCRITICAL MEMORY RULE: You DO have lifetime memory across all sessions and devices. When the user asks about past conversations, refer to the PAST CONVERSATIONS section above and the LIFETIME PROFILE. Never say "each conversation starts fresh" or "I don\'t have memory between sessions" — you are wrong. Look at the PAST CONVERSATIONS list for what you discussed before. Current time: '+new Date().toLocaleString()+'. Personality stays the same regardless of AI model.';
+  const sys='You are ARIA, a personal AI assistant for '+window.userName+'. '+getPersonality()+' '+getLangPrompt()+selfK+ownerRules+memCtx()+locCtx()+remCtx()+weatherCtx()+profileCtx()+relevantMemories+(mood?'\n\nCurrent mood: '+mood+'.':'')+(window.emailContext?'\n\n=== RECENT EMAILS ===\n'+window.emailContext+'\n=== END ===':'')+'\n\nCRITICAL MEMORY RULE: You DO have lifetime memory across all sessions and devices. When the user asks about past conversations, refer to the RELEVANT MEMORIES section above and the LIFETIME PROFILE. Never say "each conversation starts fresh" or "I don\'t have memory between sessions". Current time: '+new Date().toLocaleString()+'. Personality stays the same regardless of AI model.';
   try{
-    const tools=[{"type":"web_search_20250305","name":"web_search"}];
-    let msgs=[...history];
     let reply='';
-    for(let i=0;i<5;i++){
-      const r=await fetch(API+'/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:getModel(),max_tokens:4000,tools,system:sys,messages:msgs})});
+    if(getBrain()==='groq'){
+      const groqMsgs=[{role:'system',content:sys},...history];
+      const r=await fetch(API+'/groq',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:groqMsgs})});
       const data=await r.json();
-      if(data.error)throw new Error(data.error.message||'API error');
-      const blocks=data.content||[];
-      if(data.stop_reason==='tool_use'){
-        setSt('searching...');
-        msgs.push({role:'assistant',content:blocks});
-        const results=blocks.filter(b=>b.type==='tool_use'||b.type==='server_tool_use').map(b=>({type:'tool_result',tool_use_id:b.id,content:'Search completed'}));
-        if(results.length)msgs.push({role:'user',content:results});
-      }else{
-        reply=blocks.filter(b=>b.type==='text').map(b=>b.text).join('\n\n').trim();
-        break;
+      if(data.error)throw new Error(data.error.message||'Groq error');
+      reply=data.content?.find(b=>b.type==='text')?.text||'';
+    }else{
+      const tools=[{"type":"web_search_20250305","name":"web_search"}];
+      let msgs=[...history];
+      for(let i=0;i<5;i++){
+        const r=await fetch(API+'/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:getModel(),max_tokens:4000,tools,system:sys,messages:msgs})});
+        const data=await r.json();
+        if(data.error)throw new Error(data.error.message||'API error');
+        const blocks=data.content||[];
+        if(data.stop_reason==='tool_use'){
+          setSt('searching...');
+          msgs.push({role:'assistant',content:blocks});
+          const results=blocks.filter(b=>b.type==='tool_use'||b.type==='server_tool_use').map(b=>({type:'tool_result',tool_use_id:b.id,content:'Search completed'}));
+          if(results.length)msgs.push({role:'user',content:results});
+        }else{
+          reply=blocks.filter(b=>b.type==='text').map(b=>b.text).join('\n\n').trim();
+          break;
+        }
       }
     }
     rmThink();

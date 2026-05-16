@@ -50,6 +50,116 @@ export default {
       }
     }
 
+    // POST /groq — proxy to Groq (OpenAI-compatible), convert Anthropic↔OpenAI format
+    if (path === '/groq' && request.method === 'POST') {
+      try {
+        const body = await request.json();
+        // Extract system message if present in messages array
+        let systemMsg = body.system || '';
+        const messages = (body.messages || []).filter(m => {
+          if (m.role === 'system') { systemMsg = m.content; return false; }
+          return true;
+        });
+        const groqBody = {
+          model: 'compound-beta',
+          max_completion_tokens: 4000,
+          stream: false,
+          messages: [
+            ...(systemMsg ? [{ role: 'system', content: systemMsg }] : []),
+            ...messages,
+          ],
+        };
+        const groqKey = env.GROQ_API_KEY;
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 60000);
+        let upstream;
+        try {
+          upstream = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + groqKey,
+            },
+            body: JSON.stringify(groqBody),
+            signal: controller.signal,
+          });
+        } finally {
+          clearTimeout(timer);
+        }
+        const groqData = await upstream.json();
+        // Convert OpenAI response → Anthropic format
+        const text = groqData.choices?.[0]?.message?.content || '';
+        const anthropicResp = {
+          id: groqData.id || 'groq-resp',
+          type: 'message',
+          role: 'assistant',
+          model: 'compound-beta',
+          stop_reason: 'end_turn',
+          content: [{ type: 'text', text }],
+        };
+        return cors(JSON.stringify(anthropicResp), upstream.status);
+      } catch (e) {
+        return cors(JSON.stringify({ error: e.message }), 500);
+      }
+    }
+
+    // POST /memory/store — embed text and upsert into Vectorize
+    if (path === '/memory/store' && request.method === 'POST') {
+      try {
+        const { uid, conversationId, text, summary, ts } = await request.json();
+        if (!uid || !text) return cors(JSON.stringify({ error: 'Missing uid or text' }), 400);
+        const embRes = await fetch(
+          'https://api.cloudflare.com/client/v4/accounts/' + env.CF_ACCOUNT_ID + '/ai/run/@cf/baai/bge-small-en-v1.5',
+          {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + env.CF_AI_TOKEN, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text.slice(0, 512) }),
+          }
+        );
+        const embData = await embRes.json();
+        const embedding = embData.result?.data?.[0];
+        if (!embedding) return cors(JSON.stringify({ error: 'Embedding failed' }), 500);
+        await env.ARIA_MEMORY.upsert([{
+          id: uid + '_' + (conversationId || Date.now()),
+          values: embedding,
+          metadata: { uid, summary: (summary || text).slice(0, 300), ts: ts || Date.now() },
+        }]);
+        return cors(JSON.stringify({ success: true }));
+      } catch (e) {
+        return cors(JSON.stringify({ error: e.message }), 500);
+      }
+    }
+
+    // POST /memory/search — semantic search in Vectorize
+    if (path === '/memory/search' && request.method === 'POST') {
+      try {
+        const { uid, query, limit } = await request.json();
+        if (!uid || !query) return cors(JSON.stringify([]), 200);
+        const embRes = await fetch(
+          'https://api.cloudflare.com/client/v4/accounts/' + env.CF_ACCOUNT_ID + '/ai/run/@cf/baai/bge-small-en-v1.5',
+          {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + env.CF_AI_TOKEN, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: query.slice(0, 512) }),
+          }
+        );
+        const embData = await embRes.json();
+        const embedding = embData.result?.data?.[0];
+        if (!embedding) return cors(JSON.stringify([]));
+        const results = await env.ARIA_MEMORY.query(embedding, {
+          topK: limit || 5,
+          filter: { uid },
+          returnMetadata: 'all',
+        });
+        const hits = (results.matches || [])
+          .filter(m => m.score > 0.55)
+          .map(m => ({ summary: m.metadata?.summary || '', ts: m.metadata?.ts || 0, score: m.score }));
+        return cors(JSON.stringify(hits));
+      } catch (e) {
+        return cors(JSON.stringify([]));
+      }
+    }
+
     // GET /api/crypto — CoinGecko proxy
     if (path === '/api/crypto') {
       try {

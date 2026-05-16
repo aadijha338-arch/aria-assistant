@@ -7,6 +7,10 @@ compatibility_flags = ["nodejs_compat"]
 binding = "FILES"
 bucket_name = "aria-files"
 
+[[vectorize]]
+binding = "ARIA_MEMORY"
+index_name = "aria-memory"
+
 [observability]
 enabled = true
 
