@@ -112,7 +112,6 @@ export default {
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer ' + env.GROQ_API_KEY,
-              'Groq-Model-Version': 'latest',
             },
             body: JSON.stringify(groqBody),
             signal: controller.signal,
@@ -121,10 +120,25 @@ export default {
           clearTimeout(timer);
         }
 
-        const rawText = await upstream.text();
-        console.log('[groq] status:', upstream.status, 'response:', rawText.slice(0, 500));
+        let rawText = await upstream.text();
+        console.log('[groq] status:', upstream.status, 'response:', rawText.slice(0, 300));
 
-        const groqData = JSON.parse(rawText);
+        let groqData = JSON.parse(rawText);
+
+        // groq/compound fails with 413 on heavy web-search queries — fall back to llama
+        if (upstream.status === 413 || groqData.error) {
+          console.log('[groq] compound failed, falling back to llama-3.3-70b-versatile');
+          const fallbackBody = { ...groqBody, model: 'llama-3.3-70b-versatile', max_completion_tokens: 3000 };
+          const fb = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + env.GROQ_API_KEY },
+            body: JSON.stringify(fallbackBody),
+          });
+          rawText = await fb.text();
+          groqData = JSON.parse(rawText);
+          console.log('[groq] fallback status:', fb.status);
+        }
+
         const text = groqData.choices?.[0]?.message?.content || '';
         console.log('[groq] extracted text length:', text.length);
 
@@ -132,11 +146,11 @@ export default {
           id: groqData.id || 'groq-resp',
           type: 'message',
           role: 'assistant',
-          model: 'groq/compound',
+          model: groqData.model || 'groq/compound',
           stop_reason: 'end_turn',
-          content: [{ type: 'text', text: text || (groqData.error?.message ? '[Groq error: ' + groqData.error.message + ']' : 'No response') }],
+          content: [{ type: 'text', text: text || 'No response from Groq.' }],
         };
-        return cors(JSON.stringify(anthropicResp), upstream.status);
+        return cors(JSON.stringify(anthropicResp), 200);
       } catch (e) {
         console.log('[groq] exception:', e.message);
         return cors(JSON.stringify({ error: e.message }), 500);
