@@ -1,7 +1,7 @@
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-File-Name, X-File-Type, X-User-Id',
 };
 
 function cors(body, status = 200, extra = {}) {
@@ -50,109 +50,68 @@ export default {
       }
     }
 
-    // GET /groq/test — raw debug call to Groq
-    if (path === '/groq/test' && request.method === 'GET') {
-      try {
-        const testBody = {
-          model: 'groq/compound',
-          messages: [{ role: 'user', content: 'say hi' }],
-          max_completion_tokens: 100,
-        };
-        const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + env.GROQ_API_KEY,
-          },
-          body: JSON.stringify(testBody),
-        });
-        const raw = await r.text();
-        return cors(JSON.stringify({ status: r.status, groq_key_set: !!env.GROQ_API_KEY, body: raw }));
-      } catch (e) {
-        return cors(JSON.stringify({ error: e.message }), 500);
-      }
-    }
-
-    // POST /groq — proxy to Groq (OpenAI-compatible), convert Anthropic↔OpenAI format
-    if (path === '/groq' && request.method === 'POST') {
+    // POST /gemini — proxy to Google Gemini with Google Search grounding
+    if (path === '/gemini' && request.method === 'POST') {
       try {
         const body = await request.json();
-        console.log('[groq] messages count:', body.messages?.length, 'has system:', !!body.system);
 
-        // Extract system message; flatten any complex (array) content to plain text
-        let systemMsg = body.system || '';
-        const messages = (body.messages || []).filter(m => {
-          if (m.role === 'system') { systemMsg = String(m.content); return false; }
+        // Extract system message; flatten complex content to text
+        let systemPrompt = body.system || '';
+        const rawMessages = (body.messages || []).filter(m => {
+          if (m.role === 'system') { systemPrompt = String(m.content); return false; }
           return true;
-        }).map(m => ({
-          role: m.role,
-          // Groq only accepts string content — flatten Anthropic content blocks
-          content: Array.isArray(m.content)
-            ? m.content.filter(b => b.type === 'text').map(b => b.text).join('\n') || '[media]'
-            : String(m.content || ''),
-        }));
+        });
 
-        const groqBody = {
-          model: 'groq/compound',
-          max_completion_tokens: 3000,
-          messages: [
-            ...(systemMsg ? [{ role: 'system', content: systemMsg }] : []),
-            ...messages,
-          ],
+        // Convert to Gemini contents format
+        const contents = rawMessages.map(m => {
+          let text = '';
+          if (Array.isArray(m.content)) {
+            text = m.content.filter(b => b.type === 'text').map(b => b.text).join('\n') || '[media]';
+          } else {
+            text = String(m.content || '');
+          }
+          return {
+            role: m.role === 'assistant' ? 'model' : 'user',
+            parts: [{ text }],
+          };
+        });
+
+        const geminiBody = {
+          ...(systemPrompt ? { systemInstruction: { parts: [{ text: systemPrompt }] } } : {}),
+          contents,
+          tools: [{ googleSearch: {} }],
+          generationConfig: { maxOutputTokens: 3000 },
         };
-
-        console.log('[groq] sending to Groq, total messages:', groqBody.messages.length, 'body size:', JSON.stringify(groqBody).length);
 
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), 60000);
         let upstream;
         try {
-          upstream = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + env.GROQ_API_KEY,
-            },
-            body: JSON.stringify(groqBody),
-            signal: controller.signal,
-          });
+          upstream = await fetch(
+            'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + env.GEMINI_API_KEY,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(geminiBody),
+              signal: controller.signal,
+            }
+          );
         } finally {
           clearTimeout(timer);
         }
 
-        let rawText = await upstream.text();
-        console.log('[groq] status:', upstream.status, 'response:', rawText.slice(0, 300));
-
-        let groqData = JSON.parse(rawText);
-
-        // groq/compound fails with 413 on heavy web-search queries — fall back to llama
-        if (upstream.status === 413 || groqData.error) {
-          console.log('[groq] compound failed, falling back to llama-3.3-70b-versatile');
-          const fallbackBody = { ...groqBody, model: 'llama-3.3-70b-versatile', max_completion_tokens: 3000 };
-          const fb = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + env.GROQ_API_KEY },
-            body: JSON.stringify(fallbackBody),
-          });
-          rawText = await fb.text();
-          groqData = JSON.parse(rawText);
-          console.log('[groq] fallback status:', fb.status);
-        }
-
-        const text = groqData.choices?.[0]?.message?.content || '';
-        console.log('[groq] extracted text length:', text.length);
-
+        const geminiData = await upstream.json();
+        const text = geminiData.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
         const anthropicResp = {
-          id: groqData.id || 'groq-resp',
+          id: 'gemini-resp',
           type: 'message',
           role: 'assistant',
-          model: groqData.model || 'groq/compound',
+          model: 'gemini-2.5-flash',
           stop_reason: 'end_turn',
-          content: [{ type: 'text', text: text || 'No response from Groq.' }],
+          content: [{ type: 'text', text: text || (geminiData.error?.message ? '[Gemini error: ' + geminiData.error.message + ']' : 'No response') }],
         };
         return cors(JSON.stringify(anthropicResp), 200);
       } catch (e) {
-        console.log('[groq] exception:', e.message);
         return cors(JSON.stringify({ error: e.message }), 500);
       }
     }
@@ -262,10 +221,29 @@ export default {
         const key = uid + '/' + Date.now() + '_' + (fileName || 'file.txt');
         await env.FILES.put(key, content, {
           httpMetadata: { contentType: contentType || 'text/plain' },
-          customMetadata: { userId: uid, fileName: fileName || 'file.txt' },
+          customMetadata: { uid, fileName: fileName || 'file.txt', uploadedAt: String(Date.now()) },
         });
         const downloadUrl = url.origin + '/files/content?key=' + encodeURIComponent(key);
         return cors(JSON.stringify({ success: true, url: downloadUrl, key, fileName }));
+      } catch (e) {
+        return cors(JSON.stringify({ error: e.message }), 500);
+      }
+    }
+
+    // POST /files/upload — raw bytes upload to R2
+    if (path === '/files/upload' && request.method === 'POST') {
+      try {
+        const uid = request.headers.get('X-User-Id') || url.searchParams.get('uid') || url.searchParams.get('userId') || 'anon';
+        const rawName = request.headers.get('X-File-Name') || 'upload.bin';
+        const fileName = decodeURIComponent(rawName);
+        const fileType = request.headers.get('X-File-Type') || request.headers.get('Content-Type') || 'application/octet-stream';
+        const key = uid + '/' + Date.now() + '_' + fileName;
+        const bytes = await request.arrayBuffer();
+        await env.FILES.put(key, bytes, {
+          httpMetadata: { contentType: fileType },
+          customMetadata: { uid, fileName, uploadedAt: String(Date.now()) },
+        });
+        return cors(JSON.stringify({ success: true, key, fileName, fileType, size: bytes.byteLength }));
       } catch (e) {
         return cors(JSON.stringify({ error: e.message }), 500);
       }
@@ -274,14 +252,14 @@ export default {
     // GET /files/list — list files for a user
     if (path === '/files/list') {
       try {
-        const userId = url.searchParams.get('userId') || 'anon';
-        const list = await env.FILES.list({ prefix: userId + '/' });
+        const uid = url.searchParams.get('uid') || url.searchParams.get('userId') || 'anon';
+        const list = await env.FILES.list({ prefix: uid + '/' });
         const files = list.objects.map(o => ({
           key: o.key,
           fileName: o.customMetadata?.fileName || o.key.split('/').pop(),
           size: o.size,
-          uploaded: o.uploaded,
-          url: url.origin + '/files/content?key=' + encodeURIComponent(o.key),
+          uploadedAt: o.customMetadata?.uploadedAt ? Number(o.customMetadata.uploadedAt) : (o.uploaded ? new Date(o.uploaded).getTime() : 0),
+          contentType: o.httpMetadata?.contentType || 'application/octet-stream',
         }));
         return cors(JSON.stringify({ files }));
       } catch (e) {
@@ -289,38 +267,35 @@ export default {
       }
     }
 
-    // POST /files/upload — raw file upload to R2
-    if (path === '/files/upload' && request.method === 'POST') {
-      try {
-        const formData = await request.formData();
-        const file = formData.get('file');
-        const userId = formData.get('userId') || 'anon';
-        const fileName = file?.name || 'upload.bin';
-        const key = userId + '/' + Date.now() + '_' + fileName;
-        const bytes = await file.arrayBuffer();
-        await env.FILES.put(key, bytes, {
-          httpMetadata: { contentType: file.type || 'application/octet-stream' },
-          customMetadata: { userId, fileName },
-        });
-        const downloadUrl = url.origin + '/files/content?key=' + encodeURIComponent(key);
-        return cors(JSON.stringify({ success: true, url: downloadUrl, key, fileName }));
-      } catch (e) {
-        return cors(JSON.stringify({ error: e.message }), 500);
-      }
-    }
-
-    // GET /files/content — serve a file from R2
-    if (path === '/files/content') {
+    // GET /files/get — serve raw file bytes
+    if (path === '/files/get') {
       try {
         const key = url.searchParams.get('key');
         if (!key) return cors(JSON.stringify({ error: 'Missing key' }), 400);
         const obj = await env.FILES.get(key);
         if (!obj) return cors(JSON.stringify({ error: 'Not found' }), 404);
         const ct = obj.httpMetadata?.contentType || 'application/octet-stream';
-        const headers = { ...CORS, 'Content-Type': ct };
         const fn = obj.customMetadata?.fileName;
-        if (fn) headers['Content-Disposition'] = 'attachment; filename="' + fn + '"';
+        const headers = { ...CORS, 'Content-Type': ct };
+        if (fn) headers['Content-Disposition'] = 'inline; filename="' + fn + '"';
         return new Response(obj.body, { status: 200, headers });
+      } catch (e) {
+        return cors(JSON.stringify({ error: e.message }), 500);
+      }
+    }
+
+    // GET /files/content — return file as base64 JSON
+    if (path === '/files/content') {
+      try {
+        const key = url.searchParams.get('key');
+        if (!key) return cors(JSON.stringify({ error: 'Missing key' }), 400);
+        const obj = await env.FILES.get(key);
+        if (!obj) return cors(JSON.stringify({ error: 'Not found' }), 404);
+        const contentType = obj.httpMetadata?.contentType || 'application/octet-stream';
+        const fileName = obj.customMetadata?.fileName || key.split('/').pop();
+        const bytes = await obj.arrayBuffer();
+        const base64 = btoa(String.fromCharCode(...new Uint8Array(bytes)));
+        return cors(JSON.stringify({ contentType, type: contentType, base64, content: base64, fileName }));
       } catch (e) {
         return cors(JSON.stringify({ error: e.message }), 500);
       }
