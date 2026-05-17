@@ -364,15 +364,32 @@ body{display:flex;flex-direction:column}
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithCredential, signOut as fbSignOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 const OWNER='aadijha338@gmail.com';window.OWNER=OWNER;
 const fbCfg={apiKey:"AIzaSyAMKd-wZiOTdAGtQ0DRxWHXCqWSp5HcQSc",authDomain:"aria-assistant-4deed.firebaseapp.com",projectId:"aria-assistant-4deed",storageBucket:"aria-assistant-4deed.firebasestorage.app",messagingSenderId:"1029745466681",appId:"1:1029745466681:web:691db430ebe2ed517adce8"};
 const fb=initializeApp(fbCfg);const auth=getAuth(fb);const db=getFirestore(fb);const prov=new GoogleAuthProvider();
 window.signInWithGoogle=async()=>{
   document.getElementById('login-err').classList.remove('show');
+  // On Android WebView: delegate to native OAuth flow via Custom Tabs
+  if(window.AndroidBridge&&typeof window.AndroidBridge.signInWithGoogleNative==='function'){
+    window.AndroidBridge.signInWithGoogleNative();
+    return;
+  }
+  // Browser fallback: Firebase popup
   try{await signInWithPopup(auth,prov);}
   catch(e){if(e.code!=='auth/popup-closed-by-user'){document.getElementById('login-err').textContent='Error: '+e.message;document.getElementById('login-err').classList.add('show');}}
+};
+// Called by AndroidBridge after native OAuth completes (tokens arrive via aria://oauth-callback)
+window.onNativeAuthResult=async(idToken,accessToken)=>{
+  try{
+    const credential=GoogleAuthProvider.credential(idToken,accessToken);
+    await signInWithCredential(auth,credential);
+    localStorage.setItem('gmail_access_token',accessToken);
+  }catch(e){
+    document.getElementById('login-err').textContent='Native auth failed: '+e.message;
+    document.getElementById('login-err').classList.add('show');
+  }
 };
 window.doSignOut=async()=>{try{await window.saveSession();}catch(e){}await fbSignOut(auth);location.reload();};
 window.dbSave=async(msgs,sum)=>{if(!msgs||!msgs.length)return;try{await addDoc(collection(db,'users',window.userUID||'anon','chats'),{msgs:msgs.map(m=>({role:m.role,content:typeof m.content==='string'?m.content:'[image]'})),summary:sum||'',ts:Date.now()});}catch(e){}};
