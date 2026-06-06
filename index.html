@@ -201,6 +201,42 @@ body{display:flex;flex-direction:column}
 .research-card{background:var(--s2);border:1px solid var(--border2);border-radius:var(--r);padding:14px;margin:8px 0}
 .research-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--accent);margin-bottom:8px}
 .research-body{font-size:13px;color:var(--muted2);line-height:1.7;white-space:pre-wrap}
+/* ── Agent views ── */
+.agentView{display:none;flex:1;overflow-y:auto;flex-direction:column;padding:14px;gap:12px}
+.agentView.active{display:flex}
+.agent-hdr{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--accent);margin-bottom:4px}
+.agent-sub{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:4px}
+.agt-card{background:var(--s2);border:1px solid var(--border2);border-radius:var(--r);padding:14px;flex-shrink:0}
+.agt-card .atitle{font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px}
+.agt-card .adesc{font-size:12px;color:var(--muted2);line-height:1.6}
+.agt-card .akv{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.agt-card .akv:last-child{border:none}
+.akv-lbl{color:var(--muted2)}.akv-val{color:var(--accent);font-weight:700;font-family:'Syne',sans-serif}
+.agt-chip{display:flex;align-items:center;gap:6px;padding:10px 14px;border-radius:var(--rs);background:var(--s2);border:1px solid var(--border2);color:var(--muted2);font-size:12px;cursor:pointer;margin-bottom:6px}
+.agt-chip:active{border-color:var(--accent);color:var(--accent);background:var(--s3)}
+.agt-chip .badge{background:var(--red);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.agt-btn{width:100%;padding:12px;border-radius:var(--rs);border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;margin-top:4px}
+.agt-btn.ruby{background:var(--red);color:#fff}
+.agt-btn.aadi{background:var(--accent2);color:#080810}
+.agt-btn.green{background:var(--green);color:#080810}
+.agt-btn:disabled{opacity:.3;cursor:not-allowed}
+.agt-stat{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.agt-stat-item{background:var(--s3);border-radius:var(--rs);padding:10px;text-align:center}
+.agt-stat-item .num{font-size:24px;font-weight:700;font-family:'Syne',sans-serif;color:var(--accent)}
+.agt-stat-item .lbl{font-size:10px;color:var(--muted);margin-top:2px}
+.agt-task{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);margin-bottom:6px}
+.agt-task .prio{width:3px;border-radius:2px;flex-shrink:0;align-self:stretch}
+.agt-task .prio.urgent{background:var(--red)}
+.agt-task .prio.high{background:var(--yellow)}
+.agt-task .prio.med{background:var(--accent2)}
+.agt-task .prio.low{background:var(--muted)}
+.agt-task .tinfo{flex:1}
+.agt-task .ttitle{font-size:13px;line-height:1.4}
+.agt-task .tmeta{font-size:11px;color:var(--muted);margin-top:3px}
+.agt-task .tdone{cursor:pointer;color:var(--muted);font-size:18px;flex-shrink:0;padding:2px}
+.agt-task .tdone:hover{color:var(--green)}
+.agt-insight{background:linear-gradient(135deg,#1a1a3e,#0f1a2e);border:1px solid var(--accent2);border-radius:var(--r);padding:13px;font-size:13px;color:var(--muted2);line-height:1.6}
+.agt-loading{padding:20px;text-align:center;color:var(--muted);font-size:13px}
 </style>
 </head>
 <body>
@@ -248,6 +284,8 @@ body{display:flex;flex-direction:column}
     <div class="tab" onclick="switchTab('finance')">Markets</div>
     <div class="tab" onclick="switchTab('news')">News</div>
     <div class="tab" onclick="switchTab('history')">History</div>
+    <div class="tab" onclick="switchTab('aadi')">Aadi</div>
+    <div class="tab" onclick="switchTab('ruby')">Ruby</div>
   </div>
   <div class="view active" id="chatView">
     <div class="welcome" id="wlc">
@@ -305,6 +343,22 @@ body{display:flex;flex-direction:column}
       <div id="historyList" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
   </div>
+  <!-- Aadi Agent View -->
+  <div class="agentView" id="aadiView">
+    <div class="agent-hdr">Aadi Agent</div>
+    <div class="agent-sub">Personal CLI agent for Aaditya — tasks, research, prompts, brief</div>
+    <div id="aadiContent" style="display:flex;flex-direction:column;gap:10px">
+      <div class="agt-loading">Loading Aadi Agent...</div>
+    </div>
+  </div>
+  <!-- Ruby Agent View -->
+  <div class="agentView" id="rubyView">
+    <div class="agent-hdr">Ruby Construction Agent</div>
+    <div class="agent-sub">Tender management for M/s Ruby Construction — KGA bid monitoring, analysis, BOQ, bid docs</div>
+    <div id="rubyContent" style="display:flex;flex-direction:column;gap:10px">
+      <div class="agt-loading">Loading Ruby Agent...</div>
+    </div>
+  </div>
   <div class="ibar">
     <div id="ipw"><img id="ipreview" src="" alt=""><button id="iclr" onclick="clearImg()">x</button></div>
     <div class="chips">
@@ -315,6 +369,8 @@ body{display:flex;flex-direction:column}
       <div class="chip" onclick="detectEmotion()">Mood</div>
       <div class="chip" onclick="fetchWeather()">Weather</div>
       <div class="chip" onclick="showBriefing()">Briefing</div>
+      <div class="chip" onclick="switchTab('aadi')">Aadi</div>
+      <div class="chip" onclick="switchTab('ruby')">Ruby</div>
     </div>
     <div class="irow">
       <textarea id="tinput" placeholder="Message ARIA..." rows="1" oninput="resize(this)"></textarea>
@@ -530,9 +586,15 @@ window.startApp=async function(){
 function switchTab(n){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  const tabs=['chat','profile','finance','news','history'];
+  document.querySelectorAll('.agentView').forEach(v=>v.classList.remove('active'));
+  const tabs=['chat','profile','finance','news','history','aadi','ruby'];
   document.querySelectorAll('.tab')[tabs.indexOf(n)].classList.add('active');
-  document.getElementById(n+'View').classList.add('active');
+  const el=document.getElementById(n+'View');
+  if(el){
+    el.classList.add('active');
+    if(n==='aadi'&&!window.aadiLoaded){loadAadiBrief();}
+    if(n==='ruby'&&!window.rubyLoaded){loadRubyStatus();}
+  }
   if(n==='history')window.dbLoadHistory();
   updateGmailStatus();if(n==='profile')renderProfile();
 }
@@ -764,6 +826,317 @@ window.saveSession=async function(){
   if(!history.length)return;
   try{const res=await fetch(API+'/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:80,messages:[{role:'user',content:'Summarize in 1 sentence: '+history.filter(m=>typeof m.content==='string').slice(-6).map(m=>m.role+': '+m.content).join(' | ')}]})});const d=await res.json();const summary=d.content?.[0]?.text||'';await window.dbSave(history,summary);await window.dbUpdateProfile(history);}catch(e){await window.dbSave(history,'');}
 };
+
+// ═══ AGENT FUNCTIONS ═══
+
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+async function loadAadiBrief(force){
+  const c=document.getElementById('aadiContent');
+  if(!force&&window.aadiLoaded){renderAadiTasks();return;}
+  c.innerHTML='<div class="agt-loading">Loading morning brief...</div>';
+  try{
+    const r=await fetch(API+'/aadi/brief');
+    if(!r.ok){c.innerHTML='<div class="agt-card"><div class="adesc">Could not load brief. Backend unreachable.</div></div>';return;}
+    const d=await r.json();
+    window.aadiData=d;window.aadiLoaded=true;
+    renderAadiBrief(d);
+  }catch(e){c.innerHTML='<div class="agt-card"><div class="adesc">Error: '+escHtml(e.message)+'</div></div>';}
+}
+
+function renderAadiBrief(d){
+  const c=document.getElementById('aadiContent');
+  const days=d.kga_countdown.days_left;
+  const urgentClass=days<=7?'red':days<=14?'yellow':'accent';
+
+  c.innerHTML=`
+    <div class="agt-stat">
+      <div class="agt-stat-item"><div class="num" style="color:var(--${urgentClass})">${days}</div><div class="lbl">Days to KGA Bid</div></div>
+      <div class="agt-stat-item"><div class="num">${d.all_tasks_count}</div><div class="lbl">Active Tasks</div></div>
+      <div class="agt-stat-item"><div class="num">${d.urgent_tasks.length}</div><div class="lbl">Urgent</div></div>
+      <div class="agt-stat-item"><div class="num">${Object.keys(d.projects).length}</div><div class="lbl">Projects</div></div>
+    </div>
+
+    <div class="agt-card"><div class="atitle">KGA Bid Countdown</div>
+      <div class="akv"><span class="akv-lbl">IFB</span><span class="akv-val">${escHtml(d.kga_countdown.ifb)}</span></div>
+      <div class="akv"><span class="akv-lbl">Employer</span><span class="akv-val">NEA Kaligandaki "A"</span></div>
+      <div class="akv"><span class="akv-lbl">Location</span><span class="akv-val">${escHtml(d.kga_countdown.location)}</span></div>
+      <div class="akv"><span class="akv-lbl">Deadline</span><span class="akv-val">${escHtml(d.kga_countdown.deadline)}</span></div>
+    </div>
+
+    <div class="agt-card"><div class="atitle">Projects at a Glance</div>
+      ${Object.entries(d.projects).map(([k,v])=>`
+        <div class="akv"><span class="akv-lbl">${k.toUpperCase()}</span><span class="akv-val">${escHtml(v.status)}</span></div>
+        <div style="font-size:11px;color:var(--muted2);padding-bottom:6px;margin-top:-4px">${escHtml(v.key_issue)}</div>
+      `).join('')}
+    </div>
+
+    <div class="agt-card"><div class="atitle">Urgent Tasks (${d.urgent_tasks.length})</div>
+      ${d.urgent_tasks.length?d.urgent_tasks.slice(0,5).map(t=>`
+        <div class="agt-task">
+          <div class="prio ${t.priority==='URGENT'?'urgent':'high'}"></div>
+          <div class="tinfo"><div class="ttitle">${escHtml(t.task)}</div>
+          <div class="tmeta">${t.project.toUpperCase()}${t.deadline?' — '+t.deadline:''}</div></div>
+          <div class="tdone" onclick="markTaskDone(${t.id})">○</div>
+        </div>
+      `).join(''):'<div style="font-size:13px;color:var(--muted);padding:8px 0">No urgent tasks. Great!</div>'}
+    </div>
+
+    ${d.market_insight&&d.market_insight!=='Market insight unavailable'?`
+      <div class="agt-insight">💡 ${escHtml(d.market_insight)}</div>
+    `:''}
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <div class="agt-chip" onclick="loadAadiBrief(true)">🔄 Refresh Brief</div>
+      <div class="agt-chip" onclick="loadAadiTasks()">📋 All Tasks</div>
+      <div class="agt-chip" onclick="showAadiAddTask()">➕ Add Task</div>
+      <div class="agt-chip" onclick="showAadiChat()">💬 Chat with Aadi</div>
+    </div>
+
+    <div style="height:4px"></div>
+  `;
+  window.rubyLoaded=false;
+}
+
+async function loadAadiTasks(){
+  const c=document.getElementById('aadiContent');
+  c.innerHTML='<div class="agt-loading">Loading tasks...</div>';
+  try{
+    const r=await fetch(API+'/aadi/tasks');
+    if(!r.ok)return;
+    const d=await r.json();
+    c.innerHTML=`
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="agent-hdr" style="margin:0">Tasks (${d.count})</div>
+        <div style="display:flex;gap:6px">
+          <div class="agt-chip" style="font-size:11px;padding:6px 10px" onclick="loadAadiBrief()">← Back</div>
+          <div class="agt-chip" style="font-size:11px;padding:6px 10px" onclick="showAadiAddTask()">+ Add</div>
+        </div>
+      </div>
+      ${d.tasks.map(t=>{
+        const pc={URGENT:'urgent',HIGH:'high',MEDIUM:'med',LOW:'low'}[t.priority]||'med';
+        const sc={pending:'○',in_progress:'◐',done:'✓',cancelled:'✕'}[t.status]||'○';
+        return `<div class="agt-task">
+          <div class="prio ${pc}"></div>
+          <div class="tinfo"><div class="ttitle">${escHtml(t.task)}</div>
+          <div class="tmeta">${t.project.toUpperCase()} — ${t.priority}${t.deadline?' — '+t.deadline:''} — ${t.status}</div></div>
+          <div class="tdone" onclick="markTaskDone(${t.id})">${sc}</div>
+        </div>`;
+      }).join('')}
+      <div style="height:4px"></div>
+    `;
+  }catch(e){c.innerHTML='<div class="agt-card"><div class="adesc">Could not load tasks.</div></div>';}
+}
+
+async function markTaskDone(id){
+  try{
+    const r=await fetch(API+'/aadi/tasks/'+id+'/done',{method:'POST',headers:{'Content-Type':'application/json'}});
+    if(r.ok){loadAadiTasks();}
+  }catch(e){}
+}
+
+function showAadiAddTask(){
+  const c=document.getElementById('aadiContent');
+  const projs=['ruby','aria','vending','personal'];
+  c.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="agent-hdr" style="margin:0">Add Task</div>
+      <div class="agt-chip" style="font-size:11px;padding:6px 10px" onclick="loadAadiTasks()">← Back</div>
+    </div>
+    <div class="agt-card">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <input id="atask" class="inp" placeholder="Task description">
+        <select id="aproject" class="sel">${projs.map(p=>'<option value="'+p+'">'+p.toUpperCase()+'</option>').join('')}</select>
+        <input id="adeadline" class="inp" placeholder="Deadline (YYYY-MM-DD) — optional">
+        <select id="apriority" class="sel">
+          <option value="MEDIUM">Medium</option><option value="URGENT">Urgent</option><option value="HIGH">High</option><option value="LOW">Low</option>
+        </select>
+        <button class="agt-btn aadi" onclick="submitAadiAddTask()">Add Task</button>
+      </div>
+    </div>
+  `;
+}
+
+async function submitAadiAddTask(){
+  const task=document.getElementById('atask').value.trim();
+  const project=document.getElementById('aproject').value;
+  const deadline=document.getElementById('adeadline').value.trim();
+  const priority=document.getElementById('apriority').value;
+  if(!task)return;
+  try{
+    const r=await fetch(API+'/aadi/tasks',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({project,task,deadline:deadline||null,priority,notes:''})});
+    if(r.ok){loadAadiTasks();}
+  }catch(e){}
+}
+
+function showAadiChat(){
+  const c=document.getElementById('aadiContent');
+  c.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="agent-hdr" style="margin:0">Chat with Aadi Agent</div>
+      <div class="agt-chip" style="font-size:11px;padding:6px 10px" onclick="loadAadiBrief()">← Back</div>
+    </div>
+    <div class="agt-card" style="flex:1;display:flex;flex-direction:column;min-height:200px">
+      <div id="aadiChatMsgs" style="flex:1;overflow-y:auto;margin-bottom:10px;display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:12px;color:var(--muted);padding:4px">Ask anything. I know your tasks, projects, and context.</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <input id="aadiChatInput" class="inp" placeholder="Ask Aadi Agent..." style="flex:1" onkeydown="if(event.key==='Enter')sendAadiChat()">
+        <button class="agt-btn aadi" style="width:auto;padding:12px 16px" onclick="sendAadiChat()">Send</button>
+      </div>
+    </div>
+  `;
+}
+
+async function sendAadiChat(){
+  const inp=document.getElementById('aadiChatInput');
+  const msg=inp.value.trim();
+  if(!msg)return;
+  inp.value='';
+  const msgs=document.getElementById('aadiChatMsgs');
+  msgs.innerHTML+=`<div style="font-size:13px;color:var(--text);padding:8px 10px;background:var(--s3);border-radius:var(--rs);align-self:flex-end;max-width:80%">${escHtml(msg)}</div>`;
+  msgs.innerHTML+=`<div style="font-size:13px;color:var(--muted);padding:8px 10px">thinking...</div>`;
+  msgs.scrollTop=msgs.scrollHeight;
+  try{
+    const r=await fetch(API+'/aadi/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg})});
+    const d=await r.json();
+    msgs.querySelector('div:last-child').remove();
+    msgs.innerHTML+=`<div style="font-size:13px;color:var(--muted2);padding:8px 10px;background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);align-self:flex-start;max-width:80%;white-space:pre-wrap">${escHtml(d.reply||'No response')}</div>`;
+    msgs.scrollTop=msgs.scrollHeight;
+  }catch(e){
+    msgs.querySelector('div:last-child').remove();
+    msgs.innerHTML+=`<div style="font-size:13px;color:var(--red);padding:8px">Error: ${escHtml(e.message)}</div>`;
+  }
+}
+
+// ── RUBY AGENT ──
+
+async function loadRubyStatus(force){
+  const c=document.getElementById('rubyContent');
+  if(!force&&window.rubyLoaded){return;}
+  c.innerHTML='<div class="agt-loading">Loading Ruby Agent...</div>';
+  try{
+    const r=await fetch(API+'/ruby/status');
+    if(!r.ok){c.innerHTML='<div class="agt-card"><div class="adesc">Could not load Ruby Agent. Backend unreachable.</div></div>';return;}
+    const d=await r.json();
+    window.rubyData=d;window.rubyLoaded=true;
+    renderRubyStatus(d);
+  }catch(e){c.innerHTML='<div class="agt-card"><div class="adesc">Error: '+escHtml(e.message)+'</div></div>';}
+}
+
+function renderRubyStatus(d){
+  const c=document.getElementById('rubyContent');
+  const days=d.kga_bid.days_left;
+  const urgentClass=days<=7?'red':days<=14?'yellow':'accent';
+
+  c.innerHTML=`
+    <div class="agt-stat">
+      <div class="agt-stat-item"><div class="num" style="color:var(--${urgentClass})">${days}</div><div class="lbl">Days Left</div></div>
+      <div class="agt-stat-item"><div class="num">${d.active_tenders}</div><div class="lbl">Active Tenders</div></div>
+      <div class="agt-stat-item"><div class="num">${d.completed_tenders}</div><div class="lbl">Completed</div></div>
+      <div class="agt-stat-item"><div class="num">B</div><div class="lbl">Class</div></div>
+    </div>
+
+    <div class="agt-card"><div class="atitle">KGA-2082/83-CT-07</div>
+      <div class="akv"><span class="akv-lbl">Project</span><span class="akv-val">${escHtml(d.kga_bid.project)}</span></div>
+      <div class="akv"><span class="akv-lbl">Employer</span><span class="akv-val">${escHtml(d.kga_bid.employer)}</span></div>
+      <div class="akv"><span class="akv-lbl">Location</span><span class="akv-val">${escHtml(d.kga_bid.location)}</span></div>
+      <div class="akv"><span class="akv-lbl">Deadline</span><span class="akv-val">${escHtml(d.kga_bid.deadline)}</span></div>
+      <div class="akv"><span class="akv-lbl">Value</span><span class="akv-val">${escHtml(d.kga_bid.estimated_value)}</span></div>
+      <div class="akv" style="border:none"><span class="akv-lbl">Security</span><span class="akv-val">${escHtml(d.kga_bid.bid_security)}</span></div>
+    </div>
+
+    ${d.kga_bid.remaining_work?`
+    <div class="agt-card"><div class="atitle">Remaining Work</div>
+      ${d.kga_bid.remaining_work.map(item=>`
+        <div class="agt-task"><div class="prio urgent"></div>
+        <div class="tinfo"><div class="ttitle">${escHtml(item)}</div></div></div>
+      `).join('')}
+    </div>`:''}
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <div class="agt-chip" onclick="loadRubyStatus(true)">🔄 Refresh</div>
+      <div class="agt-chip" onclick="loadRubyTenders()">📋 All Tenders</div>
+      <div class="agt-chip" onclick="showRubyChat()">💬 Chat Ruby</div>
+    </div>
+
+    <div style="height:4px"></div>
+  `;
+  window.aadiLoaded=false;
+}
+
+async function loadRubyTenders(){
+  const c=document.getElementById('rubyContent');
+  c.innerHTML='<div class="agt-loading">Loading tenders...</div>';
+  try{
+    const r=await fetch(API+'/ruby/tenders');
+    if(!r.ok)return;
+    const d=await r.json();
+    c.innerHTML=`
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="agent-hdr" style="margin:0">Tenders (${d.count})</div>
+        <div class="agt-chip" style="font-size:11px;padding:6px 10px" onclick="loadRubyStatus()">← Back</div>
+      </div>
+      ${d.tenders.length?d.tenders.map(t=>`
+        <div class="agt-card"><div class="atitle">${escHtml(t.title)}</div>
+          <div class="akv"><span class="akv-lbl">Location</span><span class="akv-val">${escHtml(t.location||'N/A')}</span></div>
+          <div class="akv"><span class="akv-lbl">Deadline</span><span class="akv-val">${t.deadline||'N/A'}</span></div>
+          <div class="akv"><span class="akv-lbl">Status</span><span class="akv-val">${t.submitted?'Submitted':'Active'}</span></div>
+        </div>
+      `).join(''):'<div class="agt-card"><div class="adesc">No tenders found. Run ruby-agent monitor to find bids.</div></div>'}
+      <div style="height:4px"></div>
+    `;
+  }catch(e){c.innerHTML='<div class="agt-card"><div class="adesc">Could not load tenders.</div></div>';}
+}
+
+function showRubyChat(){
+  const c=document.getElementById('rubyContent');
+  c.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="agent-hdr" style="margin:0">Chat with Ruby Agent</div>
+      <div class="agt-chip" style="font-size:11px;padding:6px 10px" onclick="loadRubyStatus()">← Back</div>
+    </div>
+    <div class="agt-card" style="flex:1;display:flex;flex-direction:column;min-height:200px">
+      <div id="rubyChatMsgs" style="flex:1;overflow-y:auto;margin-bottom:10px;display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:12px;color:var(--muted);padding:4px">Ask about tenders, bid documents, BOQ, or Nepal construction.</div>
+        <div class="agt-chip" style="font-size:11px" onclick="quickRuby('What tenders should Ruby Construction bid on?')">What should I bid on?</div>
+        <div class="agt-chip" style="font-size:11px" onclick="quickRuby('Prepare bid documents for KGA-2082/83-CT-07')">Prep KGA bid docs</div>
+        <div class="agt-chip" style="font-size:11px" onclick="quickRuby('Generate Bill of Quantities for office building')">Generate BOQ</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <input id="rubyChatInput" class="inp" placeholder="Ask Ruby Agent..." style="flex:1" onkeydown="if(event.key==='Enter')sendRubyChat()">
+        <button class="agt-btn ruby" style="width:auto;padding:12px 16px" onclick="sendRubyChat()">Send</button>
+      </div>
+    </div>
+  `;
+}
+
+function quickRuby(msg){
+  document.getElementById('rubyChatInput').value=msg;
+  sendRubyChat();
+}
+
+async function sendRubyChat(){
+  const inp=document.getElementById('rubyChatInput');
+  const msg=inp.value.trim();
+  if(!msg)return;
+  inp.value='';
+  const msgs=document.getElementById('rubyChatMsgs');
+  msgs.innerHTML+=`<div style="font-size:13px;color:var(--text);padding:8px 10px;background:var(--s3);border-radius:var(--rs);align-self:flex-end;max-width:80%">${escHtml(msg)}</div>`;
+  msgs.innerHTML+=`<div style="font-size:13px;color:var(--muted);padding:8px 10px">thinking...</div>`;
+  msgs.scrollTop=msgs.scrollHeight;
+  try{
+    const r=await fetch(API+'/ruby/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg})});
+    const d=await r.json();
+    msgs.querySelector('div:last-child').remove();
+    msgs.innerHTML+=`<div style="font-size:13px;color:var(--muted2);padding:8px 10px;background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);align-self:flex-start;max-width:80%;white-space:pre-wrap">${escHtml(d.reply||'No response')}</div>`;
+    msgs.scrollTop=msgs.scrollHeight;
+  }catch(e){
+    msgs.querySelector('div:last-child').remove();
+    msgs.innerHTML+=`<div style="font-size:13px;color:var(--red);padding:8px">Error: ${escHtml(e.message)}</div>`;
+  }
+}
 
 async function handleSend(){
   const inp=document.getElementById('tinput');const txt=inp.value.trim();
