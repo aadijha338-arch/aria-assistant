@@ -11,6 +11,12 @@ bucket_name = "aria-files"
 binding = "ARIA_MEMORY"
 index_name = "aria-memory"
 
+# Direct worker-to-worker binding to the self-evolving skill system.
+# Avoids CF error 1042 (worker-to-worker over public workers.dev URLs).
+[[services]]
+binding = "SKILL_SYSTEM"
+service = "aria-skill-system"
+
 [observability]
 enabled = true
 

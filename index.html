@@ -1019,7 +1019,7 @@ async function loadRubyStatus(force){
   try{
     const r=await fetch(API+'/ruby/status');
     if(!r.ok){c.innerHTML='<div class="agt-card"><div class="adesc">Could not load Ruby Agent. Backend unreachable.</div></div>';return;}
-    const d=await r.json();
+    let d;try{d=await r.json();}catch(e){const t=await r.text();c.innerHTML='<div class="agt-card"><div class="adesc">Backend returned non-JSON: '+escHtml(t)+'</div></div>';return;}
     window.rubyData=d;window.rubyLoaded=true;
     renderRubyStatus(d);
   }catch(e){c.innerHTML='<div class="agt-card"><div class="adesc">Error: '+escHtml(e.message)+'</div></div>';}
@@ -1027,29 +1027,44 @@ async function loadRubyStatus(force){
 
 function renderRubyStatus(d){
   const c=document.getElementById('rubyContent');
-  const days=d.kga_bid.days_left;
-  const urgentClass=days<=7?'red':days<=14?'yellow':'accent';
+  const kga=d?.kga_bid;
+  const days=kga?.days_left??'N/A';
+  const urgentClass=typeof days==='number'?(days<=7?'red':days<=14?'yellow':'accent'):'accent';
+  const activeTenders=d?.active_tenders??d?.flagged??0;
+  const completedTenders=d?.completed_tenders??d?.submitted??0;
+
+  if(!kga){
+    c.innerHTML=`
+      <div class="agt-card"><div class="atitle">Ruby Agent is ready</div>
+        <div class="adesc" style="margin-top:6px">No tenders loaded yet. Run ruby-agent monitor to fetch tenders from Bolpatra.</div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div class="agt-chip" onclick="loadRubyStatus(true)">🔄 Refresh</div>
+        <div class="agt-chip" onclick="loadRubyTenders()">📋 All Tenders</div>
+        <div class="agt-chip" onclick="showRubyChat()">💬 Chat Ruby</div>
+      </div>`;
+    window.aadiLoaded=false;return;
+  }
 
   c.innerHTML=`
     <div class="agt-stat">
       <div class="agt-stat-item"><div class="num" style="color:var(--${urgentClass})">${days}</div><div class="lbl">Days Left</div></div>
-      <div class="agt-stat-item"><div class="num">${d.active_tenders}</div><div class="lbl">Active Tenders</div></div>
-      <div class="agt-stat-item"><div class="num">${d.completed_tenders}</div><div class="lbl">Completed</div></div>
+      <div class="agt-stat-item"><div class="num">${activeTenders}</div><div class="lbl">Active Tenders</div></div>
+      <div class="agt-stat-item"><div class="num">${completedTenders}</div><div class="lbl">Completed</div></div>
       <div class="agt-stat-item"><div class="num">B</div><div class="lbl">Class</div></div>
     </div>
 
-    <div class="agt-card"><div class="atitle">KGA-2082/83-CT-07</div>
-      <div class="akv"><span class="akv-lbl">Project</span><span class="akv-val">${escHtml(d.kga_bid.project)}</span></div>
-      <div class="akv"><span class="akv-lbl">Employer</span><span class="akv-val">${escHtml(d.kga_bid.employer)}</span></div>
-      <div class="akv"><span class="akv-lbl">Location</span><span class="akv-val">${escHtml(d.kga_bid.location)}</span></div>
-      <div class="akv"><span class="akv-lbl">Deadline</span><span class="akv-val">${escHtml(d.kga_bid.deadline)}</span></div>
-      <div class="akv"><span class="akv-lbl">Value</span><span class="akv-val">${escHtml(d.kga_bid.estimated_value)}</span></div>
-      <div class="akv" style="border:none"><span class="akv-lbl">Security</span><span class="akv-val">${escHtml(d.kga_bid.bid_security)}</span></div>
+    <div class="agt-card"><div class="atitle">${escHtml(kga.ifb??'KGA-2082/83-CT-07')}</div>
+      <div class="akv"><span class="akv-lbl">Project</span><span class="akv-val">${escHtml(kga.project??kga.name??'N/A')}</span></div>
+      <div class="akv"><span class="akv-lbl">Employer</span><span class="akv-val">${escHtml(kga.employer??'NEA Engineering Company Ltd.')}</span></div>
+      <div class="akv"><span class="akv-lbl">Location</span><span class="akv-val">${escHtml(kga.location??'Syangja/Palpa, Nepal')}</span></div>
+      <div class="akv"><span class="akv-lbl">Deadline</span><span class="akv-val">${escHtml(kga.deadline??'N/A')}</span></div>
+      <div class="akv"><span class="akv-lbl">Value</span><span class="akv-val">${escHtml(kga.estimated_value??'N/A')}</span></div>
+      <div class="akv" style="border:none"><span class="akv-lbl">Security</span><span class="akv-val">${escHtml(String(kga.bid_security??'N/A'))}</span></div>
     </div>
 
-    ${d.kga_bid.remaining_work?`
+    ${(kga.remaining_work??[]).length?`
     <div class="agt-card"><div class="atitle">Remaining Work</div>
-      ${d.kga_bid.remaining_work.map(item=>`
+      ${(kga.remaining_work??[]).map(item=>`
         <div class="agt-task"><div class="prio urgent"></div>
         <div class="tinfo"><div class="ttitle">${escHtml(item)}</div></div></div>
       `).join('')}
@@ -1075,10 +1090,10 @@ async function loadRubyTenders(){
     const d=await r.json();
     c.innerHTML=`
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <div class="agent-hdr" style="margin:0">Tenders (${d.count})</div>
+        <div class="agent-hdr" style="margin:0">Tenders (${(d?.tenders??[]).length})</div>
         <div class="agt-chip" style="font-size:11px;padding:6px 10px" onclick="loadRubyStatus()">← Back</div>
       </div>
-      ${d.tenders.length?d.tenders.map(t=>`
+      ${(d?.tenders??[]).length?(d?.tenders??[]).map(t=>`
         <div class="agt-card"><div class="atitle">${escHtml(t.title)}</div>
           <div class="akv"><span class="akv-lbl">Location</span><span class="akv-val">${escHtml(t.location||'N/A')}</span></div>
           <div class="akv"><span class="akv-lbl">Deadline</span><span class="akv-val">${t.deadline||'N/A'}</span></div>
